@@ -60,7 +60,7 @@ body { font-family: system-ui, -apple-system, sans-serif }
 .leg-shapes { margin-top: 2px; font-size: 10px; color: #cbd5e1 }
 
 /* Date filter — top left */
-#date-filter { top: 10px; left: 60px; bottom: auto; padding: 6px 10px }
+#filter-panel { top: 10px; left: 60px; bottom: auto; padding: 6px 10px }
 .df-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap }
 .df-row + .df-row { margin-top: 4px }
 .df-label { font-weight: 600; font-size: 12px }
@@ -73,7 +73,12 @@ body { font-family: system-ui, -apple-system, sans-serif }
 .df-btn:last-child { border-radius: 0 4px 4px 0; border-left: none }
 .df-btn.df-active { background: #2563eb; color: #f8fafc; border-color: #2563eb }
 .df-sep { font-size: 11px; color: #94a3b8 }
-.df-count { font-size: 11px; color: #94a3b8; margin-left: 4px }
+.df-count { font-size: 11px; color: #94a3b8; margin-left: auto }
+.df-cb {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 11px; cursor: pointer; white-space: nowrap;
+}
+.df-cb input { margin: 0; accent-color: #2563eb }
 #df-from, #df-to {
   background: #334155; color: #f8fafc; border: 1px solid #475569;
   border-radius: 4px; padding: 2px 6px; font-size: 11px; font-family: inherit;

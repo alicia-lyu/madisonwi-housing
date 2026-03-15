@@ -272,18 +272,28 @@ def build_zoning_panel_html(zoning_info):
             color = zoning_color(code)
             permitted = html.escape(z.get("residential_permitted", "") or "")
             conditional = html.escape(z.get("residential_conditional", "") or "")
+            desc_text = html.escape(z["description"])
+            row_id = f'zd-{html.escape(code)}'
             table_rows.append(
                 f'<tr class="zp-row">'
                 f'<td class="zp-code">'
                 f'<span class="zp-dot" style="background:{color}"></span>'
                 f'{html.escape(code)}</td>'
-                f'<td class="zp-name">'
-                f'<b>{html.escape(z["name"])}</b><br>'
-                f'<span class="zp-desc">{html.escape(z["description"])}</span></td>'
+                f'<td class="zp-name zp-toggle" onclick="'
+                f"var r=document.getElementById('{row_id}');"
+                f"r.style.display=r.style.display==='none'?'table-row':'none';"
+                f"this.querySelector('.zp-arrow').textContent="
+                f"r.style.display==='none'?'\\u25B8':'\\u25BE'"
+                f'">'
+                f'<span class="zp-arrow">&#x25B8;</span>'
+                f'<b>{html.escape(z["name"])}</b></td>'
                 f'<td class="zp-cell">{permitted}</td>'
                 f'<td class="zp-cell">{conditional}</td>'
                 f'<td class="zp-cell zp-nowrap">{html.escape(z["max_stories"])}</td>'
                 f'<td class="zp-cell zp-nowrap zp-last">{html.escape(z["max_density"])}</td>'
+                f'</tr>'
+                f'<tr id="{row_id}" class="zp-detail" style="display:none">'
+                f'<td></td><td colspan="5" class="zp-desc-cell">{desc_text}</td>'
                 f'</tr>'
             )
         sections.append(
@@ -332,7 +342,16 @@ def main():
             "d": r.get("date", ""),
         })
 
-    stats_html = build_stats_html(rows)
+    # All projects for JS-side stats computation (date-filterable)
+    all_projects = []
+    for r in rows:
+        all_projects.append({
+            "d": r.get("date", ""),
+            "t": r.get("use_type", "UNKNOWN"),
+            "h": r.get("housing_type", "Unknown"),
+            "u": int(r["units"]) if r.get("units") else 0,
+        })
+    all_projects_json = json.dumps(all_projects)
 
     # Load transit routes
     transit_json = "[]"
@@ -378,20 +397,26 @@ def main():
   <button id="stats-toggle" class="map-overlay-btn" onclick="document.getElementById('stats-panel').classList.remove('collapsed');this.style.display='none'">Project Summary</button>
   <div id="stats-panel" class="map-overlay">
     <button class="map-overlay-close" onclick="this.parentElement.classList.add('collapsed');document.getElementById('stats-toggle').style.display='block'">&times;</button>
-    {stats_html}
+    <div id="stats-body"></div>
   </div>
-  <div id="date-filter" class="map-overlay">
+  <div id="filter-panel" class="map-overlay">
     <div class="df-row">
-      <span class="df-label">Filter by date</span>
+      <span class="df-label">Date</span>
       <span class="df-toggle">
         <button id="df-month" class="df-btn df-active" onclick="setGran('month')">Month</button>
         <button id="df-year" class="df-btn" onclick="setGran('year')">Year</button>
       </span>
+      <select id="df-from" onchange="applyFilters()"></select>
+      <span class="df-sep">to</span>
+      <select id="df-to" onchange="applyFilters()"></select>
     </div>
     <div class="df-row">
-      <select id="df-from" onchange="applyDateFilter()"></select>
-      <span class="df-sep">to</span>
-      <select id="df-to" onchange="applyDateFilter()"></select>
+      <span class="df-label">Use type</span>
+      <label class="df-cb"><input type="checkbox" value="PERMITTED" checked onchange="applyFilters()"><span style="color:#16a34a">Permitted</span></label>
+      <label class="df-cb"><input type="checkbox" value="CONDITIONAL" checked onchange="applyFilters()"><span style="color:#d97706">Conditional</span></label>
+      <label class="df-cb"><input type="checkbox" value="REZONED" checked onchange="applyFilters()"><span style="color:#7c3aed">Rezoned</span></label>
+      <label class="df-cb"><input type="checkbox" value="VARIES" checked onchange="applyFilters()"><span style="color:#7c3aed">PD</span></label>
+      <label class="df-cb"><input type="checkbox" value="UNKNOWN" checked onchange="applyFilters()"><span style="color:#6b7280">Unknown</span></label>
       <span id="df-count" class="df-count"></span>
     </div>
   </div>
@@ -422,6 +447,7 @@ tr.forEach(function(rt){{
     '<b>Route '+rt.name+'</b>'
   );
 }});
+var allProj={all_projects_json};
 var d={markers_json};
 var markers=[];
 function sqSvg(sz,fill){{
@@ -455,6 +481,7 @@ d.forEach(function(x){{
   mk._baseR=x.r;
   mk._fill=x.c;
   mk._date=x.d||"";
+  mk._useType=x.t||"";
   markers.push(mk);
 }});
 function scaleMarkers(){{
@@ -497,12 +524,58 @@ function fillSel(sel,opts,idx){{
   }});
   sel.selectedIndex=Math.min(idx,opts.length-1);
 }}
+var HT_ORDER=["Mid-Rise","Mid-Rise Mixed-Use","High-Rise","High-Rise Mixed-Use",
+  "Townhouse","Multiplex","Duplex/Triplex"];
+var COL_KEYS=["permitted","conditional","rezoned_pd","unknown"];
+var COL_LABELS=[["Permitted","#16a34a"],["Conditional","#d97706"],["Rezoned / PD","#7c3aed"],["Unknown","#6b7280"]];
+function buildStats(from,to){{
+  var cross={{}};
+  var fProj=allProj.filter(function(p){{
+    var k=gran==="year"?p.d.slice(0,4):p.d.slice(0,7);
+    return k&&k>=from&&k<=to;
+  }});
+  fProj.forEach(function(p){{
+    var col=p.t==="PERMITTED"?"permitted":p.t==="CONDITIONAL"?"conditional":
+      (p.t==="REZONED"||p.t==="VARIES")?"rezoned_pd":"unknown";
+    if(!cross[p.h])cross[p.h]={{}};
+    if(!cross[p.h][col])cross[p.h][col]={{n:0,u:0}};
+    cross[p.h][col].n++;cross[p.h][col].u+=p.u;
+  }});
+  function cell(ht,col){{
+    var d=(cross[ht]&&cross[ht][col])||{{n:0,u:0}};
+    if(d.n===0)return '<td class="zp-cell" style="text-align:center;color:#cbd5e1">\u2014</td>';
+    return '<td class="zp-cell" style="text-align:right">'+d.n+' <span class="zp-desc">('+d.u.toLocaleString()+' units)</span></td>';
+  }}
+  var html='<div class="zp-section"><div class="zp-cat">Project Summary</div>';
+  html+='<table class="zp-table"><tr class="zp-hdr"><th>Housing Type</th>';
+  COL_LABELS.forEach(function(c){{html+='<th style="text-align:right;color:'+c[1]+'">'+c[0]+'</th>'}});
+  html+='<th style="text-align:right">Total</th></tr>';
+  HT_ORDER.forEach(function(ht){{
+    if(!cross[ht])return;
+    var tn=0,tu=0;
+    COL_KEYS.forEach(function(c){{var d=(cross[ht]&&cross[ht][c])||{{n:0,u:0}};tn+=d.n;tu+=d.u}});
+    html+='<tr class="zp-row"><td class="zp-cell" style="font-weight:600">'+ht+'</td>';
+    COL_KEYS.forEach(function(c){{html+=cell(ht,c)}});
+    html+='<td class="zp-cell" style="text-align:right;font-weight:600">'+tn+' <span class="zp-desc">('+tu.toLocaleString()+')</span></td></tr>';
+  }});
+  var tot={{}};COL_KEYS.forEach(function(c){{tot[c]={{n:0,u:0}};
+    for(var ht in cross){{var d=(cross[ht][c])||{{n:0,u:0}};tot[c].n+=d.n;tot[c].u+=d.u}}
+  }});
+  var gn=0,gu=0;COL_KEYS.forEach(function(c){{gn+=tot[c].n;gu+=tot[c].u}});
+  html+='<tr style="border-top:2px solid #cbd5e1"><td class="zp-cell" style="font-weight:700">Total</td>';
+  COL_KEYS.forEach(function(c){{
+    html+='<td class="zp-cell" style="text-align:right;font-weight:700">'+tot[c].n+' <span class="zp-desc">('+tot[c].u.toLocaleString()+')</span></td>';
+  }});
+  html+='<td class="zp-cell" style="text-align:right;font-weight:700">'+gn+' <span class="zp-desc">('+gu.toLocaleString()+')</span></td></tr>';
+  html+='</table></div>';
+  document.getElementById("stats-body").innerHTML=html;
+}}
 function initDateFilter(){{
   var keys=allKeys();
   if(keys.length===0)return;
   fillSel(document.getElementById("df-from"),keys,0);
   fillSel(document.getElementById("df-to"),keys,keys.length-1);
-  applyDateFilter();
+  applyFilters();
 }}
 function setGran(g){{
   gran=g;
@@ -510,13 +583,23 @@ function setGran(g){{
   document.getElementById("df-year").className="df-btn"+(g==="year"?" df-active":"");
   initDateFilter();
 }}
-function applyDateFilter(){{
+function getCheckedUseTypes(){{
+  var s=new Set();
+  document.querySelectorAll('#filter-panel input[type=checkbox]:checked').forEach(function(cb){{
+    s.add(cb.value);
+  }});
+  return s;
+}}
+function applyFilters(){{
   var from=document.getElementById("df-from").value;
   var to=document.getElementById("df-to").value;
+  var useTypes=getCheckedUseTypes();
   var shown=0;
   markers.forEach(function(mk){{
     var k=mk._date?dateKey(mk._date):"";
-    if(k&&k>=from&&k<=to){{
+    var dateOk=k&&k>=from&&k<=to;
+    var typeOk=useTypes.has(mk._useType);
+    if(dateOk&&typeOk){{
       if(!m.hasLayer(mk))mk.addTo(m);
       shown++;
     }}else{{
@@ -524,6 +607,7 @@ function applyDateFilter(){{
     }}
   }});
   document.getElementById("df-count").textContent=shown+"/"+markers.length;
+  buildStats(from,to);
 }}
 initDateFilter();
 </script>
