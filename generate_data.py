@@ -23,6 +23,7 @@ CACHE_FILE = "geocode_cache.json"
 ZONING_CSV = "zoning_districts.csv"
 GTFS_DIR = "gtfs_tmp"
 TRANSIT_JSON = "transit_routes.json"
+OUTCOME_OVERRIDES_CSV = "outcome_overrides.csv"
 
 # ---------------------------------------------------------------------------
 # API endpoints
@@ -715,15 +716,37 @@ def classify_outcome(status, date_str):
     return "ACTIVE"
 
 
+def load_outcome_overrides():
+    """Load manual outcome overrides from CSV. Returns dict of record_number -> outcome."""
+    if not os.path.exists(OUTCOME_OVERRIDES_CSV):
+        return {}
+    overrides = {}
+    with open(OUTCOME_OVERRIDES_CSV, newline="") as f:
+        for row in csv.DictReader(f):
+            overrides[row["record_number"].strip()] = row["outcome"].strip()
+    return overrides
+
+
 def _step_classify_outcome(projects):
     """Step 5b: classify project outcome (built / active / did not proceed)."""
     print("Step 5b: Classifying project outcomes...")
+    overrides = load_outcome_overrides()
+    override_count = 0
     outcome_counts = {}
     for p in projects:
-        p["outcome"] = classify_outcome(p["status"], p["date"])
+        rec = p["record_number"]
+        if rec in overrides:
+            p["outcome"] = overrides[rec]
+            override_count += 1
+            print(f"  {rec}: {p['outcome']} (manual override)")
+        else:
+            p["outcome"] = classify_outcome(p["status"], p["date"])
+    for p in projects:
         outcome_counts[p["outcome"]] = outcome_counts.get(p["outcome"], 0) + 1
     for outcome, count in sorted(outcome_counts.items()):
         print(f"  {outcome}: {count}")
+    if override_count:
+        print(f"  ({override_count} manual override(s) applied)")
     print()
 
 

@@ -58,8 +58,8 @@ STATUS_STYLES = {
 USE_TYPE_COLORS = {
     "PERMITTED": "#16a34a",
     "CONDITIONAL": "#d97706",
-    "REZONED": "#7c3aed",
-    "VARIES": "#7c3aed",
+    "REZONED": "#ef4444",
+    "VARIES": "#ef4444",
     "UNKNOWN": "#6b7280",
 }
 
@@ -71,7 +71,7 @@ USE_TYPE_LABELS = {
     "UNKNOWN": "Unknown",
 }
 
-OUTCOME_COLORS = {"BUILT": "#10b981", "ACTIVE": "#2563eb", "DID_NOT_PROCEED": "#ef4444"}
+OUTCOME_COLORS = {"BUILT": "#10b981", "ACTIVE": "#d97706", "DID_NOT_PROCEED": "#ef4444"}
 OUTCOME_LABELS = {"BUILT": "Built", "ACTIVE": "Active", "DID_NOT_PROCEED": "Did Not Proceed"}
 
 # ---------------------------------------------------------------------------
@@ -259,7 +259,7 @@ def build_stats_html(rows):
         f'<tr class="zp-hdr"><th>Housing Type</th>'
         f'<th style="text-align:right;color:#16a34a">Permitted</th>'
         f'<th style="text-align:right;color:#d97706">Conditional</th>'
-        f'<th style="text-align:right;color:#7c3aed">Rezoned / PD</th>'
+        f'<th style="text-align:right;color:#ef4444">Rezoned / PD</th>'
         f'<th style="text-align:right;color:#6b7280">Unknown</th>'
         f'<th style="text-align:right">Total</th></tr>'
         f'{"".join(table_rows)}</table></div>'
@@ -546,7 +546,7 @@ function fillSel(sel,opts,idx){{
 var HT_ORDER=["Mid-Rise","Mid-Rise Mixed-Use","High-Rise","High-Rise Mixed-Use",
   "Townhouse","Multiplex","Duplex/Triplex"];
 var COL_KEYS=["permitted","conditional","rezoned_pd","unknown"];
-var COL_LABELS=[["Permitted","#16a34a"],["Conditional","#d97706"],["Rezoned / PD","#7c3aed"],["Unknown","#6b7280"]];
+var COL_LABELS=[["Permitted","#16a34a"],["Conditional","#d97706"],["Rezoned / PD","#ef4444"],["Unknown","#6b7280"]];
 function buildStats(from,to,useTypes,outcomes){{
   var cross={{}};
   var fProj=allProj.filter(function(p){{
@@ -782,15 +782,15 @@ def _build_filter_panel_html():
       <span class="df-label">Use type</span>
       <label class="df-cb"><input type="checkbox" name="usetype" value="PERMITTED" checked onchange="applyFilters()"><span style="color:#16a34a">Permitted</span></label>
       <label class="df-cb"><input type="checkbox" name="usetype" value="CONDITIONAL" checked onchange="applyFilters()"><span style="color:#d97706">Conditional</span></label>
-      <label class="df-cb"><input type="checkbox" name="usetype" value="REZONED" checked onchange="applyFilters()"><span style="color:#7c3aed">Rezoned</span></label>
-      <label class="df-cb"><input type="checkbox" name="usetype" value="VARIES" checked onchange="applyFilters()"><span style="color:#7c3aed">PD</span></label>
+      <label class="df-cb"><input type="checkbox" name="usetype" value="REZONED" checked onchange="applyFilters()"><span style="color:#ef4444">Rezoned</span></label>
+      <label class="df-cb"><input type="checkbox" name="usetype" value="VARIES" checked onchange="applyFilters()"><span style="color:#ef4444">PD</span></label>
       <label class="df-cb"><input type="checkbox" name="usetype" value="UNKNOWN" checked onchange="applyFilters()"><span style="color:#6b7280">Unknown</span></label>
       <span id="df-count" class="df-count"></span>
     </div>
     <div class="df-row">
       <span class="df-label">Outcome</span>
       <label class="df-cb"><input type="checkbox" name="outcome" value="BUILT" checked onchange="applyFilters()"><span style="color:#10b981">Built</span></label>
-      <label class="df-cb"><input type="checkbox" name="outcome" value="ACTIVE" checked onchange="applyFilters()"><span style="color:#2563eb">Active</span></label>
+      <label class="df-cb"><input type="checkbox" name="outcome" value="ACTIVE" checked onchange="applyFilters()"><span style="color:#d97706">Active</span></label>
       <label class="df-cb"><input type="checkbox" name="outcome" value="DID_NOT_PROCEED" checked onchange="applyFilters()"><span style="color:#ef4444">Did Not Proceed</span></label>
     </div>
   </div>"""
