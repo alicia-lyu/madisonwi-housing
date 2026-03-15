@@ -743,7 +743,19 @@ function loadHash(){{
   applyFilters();
   return true;
 }}
-if(!loadHash())initDateFilter();"""
+if(!loadHash())initDateFilter();
+if(window.innerWidth<=768){{
+  ['legend','stats-panel','filter-panel'].forEach(function(id){{
+    var el=document.getElementById(id);
+    if(el)el.classList.add('collapsed');
+    var tog=document.getElementById(id.replace('-panel','')+'-toggle');
+    if(!tog)tog=document.getElementById(id+'-toggle');
+    if(tog)tog.style.display='block';
+  }});
+  document.getElementById('legend-toggle').style.display='block';
+  document.getElementById('stats-toggle').style.display='block';
+  document.getElementById('filter-toggle').style.display='block';
+}}"""
 
 
 # ---------------------------------------------------------------------------
@@ -767,7 +779,9 @@ def _build_header_html(total, total_units, mapped):
 
 def _build_filter_panel_html():
     return """\
+  <button id="filter-toggle" class="map-overlay-btn" onclick="document.getElementById('filter-panel').classList.remove('collapsed');this.style.display='none'">Filters</button>
   <div id="filter-panel" class="map-overlay">
+    <button class="map-overlay-close" onclick="this.parentElement.classList.add('collapsed');document.getElementById('filter-toggle').style.display='block'">&times;</button>
     <div class="df-row">
       <span class="df-label">Date</span>
       <span class="df-toggle">

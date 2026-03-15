@@ -19,7 +19,7 @@ body { font-family: system-ui, -apple-system, sans-serif }
 /* Legend — collapsible on the map, not in the header */
 /* Floating overlay panels (shared) */
 .map-overlay {
-  position: absolute; z-index: 1000;
+  position: absolute; z-index: 1100;
   background: rgba(30,41,59,0.93); color: #f8fafc;
   padding: 10px 14px; border-radius: 8px; font-size: 11px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.35);
@@ -69,6 +69,7 @@ body { font-family: system-ui, -apple-system, sans-serif }
 
 /* Date filter — top left */
 #filter-panel { top: 10px; left: 60px; bottom: auto; padding: 8px 12px }
+#filter-toggle { top: 10px; left: 60px }
 .df-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap }
 .df-row + .df-row { margin-top: 5px }
 .df-label { font-weight: 600; font-size: 12px; min-width: 52px }
@@ -104,6 +105,9 @@ body { font-family: system-ui, -apple-system, sans-serif }
   .leg-code { font-size: 9px }
   #header h1 { font-size: 14px }
   .stats { font-size: 11px }
+  #stats-panel { left: 10px; right: 10px; max-width: none; font-size: 10px }
+  #stats-panel .zp-table { display: block; overflow-x: auto }
+  #filter-panel { left: 10px; right: auto; max-width: calc(100vw - 20px) }
 }
 
 /* Zoning reference button & panel */
