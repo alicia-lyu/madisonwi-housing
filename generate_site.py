@@ -252,63 +252,7 @@ def main():
 <title>Madison WI Multi-Family Housing Permits (2025)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<style>
-*{{margin:0;padding:0;box-sizing:border-box}}
-body{{font-family:system-ui,-apple-system,sans-serif}}
-#header{{background:#1e293b;color:#f8fafc;padding:10px 20px;
-  display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px}}
-#header h1{{font-size:18px;font-weight:600}}
-.stats{{font-size:13px;color:#94a3b8;margin-top:3px}}
-.stats span{{margin-right:14px}}
-#legend{{display:flex;flex-direction:column;gap:2px}}
-#map-wrap{{position:relative;height:calc(100vh - 56px)}}
-#map{{height:100%;width:100%}}
-#zoning-btn{{position:absolute;top:10px;right:10px;z-index:1000;
-  background:#1e293b;color:#f8fafc;border:none;padding:7px 14px;
-  border-radius:6px;cursor:pointer;font-size:13px;font-family:inherit;
-  box-shadow:0 2px 6px rgba(0,0,0,0.3)}}
-#zoning-btn:hover{{background:#334155}}
-#zoning-panel{{position:absolute;top:10px;right:10px;z-index:1001;
-  background:#fff;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.25);
-  width:900px;max-width:calc(100vw - 30px);max-height:calc(100vh - 100px);
-  overflow-y:auto;padding:16px;display:none}}
-#zoning-panel.open{{display:block}}
-#panel-close{{float:right;background:none;border:none;font-size:20px;
-  cursor:pointer;color:#64748b;line-height:1}}
-#panel-close:hover{{color:#1e293b}}
-#panel-title{{font-size:15px;font-weight:600;margin-bottom:10px;color:#1e293b}}
-#panel-note{{font-size:11px;color:#94a3b8;margin-bottom:12px;line-height:1.4}}
-/* Popup */
-.popup{{font:13px/1.5 system-ui,sans-serif;max-width:320px}}
-.popup-name{{font-weight:600;font-size:14px;margin-bottom:4px}}
-.popup-body{{color:#475569}}
-.popup-use{{font-weight:600}}
-.popup-desc{{margin-top:6px;font-size:12px;color:#64748b;border-top:1px solid #e2e8f0;padding-top:6px}}
-/* Legend */
-.leg-item{{display:inline-flex;align-items:center;margin-right:8px}}
-.leg-dot{{width:12px;height:12px;border-radius:50%;display:inline-block;margin-right:3px;border:1px solid rgba(0,0,0,0.2)}}
-.leg-code{{font-size:11px}}
-.leg-row{{margin-bottom:2px}}
-.leg-cat{{font-size:10px;color:#94a3b8;margin-right:6px}}
-.leg-shapes{{margin-top:2px;font-size:11px;color:#cbd5e1}}
-/* Stats color highlights */
-.stat-permitted{{color:#16a34a}}
-.stat-conditional{{color:#d97706}}
-/* Zoning panel table */
-.zp-section{{margin-bottom:12px}}
-.zp-cat{{font-weight:600;font-size:13px;color:#3b82f6;margin-bottom:4px;border-bottom:1px solid #e2e8f0;padding-bottom:3px}}
-.zp-table{{font-size:12px;border-collapse:collapse;width:100%}}
-.zp-hdr{{color:#94a3b8;font-size:10px;text-transform:uppercase}}
-.zp-hdr th{{text-align:left;padding:2px 6px}}
-.zp-row{{border-bottom:1px solid #f1f5f9}}
-.zp-code{{white-space:nowrap;font-weight:600;vertical-align:top;padding:4px 8px 4px 0}}
-.zp-dot{{display:inline-block;width:12px;height:12px;border-radius:50%;vertical-align:middle;margin-right:4px;border:1px solid rgba(0,0,0,0.15)}}
-.zp-name{{vertical-align:top;padding:4px 8px 4px 0;min-width:120px}}
-.zp-desc{{font-size:11px;color:#64748b}}
-.zp-cell{{vertical-align:top;padding:4px 6px;font-size:11px;color:#475569}}
-.zp-nowrap{{white-space:nowrap;font-size:12px}}
-.zp-last{{padding-left:6px;padding-right:0}}
-</style>
+<link rel="stylesheet" href="style.css"/>
 </head>
 <body>
 <div id="header">
