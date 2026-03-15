@@ -5,3 +5,6 @@
 *.txt
 *.zip
 .claude/
+!projects.csv
+!zoning_districts.csv
+!transit_routes.json
