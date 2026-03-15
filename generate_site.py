@@ -159,7 +159,7 @@ def build_legend_html(zoning_codes_used):
     # Shape legend
     parts.append(
         '<div class="leg-shapes">'
-        '&#9679; = Permitted use &nbsp; &#9650; = Conditional use'
+        '&#9679; = Permitted use &nbsp; &#9632; = Conditional/Varies'
         '</div>'
     )
     return "\n".join(parts)
@@ -223,7 +223,9 @@ def main():
         ut = r.get("use_type", "UNKNOWN")
         use_type_counts[ut] = use_type_counts.get(ut, 0) + 1
     permitted_count = use_type_counts.get("PERMITTED", 0)
-    conditional_count = use_type_counts.get("CONDITIONAL", 0) + use_type_counts.get("NOT_ALLOWED", 0)
+    conditional_count = (use_type_counts.get("CONDITIONAL", 0)
+                        + use_type_counts.get("NOT_ALLOWED", 0)
+                        + use_type_counts.get("VARIES", 0))
 
     markers = []
     for r in mappable:
@@ -263,7 +265,7 @@ def main():
       <span>{total_units:,} total units</span>
       <span>{mapped} mapped</span>
       <span class="stat-permitted">&#9679; {permitted_count} permitted</span>
-      <span class="stat-conditional">&#9650; {conditional_count} conditional</span>
+      <span class="stat-conditional">&#9632; {conditional_count} conditional</span>
       <span>Size = unit count (log scale)</span>
     </div>
   </div>
@@ -293,34 +295,32 @@ L.tileLayer("https://{{s}}.tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png",{{
   maxZoom:19}}).addTo(m);
 var d={markers_json};
 var markers=[];
-function triSvg(sz,fill){{
-  var h=sz*1.73;
-  var pts=(sz/2)+",0 "+sz+","+h+" 0,"+h;
-  return '<svg width="'+sz+'" height="'+h+'" style="display:block">'
-    +'<polygon points="'+pts+'" fill="'+fill+'" stroke="#fff" stroke-width="1.5" opacity="0.85"/></svg>';
+function sqSvg(sz,fill){{
+  return '<svg width="'+sz+'" height="'+sz+'" style="display:block">'
+    +'<rect width="'+sz+'" height="'+sz+'" fill="'+fill+'" stroke="#fff" stroke-width="1.5" opacity="0.85"/></svg>';
 }}
-function makeTri(r,fill){{
+function makeSq(r,fill){{
   var sz=r*2;
-  var h=sz*1.73;
   return L.divIcon({{
-    html:triSvg(sz,fill),
+    html:sqSvg(sz,fill),
     className:"",
-    iconSize:[sz,h],
-    iconAnchor:[sz/2,h/2],
-    popupAnchor:[0,-h/2]
+    iconSize:[sz,sz],
+    iconAnchor:[sz/2,sz/2],
+    popupAnchor:[0,-sz/2]
   }});
 }}
+var SQ_TYPES={{"CONDITIONAL":1,"NOT_ALLOWED":1,"VARIES":1}};
 d.forEach(function(x){{
   var mk;
-  if(x.t==="CONDITIONAL"||x.t==="NOT_ALLOWED"){{
-    mk=L.marker([x.lat,x.lng],{{icon:makeTri(x.r,x.c)}});
-    mk._isTri=true;
+  if(SQ_TYPES[x.t]){{
+    mk=L.marker([x.lat,x.lng],{{icon:makeSq(x.r,x.c)}});
+    mk._isSq=true;
   }}else{{
     mk=L.circleMarker([x.lat,x.lng],{{
       radius:x.r,fillColor:x.c,color:"#fff",weight:1.5,
       opacity:1,fillOpacity:0.85
     }});
-    mk._isTri=false;
+    mk._isSq=false;
   }}
   mk.addTo(m).bindPopup(x.p);
   mk._baseR=x.r;
@@ -329,18 +329,17 @@ d.forEach(function(x){{
 }});
 function scaleMarkers(){{
   var z=m.getZoom();
-  var s=Math.pow(2,(z-12)*1.5)*0.6;
-  s=Math.max(0.15,Math.min(s,3));
+  var s=Math.max(0.15,0.05+0.35*Math.log2(Math.max(1,z-10)));
   markers.forEach(function(mk){{
     var r=Math.max(2,mk._baseR*s);
-    if(mk._isTri){{
-      var sz=r*2,h=sz*1.73;
+    if(mk._isSq){{
+      var sz=r*2;
       mk.setIcon(L.divIcon({{
-        html:triSvg(sz,mk._fill),
+        html:sqSvg(sz,mk._fill),
         className:"",
-        iconSize:[sz,h],
-        iconAnchor:[sz/2,h/2],
-        popupAnchor:[0,-h/2]
+        iconSize:[sz,sz],
+        iconAnchor:[sz/2,sz/2],
+        popupAnchor:[0,-sz/2]
       }}));
     }}else{{
       mk.setRadius(r);
