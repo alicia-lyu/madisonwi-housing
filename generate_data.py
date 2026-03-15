@@ -12,12 +12,30 @@ import urllib.parse
 import urllib.error
 from datetime import date, datetime
 
+# ---------------------------------------------------------------------------
+# File paths
+# ---------------------------------------------------------------------------
+
 CSV_FILE = "01012015-03152026.csv"
 OUTPUT_JSON = "projects.json"
 OUTPUT_CSV = "projects.csv"
 CACHE_FILE = "geocode_cache.json"
+ZONING_CSV = "zoning_districts.csv"
+GTFS_DIR = "gtfs_tmp"
+TRANSIT_JSON = "transit_routes.json"
 
+# ---------------------------------------------------------------------------
+# API endpoints
+# ---------------------------------------------------------------------------
+
+NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
+ZONING_URL = "https://maps.cityofmadison.com/arcgis/rest/services/Planning/Zoning/MapServer/2/query"
+USER_AGENT = "MadisonWI-HousingPermits/1.0"
+
+# ---------------------------------------------------------------------------
 # Records to exclude (false positives identified during manual review)
+# ---------------------------------------------------------------------------
+
 EXCLUDE_RECORDS = {
     "BLDNCC-2025-18873",  # Convert apartment building TO hotel (removing housing)
     "BLDNCC-2025-15801",  # Garage repair at existing apartment complex
@@ -26,7 +44,10 @@ EXCLUDE_RECORDS = {
     "BLDNCC-2017-11036",  # SpringHill Suites hotel in mixed-use building
 }
 
-# Regex to identify multi-family housing projects
+# ---------------------------------------------------------------------------
+# Multi-family detection patterns
+# ---------------------------------------------------------------------------
+
 MULTI_FAMILY_RE = re.compile(
     r"\d+.?unit|\d+\s+residential\s+unit"
     r"|\d+.?dwelling|apartment|townhouse|townhome|duplex|triplex"
@@ -34,18 +55,84 @@ MULTI_FAMILY_RE = re.compile(
     re.IGNORECASE,
 )
 
-# Patterns that indicate false positives
+# Patterns that indicate false positives (single-unit condo alterations)
 _CONDO_ALTER_RE = re.compile(
     r"alter|remodel|repair|replace|kitchen|bathroom|basement|layout"
     r"|finish|closet|stair|deck|window|door|floor|paint|roof",
     re.IGNORECASE,
 )
+
+# Positive indicators that a "condo" or "mixed-use" match is truly residential
 _RESIDENTIAL_INDICATOR_RE = re.compile(
     r"\d+.?unit|\d+\s+residential\s+unit|\d+.?dwelling"
     r"|apartment|\bapt\b|new\b.*\bcondo|housing|multi.?family",
     re.IGNORECASE,
 )
 
+# ---------------------------------------------------------------------------
+# Unit count extraction patterns
+# ---------------------------------------------------------------------------
+
+UNIT_PATTERNS = [
+    re.compile(r"(\d+)[- ]?(?:dwelling )?units?", re.IGNORECASE),
+    re.compile(r"(\d+)\s+residential\s+units?", re.IGNORECASE),
+    re.compile(r"(\d+)[- ]?dwelling", re.IGNORECASE),
+    re.compile(r"(\d+)[- ]?apartments?", re.IGNORECASE),
+    re.compile(r"(\d+) unit", re.IGNORECASE),
+]
+
+WORD_TO_NUM = {
+    "one": 1, "two": 2, "three": 3, "four": 4, "five": 5,
+    "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10,
+    "eleven": 11, "twelve": 12, "thirteen": 13, "fourteen": 14, "fifteen": 15,
+    "sixteen": 16, "seventeen": 17, "eighteen": 18, "nineteen": 19, "twenty": 20,
+}
+_WORD_PAT = "|".join(WORD_TO_NUM.keys())
+
+WORD_UNIT_PATTERNS = [
+    re.compile(rf"({_WORD_PAT})[- ]?(?:dwelling )?units?", re.IGNORECASE),
+    re.compile(rf"({_WORD_PAT})\s+(?:new\s+)?residential\s+units?", re.IGNORECASE),
+    re.compile(rf"({_WORD_PAT})[- ]?(?:apartment)", re.IGNORECASE),
+]
+
+# ---------------------------------------------------------------------------
+# Transit service level classification (from Dec 2025 system map)
+# ---------------------------------------------------------------------------
+
+FREQUENT_ROUTES = {"A", "B", "C", "D", "80"}
+STANDARD_ROUTES = {"E", "F", "G", "H", "J", "O", "P", "R", "28", "38"}
+PEAK_ROUTES = {"55", "65", "75"}
+SUPPLEMENTAL_ROUTES = {"60", "61", "62", "63", "64"}
+
+# ---------------------------------------------------------------------------
+# CSV output field order
+# ---------------------------------------------------------------------------
+
+CSV_FIELDS = [
+    "record_number", "date", "address", "status", "description",
+    "project_name", "units", "zoning", "lat", "lng", "use_type", "housing_type",
+]
+
+
+# ---------------------------------------------------------------------------
+# Cache helpers
+# ---------------------------------------------------------------------------
+
+def load_cache():
+    if os.path.exists(CACHE_FILE):
+        with open(CACHE_FILE) as f:
+            return json.load(f)
+    return {}
+
+
+def save_cache(cache):
+    with open(CACHE_FILE, "w") as f:
+        json.dump(cache, f, indent=2)
+
+
+# ---------------------------------------------------------------------------
+# CSV parsing and filtering
+# ---------------------------------------------------------------------------
 
 def is_likely_multifamily(desc):
     """Post-filter to weed out false positives from the broad regex match."""
@@ -67,54 +154,6 @@ def is_likely_multifamily(desc):
             return False
 
     return True
-
-# Regex patterns to extract unit counts
-UNIT_PATTERNS = [
-    re.compile(r"(\d+)[- ]?(?:dwelling )?units?", re.IGNORECASE),
-    re.compile(r"(\d+)\s+residential\s+units?", re.IGNORECASE),
-    re.compile(r"(\d+)[- ]?dwelling", re.IGNORECASE),
-    re.compile(r"(\d+)[- ]?apartments?", re.IGNORECASE),
-    re.compile(r"(\d+) unit", re.IGNORECASE),
-]
-
-WORD_TO_NUM = {
-    "one": 1, "two": 2, "three": 3, "four": 4, "five": 5,
-    "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10,
-    "eleven": 11, "twelve": 12, "thirteen": 13, "fourteen": 14, "fifteen": 15,
-    "sixteen": 16, "seventeen": 17, "eighteen": 18, "nineteen": 19, "twenty": 20,
-}
-_WORD_PAT = "|".join(WORD_TO_NUM.keys())
-WORD_UNIT_PATTERNS = [
-    re.compile(rf"({_WORD_PAT})[- ]?(?:dwelling )?units?", re.IGNORECASE),
-    re.compile(rf"({_WORD_PAT})\s+(?:new\s+)?residential\s+units?", re.IGNORECASE),
-    re.compile(rf"({_WORD_PAT})[- ]?(?:apartment)", re.IGNORECASE),
-]
-
-ZONING_CSV = "zoning_districts.csv"
-GTFS_DIR = "gtfs_tmp"
-TRANSIT_JSON = "transit_routes.json"
-
-# Service level classification for line weight/style (from Dec 2025 system map)
-FREQUENT_ROUTES = {"A", "B", "C", "D", "80"}
-STANDARD_ROUTES = {"E", "F", "G", "H", "J", "O", "P", "R", "28", "38"}
-PEAK_ROUTES = {"55", "65", "75"}
-SUPPLEMENTAL_ROUTES = {"60", "61", "62", "63", "64"}
-
-NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
-ZONING_URL = "https://maps.cityofmadison.com/arcgis/rest/services/Planning/Zoning/MapServer/2/query"
-USER_AGENT = "MadisonWI-HousingPermits/1.0"
-
-
-def load_cache():
-    if os.path.exists(CACHE_FILE):
-        with open(CACHE_FILE) as f:
-            return json.load(f)
-    return {}
-
-
-def save_cache(cache):
-    with open(CACHE_FILE, "w") as f:
-        json.dump(cache, f, indent=2)
 
 
 def parse_csv():
@@ -148,6 +187,10 @@ def parse_csv():
             })
     return projects
 
+
+# ---------------------------------------------------------------------------
+# Unit and housing type extraction
+# ---------------------------------------------------------------------------
 
 def extract_units(description):
     """Extract unit count from description text."""
@@ -210,13 +253,25 @@ def classify_housing_type(description, units):
     return "Mid-Rise"
 
 
+# ---------------------------------------------------------------------------
+# Geocoding
+# ---------------------------------------------------------------------------
+
 def clean_address(address):
     """Clean address for geocoding — remove unit numbers and 'United States'."""
-    # Remove ", United States" suffix
     address = re.sub(r",?\s*United States\s*$", "", address)
-    # Remove unit/suite numbers like ", 204," or ", 803,"
     address = re.sub(r",\s*\d+,", ",", address)
     return address.strip()
+
+
+def _api_request(url):
+    """Make an HTTP GET request with our User-Agent. Returns parsed JSON or None."""
+    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    try:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            return json.loads(resp.read().decode())
+    except (urllib.error.URLError, OSError):
+        return None
 
 
 def geocode(address, cache):
@@ -268,6 +323,10 @@ def geocode(address, cache):
         return None, None
 
 
+# ---------------------------------------------------------------------------
+# Zoning lookup
+# ---------------------------------------------------------------------------
+
 def get_zoning(lat, lng, cache):
     """Query Madison ArcGIS zoning layer for a point. Returns zoning code or None."""
     if lat is None or lng is None:
@@ -308,6 +367,10 @@ def get_zoning(lat, lng, cache):
         return None
 
 
+# ---------------------------------------------------------------------------
+# Zoning rules (permitted vs conditional use classification)
+# ---------------------------------------------------------------------------
+
 def parse_unit_ranges(text, building_type):
     """Parse semi-structured zoning text to extract (min, max) unit ranges for a type.
 
@@ -318,33 +381,31 @@ def parse_unit_ranges(text, building_type):
         return []
     ranges = []
     INF = float("inf")
-    # Split on commas to get individual clauses
     for clause in text.split(","):
         clause = clause.strip()
-        # Check if this clause mentions the building type
         if building_type.lower() not in clause.lower():
             continue
-        # Pattern: "4-24 unit multifamily" or "2-3-unit building" -> (4, 24)
+        # "4-24 unit multifamily" -> (4, 24)
         m = re.search(r"(\d+)\s*-\s*(\d+)[\s-]+(?:unit[\s-]+)?" + building_type, clause, re.IGNORECASE)
         if m:
             ranges.append((int(m.group(1)), int(m.group(2))))
             continue
-        # Pattern: ">24 unit multifamily" or ">8 unit townhome" -> (25, inf)
+        # ">24 unit multifamily" -> (25, inf)
         m = re.search(r">\s*(\d+)\s+(?:unit\s+)?" + building_type, clause, re.IGNORECASE)
         if m:
             ranges.append((int(m.group(1)) + 1, INF))
             continue
-        # Pattern: "4 or > multifamily" or "4 or > unit multifamily" -> (4, inf)
+        # "4 or > multifamily" -> (4, inf)
         m = re.search(r"(\d+)\s+or\s*>\s*(?:unit\s+)?" + building_type, clause, re.IGNORECASE)
         if m:
             ranges.append((int(m.group(1)), INF))
             continue
-        # Pattern: "4 unit multifamily" (single number) -> (4, 4)
+        # "4 unit multifamily" (single number) -> (4, 4)
         m = re.search(r"(\d+)\s+(?:unit\s+)?" + building_type, clause, re.IGNORECASE)
         if m:
             ranges.append((int(m.group(1)), int(m.group(1))))
             continue
-        # Pattern: "Multifamily building" (no number) -> (1, inf)
+        # "Multifamily building" (no number) -> (1, inf)
         m = re.search(building_type, clause, re.IGNORECASE)
         if m:
             ranges.append((1, INF))
@@ -352,7 +413,7 @@ def parse_unit_ranges(text, building_type):
 
 
 def parse_small_building_ranges(text):
-    """Parse 'X-Y unit building' and 'X unit building' patterns specifically.
+    """Parse 'X-Y unit building' and 'X unit building' patterns.
 
     Only matches clauses like '2-3-unit building' or '2 unit building',
     NOT 'Single family building' or 'Mixed-use building'.
@@ -397,8 +458,13 @@ def load_zoning_rules():
     return rules
 
 
+def _in_any_range(ranges, count):
+    """Check whether count falls within any (min, max) range."""
+    return any(lo <= count <= hi for lo, hi in ranges)
+
+
 def classify_use(zoning, units, description, rules):
-    """Classify a project as PERMITTED, CONDITIONAL, VARIES, NOT_ALLOWED, or UNKNOWN."""
+    """Classify a project as PERMITTED, CONDITIONAL, VARIES, REZONED, or UNKNOWN."""
     if not zoning or not units:
         return "UNKNOWN"
     if zoning.startswith("PD"):
@@ -408,60 +474,72 @@ def classify_use(zoning, units, description, rules):
     if not rule:
         return "UNKNOWN"
 
-    # Detect townhouse/townhome projects
     is_townhouse = bool(re.search(r"townho(?:me|use)", description, re.IGNORECASE))
 
-    def in_any_range(ranges, count):
-        return any(lo <= count <= hi for lo, hi in ranges)
-
     if is_townhouse:
-        if in_any_range(rule["permitted_th"], units):
+        if _in_any_range(rule["permitted_th"], units):
             return "PERMITTED"
-        if in_any_range(rule["conditional_th"], units):
+        if _in_any_range(rule["conditional_th"], units):
             return "CONDITIONAL"
+
     # Check multifamily ranges (also fallback for townhouses not matched above)
-    if in_any_range(rule["permitted_mf"], units):
+    if _in_any_range(rule["permitted_mf"], units):
         return "PERMITTED"
-    if in_any_range(rule["conditional_mf"], units):
+    if _in_any_range(rule["conditional_mf"], units):
         return "CONDITIONAL"
+
     # Check generic "X unit building" ranges (e.g. "2-3 unit building")
-    if in_any_range(rule["permitted_bldg"], units):
+    if _in_any_range(rule["permitted_bldg"], units):
         return "PERMITTED"
-    if in_any_range(rule["conditional_bldg"], units):
+    if _in_any_range(rule["conditional_bldg"], units):
         return "CONDITIONAL"
 
     return "REZONED"
 
 
-def process_gtfs():
-    """Process GTFS data into transit route lines with colors and service levels."""
-    routes_file = os.path.join(GTFS_DIR, "routes.txt")
-    trips_file = os.path.join(GTFS_DIR, "trips.txt")
-    shapes_file = os.path.join(GTFS_DIR, "shapes.txt")
+# ---------------------------------------------------------------------------
+# GTFS transit processing
+# ---------------------------------------------------------------------------
 
-    if not all(os.path.exists(f) for f in [routes_file, trips_file, shapes_file]):
-        print("  GTFS files not found, skipping transit overlay")
-        return None
+def _route_service_style(route_name):
+    """Return (weight, dash_pattern) based on service frequency tier."""
+    if route_name in FREQUENT_ROUTES:
+        return 4, None
+    if route_name in STANDARD_ROUTES:
+        return 3, None
+    if route_name in PEAK_ROUTES:
+        return 2, "8 6"
+    if route_name in SUPPLEMENTAL_ROUTES:
+        return 2, "4 4"
+    return 2, None
 
-    # Load routes
+
+def _load_gtfs_routes():
+    """Load route info from GTFS routes.txt."""
     route_info = {}
-    with open(routes_file, newline="") as f:
+    with open(os.path.join(GTFS_DIR, "routes.txt"), newline="") as f:
         for r in csv.DictReader(f):
             route_info[r["route_id"]] = {
                 "name": r["route_short_name"],
                 "color": "#" + r["route_color"],
                 "long_name": r["route_long_name"],
             }
+    return route_info
 
-    # Map route_id -> set of shape_ids via trips
+
+def _load_gtfs_trip_shapes():
+    """Map route_id -> set of shape_ids via trips.txt."""
     route_shapes = {}
-    with open(trips_file, newline="") as f:
+    with open(os.path.join(GTFS_DIR, "trips.txt"), newline="") as f:
         for r in csv.DictReader(f):
             route_shapes.setdefault(r["route_id"], set()).add(r["shape_id"])
+    return route_shapes
 
-    # Load all shape points
+
+def _load_gtfs_shapes():
+    """Load all shape points from shapes.txt, sorted by sequence."""
     shapes = {}
-    with open(shapes_file, newline="") as f:
+    with open(os.path.join(GTFS_DIR, "shapes.txt"), newline="") as f:
         for r in csv.DictReader(f):
             sid = r["shape_id"]
             shapes.setdefault(sid, []).append((
@@ -469,10 +547,33 @@ def process_gtfs():
                 float(r["shape_pt_lat"]),
                 float(r["shape_pt_lon"]),
             ))
-
-    # Sort each shape by sequence
     for sid in shapes:
         shapes[sid].sort(key=lambda x: x[0])
+    return shapes
+
+
+def _simplify_shape(pts):
+    """Downsample shape points to ~200 and round coordinates."""
+    step = max(1, len(pts) // 200)
+    coords = [[round(p[1], 5), round(p[2], 5)] for p in pts[::step]]
+    last = [round(pts[-1][1], 5), round(pts[-1][2], 5)]
+    if coords[-1] != last:
+        coords.append(last)
+    return coords
+
+
+def process_gtfs():
+    """Process GTFS data into transit route lines with colors and service levels."""
+    gtfs_files = [
+        os.path.join(GTFS_DIR, f) for f in ("routes.txt", "trips.txt", "shapes.txt")
+    ]
+    if not all(os.path.exists(f) for f in gtfs_files):
+        print("  GTFS files not found, skipping transit overlay")
+        return None
+
+    route_info = _load_gtfs_routes()
+    route_shapes = _load_gtfs_trip_shapes()
+    shapes = _load_gtfs_shapes()
 
     # For each route, pick the two longest shapes (one per direction typically)
     transit_routes = []
@@ -491,32 +592,17 @@ def process_gtfs():
             pts = shapes.get(sid, [])
             if not pts:
                 continue
-            # Simplify: take every Nth point to reduce size
-            step = max(1, len(pts) // 200)
-            coords = [[round(p[1], 5), round(p[2], 5)] for p in pts[::step]]
-            # Always include last point
-            last = [round(pts[-1][1], 5), round(pts[-1][2], 5)]
-            if coords[-1] != last:
-                coords.append(last)
 
-            # Skip near-duplicate shapes
+            coords = _simplify_shape(pts)
+
+            # Skip near-duplicate shapes (same start/end points)
             key = (coords[0][0], coords[0][1], coords[-1][0], coords[-1][1])
             if key in seen_coords:
                 continue
             seen_coords.add(key)
 
-            # Use city's per-route color; service level sets weight/dash
             name = info["name"]
-            if name in FREQUENT_ROUTES:
-                weight, dash = 4, None
-            elif name in STANDARD_ROUTES:
-                weight, dash = 3, None
-            elif name in PEAK_ROUTES:
-                weight, dash = 2, "8 6"
-            elif name in SUPPLEMENTAL_ROUTES:
-                weight, dash = 2, "4 4"
-            else:
-                weight, dash = 2, None
+            weight, dash = _route_service_style(name)
 
             transit_routes.append({
                 "name": name,
@@ -529,13 +615,17 @@ def process_gtfs():
     return transit_routes
 
 
-def main():
-    cache = load_cache()
+# ---------------------------------------------------------------------------
+# Pipeline steps (called from main)
+# ---------------------------------------------------------------------------
 
-    print("Step 1: Parsing CSV and filtering multi-family projects...")
-    projects = parse_csv()
+def _step_parse(projects):
+    """Step 1 log: show project count."""
     print(f"  Found {len(projects)} multi-family housing projects\n")
 
+
+def _step_extract_units(projects):
+    """Step 2: extract unit counts and log each project."""
     print("Step 2: Extracting unit counts...")
     for p in projects:
         p["units"] = extract_units(p["description"])
@@ -543,6 +633,9 @@ def main():
         print(f"  {p['record_number']}: {units_str} units — {p['description'][:80]}")
     print()
 
+
+def _step_classify_types(projects):
+    """Step 2b: classify housing types and print summary."""
     print("Step 2b: Classifying housing type...")
     type_counts = {}
     for p in projects:
@@ -553,6 +646,9 @@ def main():
         print(f"  {ht}: {count}")
     print()
 
+
+def _step_geocode(projects, cache):
+    """Step 3: geocode all project addresses."""
     print("Step 3: Geocoding addresses...")
     geocoded_count = 0
     for p in projects:
@@ -569,6 +665,9 @@ def main():
             time.sleep(1.5)
     print(f"  Geocoded {geocoded_count}/{len(projects)} addresses\n")
 
+
+def _step_fetch_zoning(projects, cache):
+    """Step 4: fetch zoning district for each geocoded project."""
     print("Step 4: Fetching zoning districts...")
     zoned_count = 0
     for p in projects:
@@ -578,6 +677,9 @@ def main():
         save_cache(cache)
     print(f"  Got zoning for {zoned_count}/{len(projects)} projects\n")
 
+
+def _step_classify_use(projects):
+    """Step 5: classify each project as permitted/conditional/etc."""
     print("Step 5: Classifying permitted vs conditional use...")
     zoning_rules = load_zoning_rules()
     use_counts = {}
@@ -592,6 +694,9 @@ def main():
         print(f"  {use_type}: {count}")
     print()
 
+
+def _step_transit():
+    """Step 6: process GTFS transit routes."""
     print("Step 6: Processing GTFS transit routes...")
     transit_routes = process_gtfs()
     if transit_routes:
@@ -603,34 +708,49 @@ def main():
     else:
         print("  No transit data generated\n")
 
-    # Build JSON output
+
+def _write_outputs(projects):
+    """Write projects.json and projects.csv, print summary."""
     output = {
         "generated": str(date.today()),
         "projects": projects,
     }
-
     with open(OUTPUT_JSON, "w") as f:
         json.dump(output, f, indent=2)
 
-    # Build CSV output (canonical data source for generate_site.py)
-    csv_fields = [
-        "record_number", "date", "address", "status", "description",
-        "project_name", "units", "zoning", "lat", "lng", "use_type", "housing_type",
-    ]
     with open(OUTPUT_CSV, "w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=csv_fields, extrasaction="ignore")
+        writer = csv.DictWriter(f, fieldnames=CSV_FIELDS, extrasaction="ignore")
         writer.writeheader()
         writer.writerows(projects)
 
     print(f"Done! Wrote {len(projects)} projects to {OUTPUT_JSON} and {OUTPUT_CSV}")
 
-    # Summary
     has_coords = sum(1 for p in projects if p["lat"] is not None)
     has_units = sum(1 for p in projects if p["units"] is not None)
     has_zoning = sum(1 for p in projects if p["zoning"])
     print(f"  With coordinates: {has_coords}")
     print(f"  With unit count:  {has_units}")
     print(f"  With zoning:      {has_zoning}")
+
+
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
+
+def main():
+    cache = load_cache()
+
+    print("Step 1: Parsing CSV and filtering multi-family projects...")
+    projects = parse_csv()
+    _step_parse(projects)
+
+    _step_extract_units(projects)
+    _step_classify_types(projects)
+    _step_geocode(projects, cache)
+    _step_fetch_zoning(projects, cache)
+    _step_classify_use(projects)
+    _step_transit()
+    _write_outputs(projects)
 
 
 if __name__ == "__main__":
