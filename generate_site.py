@@ -273,49 +273,42 @@ def build_zoning_panel_html(zoning_info):
             permitted = html.escape(z.get("residential_permitted", "") or "")
             conditional = html.escape(z.get("residential_conditional", "") or "")
             desc_text = (z.get("description") or "").strip()
-            row_id = f'zd-{html.escape(code)}'
+            desc_id = f'zd-{html.escape(code)}'
             if desc_text:
-                name_td = (
-                    f'<td class="zp-name zp-toggle" onclick="'
-                    f"var r=document.getElementById('{row_id}');"
-                    f"r.style.display=r.style.display==='none'?'table-row':'none';"
-                    f"this.querySelector('.zp-arrow').textContent="
-                    f"r.style.display==='none'?'\\u25B8':'\\u25BE'"
-                    f'">'
-                    f'<span class="zp-arrow">&#x25B8;</span>'
-                    f'<b>{html.escape(z["name"])}</b></td>'
+                toggle_td = (
+                    f'<td class="zp-expand" onclick="'
+                    f"var d=document.getElementById('{desc_id}');"
+                    f"var open=d.style.display==='none';"
+                    f"d.style.display=open?'block':'none';"
+                    f"this.textContent=open?'\\u25BE':'\\u25B8'"
+                    f'">&#x25B8;</td>'
                 )
-                detail_row = (
-                    f'<tr id="{row_id}" class="zp-detail" style="display:none">'
-                    f'<td></td><td colspan="5" class="zp-desc-cell">'
-                    f'{html.escape(desc_text)}</td></tr>'
+                desc_div = (
+                    f'<div id="{desc_id}" class="zp-desc-inline" style="display:none">'
+                    f'{html.escape(desc_text)}</div>'
                 )
             else:
-                name_td = (
-                    f'<td class="zp-name">'
-                    f'<span class="zp-arrow-placeholder"></span>'
-                    f'<b>{html.escape(z["name"])}</b></td>'
-                )
-                detail_row = ""
+                toggle_td = '<td class="zp-expand-empty"></td>'
+                desc_div = ""
             table_rows.append(
                 f'<tr class="zp-row">'
+                f'{toggle_td}'
                 f'<td class="zp-code">'
                 f'<span class="zp-dot" style="background:{color}"></span>'
                 f'{html.escape(code)}</td>'
-                f'{name_td}'
+                f'<td class="zp-name"><b>{html.escape(z["name"])}</b>{desc_div}</td>'
                 f'<td class="zp-cell">{permitted}</td>'
                 f'<td class="zp-cell">{conditional}</td>'
                 f'<td class="zp-cell zp-nowrap">{html.escape(z["max_stories"])}</td>'
                 f'<td class="zp-cell zp-nowrap zp-last">{html.escape(z["max_density"])}</td>'
                 f'</tr>'
-                f'{detail_row}'
             )
         sections.append(
             f'<div class="zp-section">'
             f'<div class="zp-cat">{cat}</div>'
             f'<table class="zp-table">'
             f'<tr class="zp-hdr">'
-            f'<th>Code</th><th>District</th><th>Permitted</th>'
+            f'<th></th><th>Code</th><th>District</th><th>Permitted</th>'
             f'<th>Conditional</th><th>Stories</th><th>Density</th></tr>'
             f'{"".join(table_rows)}</table></div>'
         )

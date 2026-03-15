@@ -148,12 +148,17 @@ body { font-family: system-ui, -apple-system, sans-serif }
   border: 1px solid rgba(0,0,0,0.15);
 }
 .zp-name { vertical-align: top; padding: 6px 8px 6px 0; min-width: 120px }
-.zp-toggle { cursor: pointer }
-.zp-toggle:hover { background: rgba(59,130,246,0.08) }
-.zp-arrow { display: inline-block; width: 12px; font-size: 10px; color: #94a3b8 }
-.zp-arrow-placeholder { display: inline-block}
-.zp-detail td { padding: 0 }
-.zp-desc-cell { padding: 4px 8px 10px 0; font-size: 11px; color: #64748b; line-height: 1.5 }
+.zp-expand {
+  width: 24px; text-align: center; vertical-align: middle;
+  cursor: pointer; color: #94a3b8; font-size: 12px;
+  padding: 0; user-select: none; border-right: 1px solid #f1f5f9;
+}
+.zp-expand:hover { color: #3b82f6; background: rgba(59,130,246,0.06) }
+.zp-expand-empty { width: 24px; padding: 0 }
+.zp-desc-inline {
+  margin-top: 4px; font-size: 11px; color: #64748b; line-height: 1.5;
+  font-weight: normal;
+}
 .zp-desc { font-size: 11px; color: #64748b }
 .zp-cell { vertical-align: top; padding: 6px 6px; font-size: 11px; color: #475569; line-height: 1.4 }
 .zp-nowrap { white-space: nowrap; font-size: 12px }
