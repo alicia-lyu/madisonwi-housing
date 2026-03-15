@@ -272,29 +272,43 @@ def build_zoning_panel_html(zoning_info):
             color = zoning_color(code)
             permitted = html.escape(z.get("residential_permitted", "") or "")
             conditional = html.escape(z.get("residential_conditional", "") or "")
-            desc_text = html.escape(z["description"])
+            desc_text = (z.get("description") or "").strip()
             row_id = f'zd-{html.escape(code)}'
+            if desc_text:
+                name_td = (
+                    f'<td class="zp-name zp-toggle" onclick="'
+                    f"var r=document.getElementById('{row_id}');"
+                    f"r.style.display=r.style.display==='none'?'table-row':'none';"
+                    f"this.querySelector('.zp-arrow').textContent="
+                    f"r.style.display==='none'?'\\u25B8':'\\u25BE'"
+                    f'">'
+                    f'<span class="zp-arrow">&#x25B8;</span>'
+                    f'<b>{html.escape(z["name"])}</b></td>'
+                )
+                detail_row = (
+                    f'<tr id="{row_id}" class="zp-detail" style="display:none">'
+                    f'<td></td><td colspan="5" class="zp-desc-cell">'
+                    f'{html.escape(desc_text)}</td></tr>'
+                )
+            else:
+                name_td = (
+                    f'<td class="zp-name">'
+                    f'<span class="zp-arrow-placeholder"></span>'
+                    f'<b>{html.escape(z["name"])}</b></td>'
+                )
+                detail_row = ""
             table_rows.append(
                 f'<tr class="zp-row">'
                 f'<td class="zp-code">'
                 f'<span class="zp-dot" style="background:{color}"></span>'
                 f'{html.escape(code)}</td>'
-                f'<td class="zp-name zp-toggle" onclick="'
-                f"var r=document.getElementById('{row_id}');"
-                f"r.style.display=r.style.display==='none'?'table-row':'none';"
-                f"this.querySelector('.zp-arrow').textContent="
-                f"r.style.display==='none'?'\\u25B8':'\\u25BE'"
-                f'">'
-                f'<span class="zp-arrow">&#x25B8;</span>'
-                f'<b>{html.escape(z["name"])}</b></td>'
+                f'{name_td}'
                 f'<td class="zp-cell">{permitted}</td>'
                 f'<td class="zp-cell">{conditional}</td>'
                 f'<td class="zp-cell zp-nowrap">{html.escape(z["max_stories"])}</td>'
                 f'<td class="zp-cell zp-nowrap zp-last">{html.escape(z["max_density"])}</td>'
                 f'</tr>'
-                f'<tr id="{row_id}" class="zp-detail" style="display:none">'
-                f'<td></td><td colspan="5" class="zp-desc-cell">{desc_text}</td>'
-                f'</tr>'
+                f'{detail_row}'
             )
         sections.append(
             f'<div class="zp-section">'
