@@ -18,6 +18,38 @@ TRANSIT_JSON = "transit_routes.json"
 OUTPUT_HTML = "index.html"
 
 # ---------------------------------------------------------------------------
+# Policy milestones — annotate date filter dropdowns
+# ---------------------------------------------------------------------------
+
+# Major milestones: shown in both year and month dropdowns
+POLICY_MAJOR = [
+    ("2018-08", "Imagine Madison Plan"),
+    ("2023-01", "TOD Overlay District"),
+    ("2024-04", "ADU Expansion"),
+    ("2024-09", "BRT Launch"),
+    ("2025-02", "Housing Forward Pkg 1"),
+    ("2025-07", "Housing Forward Pkg 2"),
+    ("2025-10", "Housing Forward Pkg 3"),
+]
+
+# Area plans: shown only in month dropdown
+POLICY_AREA_PLANS = [
+    ("2016-01", "Emerson East-Eken Park-Yahara"),
+    ("2017-01", "High Point-Raymond"),
+    ("2017-09", "Darbo Worthington Starkweather"),
+    ("2017-10", "Cottage Grove Rd"),
+    ("2018-01", "Elderberry, Junction, Pioneer"),
+    ("2018-12", "Milwaukee St"),
+    ("2019-01", "Triangle Monona Bay"),
+    ("2019-11", "Mifflandia, Nelson"),
+    ("2020-07", "Oscar Mayer"),
+    ("2022-01", "South Madison, Yahara Hills"),
+    ("2023-01", "Rattman, Reiner, Shady Wood"),
+    ("2024-09", "Northeast, West Area Plan"),
+    ("2025-01", "Lamp House Block"),
+]
+
+# ---------------------------------------------------------------------------
 # Color maps
 # ---------------------------------------------------------------------------
 
@@ -450,8 +482,21 @@ def _build_map_js(markers_json, all_projects_json, all_rows_json, transit_json):
     zoom scaling, date filtering, and dynamic stats rebuilding. All heavy computation
     (colors, sizes, popups) is done in Python.
     """
+    # Build milestone lookup objects for date dropdown annotations
+    year_map = {}
+    for date, label in POLICY_MAJOR:
+        y = date[:4]
+        year_map.setdefault(y, []).append(label)
+    milestones_year_js = json.dumps({k: ", ".join(v) for k, v in year_map.items()})
+
+    month_map = {}
+    for date, label in POLICY_MAJOR + POLICY_AREA_PLANS:
+        month_map.setdefault(date, []).append(label)
+    milestones_month_js = json.dumps({k: ", ".join(v) for k, v in month_map.items()})
+
     # Double braces {{ }} are literal JS braces inside the f-string
     return f"""\
+var ML_Y={milestones_year_js},ML_M={milestones_month_js};
 var m=L.map("map").setView([43.073,-89.401],12);
 L.tileLayer("https://{{s}}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{{z}}/{{x}}/{{y}}@2x.png",{{
   attribution:'&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
@@ -539,7 +584,9 @@ function allKeys(){{
 function fillSel(sel,opts,idx){{
   sel.innerHTML="";
   opts.forEach(function(v){{
-    var o=document.createElement("option");o.value=v;o.text=fmtOpt(v);sel.appendChild(o);
+    var o=document.createElement("option");o.value=v;
+    var ml=gran==="year"?ML_Y:ML_M;
+    o.text=ml[v]?fmtOpt(v)+" \u00b7 "+ml[v]:fmtOpt(v);sel.appendChild(o);
   }});
   sel.selectedIndex=Math.min(idx,opts.length-1);
 }}
