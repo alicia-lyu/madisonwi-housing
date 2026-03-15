@@ -12,7 +12,7 @@ import urllib.parse
 import urllib.error
 from datetime import date, datetime
 
-CSV_FILE = "RecordList20260314-2.csv"
+CSV_FILE = "01012015-03152026.csv"
 OUTPUT_JSON = "projects.json"
 OUTPUT_CSV = "projects.csv"
 CACHE_FILE = "geocode_cache.json"
@@ -20,23 +20,58 @@ CACHE_FILE = "geocode_cache.json"
 # Records to exclude (false positives identified during manual review)
 EXCLUDE_RECORDS = {
     "BLDNCC-2025-18873",  # Convert apartment building TO hotel (removing housing)
-    "BLDNCC-2025-15946",  # Single condo layout alteration
     "BLDNCC-2025-15801",  # Garage repair at existing apartment complex
-    "BLDNCC-2025-12728",  # "warehousing" false positive on "housing" regex
     "BLDNCC-2025-06508",  # Incomplete address (just "DR, Madison WI 53719")
     "BLDNCC-2025-06490",  # Hotel-to-apartment accessibility alteration (4 units)
+    "BLDNCC-2017-11036",  # SpringHill Suites hotel in mixed-use building
 }
 
 # Regex to identify multi-family housing projects
 MULTI_FAMILY_RE = re.compile(
-    r"\d+.?unit|\d+.?dwelling|apartment|townhouse|townhome|duplex|triplex"
+    r"\d+.?unit|\d+\s+residential\s+unit"
+    r"|\d+.?dwelling|apartment|townhouse|townhome|duplex|triplex"
     r"|fourplex|mixed.use|multi.?family|housing|condo",
     re.IGNORECASE,
 )
 
+# Patterns that indicate false positives
+_CONDO_ALTER_RE = re.compile(
+    r"alter|remodel|repair|replace|kitchen|bathroom|basement|layout"
+    r"|finish|closet|stair|deck|window|door|floor|paint|roof",
+    re.IGNORECASE,
+)
+_RESIDENTIAL_INDICATOR_RE = re.compile(
+    r"\d+.?unit|\d+\s+residential\s+unit|\d+.?dwelling"
+    r"|apartment|\bapt\b|new\b.*\bcondo|housing|multi.?family",
+    re.IGNORECASE,
+)
+
+
+def is_likely_multifamily(desc):
+    """Post-filter to weed out false positives from the broad regex match."""
+    dl = desc.lower()
+
+    # Exclude warehousing
+    if "warehous" in dl:
+        return False
+
+    # Condo alterations: matched only via "condo" keyword, looks like single-unit work
+    if re.search(r"\bcondo", dl, re.IGNORECASE):
+        if not _RESIDENTIAL_INDICATOR_RE.search(desc):
+            if _CONDO_ALTER_RE.search(desc):
+                return False
+
+    # Mixed-use without residential evidence (shell buildings, hotels, tenant buildouts)
+    if re.search(r"mixed.?use", dl):
+        if not _RESIDENTIAL_INDICATOR_RE.search(desc):
+            return False
+
+    return True
+
 # Regex patterns to extract unit counts
 UNIT_PATTERNS = [
     re.compile(r"(\d+)[- ]?(?:dwelling )?units?", re.IGNORECASE),
+    re.compile(r"(\d+)\s+residential\s+units?", re.IGNORECASE),
     re.compile(r"(\d+)[- ]?dwelling", re.IGNORECASE),
     re.compile(r"(\d+)[- ]?apartments?", re.IGNORECASE),
     re.compile(r"(\d+) unit", re.IGNORECASE),
@@ -51,6 +86,7 @@ WORD_TO_NUM = {
 _WORD_PAT = "|".join(WORD_TO_NUM.keys())
 WORD_UNIT_PATTERNS = [
     re.compile(rf"({_WORD_PAT})[- ]?(?:dwelling )?units?", re.IGNORECASE),
+    re.compile(rf"({_WORD_PAT})\s+(?:new\s+)?residential\s+units?", re.IGNORECASE),
     re.compile(rf"({_WORD_PAT})[- ]?(?:apartment)", re.IGNORECASE),
 ]
 
@@ -93,6 +129,8 @@ def parse_csv():
             if record in EXCLUDE_RECORDS:
                 continue
             if not MULTI_FAMILY_RE.search(desc):
+                continue
+            if not is_likely_multifamily(desc):
                 continue
 
             raw_date = row.get("Date", "").strip()

@@ -352,7 +352,7 @@ def main():
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Madison WI Multi-Family Housing Permits (2025)</title>
+<title>Madison WI Multi-Family Housing Permits (2015–2026)</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <link rel="stylesheet" href="style.css"/>
@@ -360,7 +360,7 @@ def main():
 <body style="display:flex;flex-direction:column;height:100vh">
 <div id="header">
   <div>
-    <h1>Madison WI Multi-Family Housing Permits (2025)</h1>
+    <h1>Madison WI Multi-Family Housing Permits (2015–2026)</h1>
     <div class="stats">
       <span>{total} projects</span>
       <span>{total_units:,} total units</span>
