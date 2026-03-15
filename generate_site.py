@@ -18,9 +18,10 @@ TRANSIT_JSON = "transit_routes.json"
 OUTPUT_HTML = "index.html"
 
 # ---------------------------------------------------------------------------
-# Zoning district -> color, based on City of Madison West Area Plan map
+# Color maps
 # ---------------------------------------------------------------------------
 
+# Zoning district -> color, based on City of Madison West Area Plan map
 ZONING_COLORS = {
     # Single-family Residential (yellows)
     "SR-C1": "#fff9c4", "SR-C2": "#fff176", "SR-C3": "#ffee58",
@@ -70,11 +71,9 @@ USE_TYPE_LABELS = {
     "UNKNOWN": "Unknown",
 }
 
-def load_zoning_info():
-    """Load zoning district info from zoning_districts.csv."""
-    with open(ZONING_CSV, newline="") as f:
-        return list(csv.DictReader(f))
-
+# ---------------------------------------------------------------------------
+# Zoning color lookup
+# ---------------------------------------------------------------------------
 
 def zoning_color(code):
     if not code:
@@ -82,11 +81,34 @@ def zoning_color(code):
     code = code.strip()
     if code in ZONING_COLORS:
         return ZONING_COLORS[code]
+    # Prefix match: try longest keys first so "CC-T" matches before "CC"
     for key in sorted(ZONING_COLORS.keys(), key=len, reverse=True):
         if code.startswith(key):
             return ZONING_COLORS[key]
     return DEFAULT_ZONING_COLOR
 
+
+# ---------------------------------------------------------------------------
+# Data loading
+# ---------------------------------------------------------------------------
+
+def load_zoning_info():
+    """Load zoning district info from zoning_districts.csv."""
+    with open(ZONING_CSV, newline="") as f:
+        return list(csv.DictReader(f))
+
+
+def load_transit_json():
+    """Load transit route data, or return empty list if not available."""
+    if os.path.exists(TRANSIT_JSON):
+        with open(TRANSIT_JSON) as f:
+            return f.read()
+    return "[]"
+
+
+# ---------------------------------------------------------------------------
+# Marker sizing
+# ---------------------------------------------------------------------------
 
 def marker_base_radius(units):
     """Base radius (at zoom 12) from unit count, log scale.
@@ -96,6 +118,10 @@ def marker_base_radius(units):
     u = max(int(units), 1)
     return max(3, int(3 + 3 * math.log2(u)))
 
+
+# ---------------------------------------------------------------------------
+# Popup HTML
+# ---------------------------------------------------------------------------
 
 def build_popup_html(row):
     name = row["project_name"] or row["address"].split(",")[0]
@@ -127,76 +153,91 @@ def build_popup_html(row):
     )
 
 
-def build_stats_html(rows):
-    """Build cross-tab: housing type (rows) × permitted/conditional (columns)."""
-    ht_order = ["Mid-Rise", "Mid-Rise Mixed-Use", "High-Rise", "High-Rise Mixed-Use",
-                "Townhouse", "Multiplex", "Duplex/Triplex"]
-    # Collect counts: ht -> {permitted: n, conditional: n, unknown: n}
-    # and units: ht -> {permitted: n, conditional: n, unknown: n}
+# ---------------------------------------------------------------------------
+# Stats table (housing type x use type cross-tab)
+# ---------------------------------------------------------------------------
+
+HOUSING_TYPE_ORDER = [
+    "Mid-Rise", "Mid-Rise Mixed-Use", "High-Rise", "High-Rise Mixed-Use",
+    "Townhouse", "Multiplex", "Duplex/Triplex",
+]
+
+USE_COLUMNS = ("permitted", "conditional", "rezoned_pd", "unknown")
+
+
+def _use_type_to_column(use_type):
+    """Map raw use_type string to cross-tab column key."""
+    if use_type == "PERMITTED":
+        return "permitted"
+    if use_type == "CONDITIONAL":
+        return "conditional"
+    if use_type in ("REZONED", "VARIES"):
+        return "rezoned_pd"
+    return "unknown"
+
+
+def _build_cross_tab(rows):
+    """Build cross-tab dict: housing_type -> column -> {n, u}."""
     cross = {}
     for r in rows:
         ht = r.get("housing_type", "Unknown")
-        ut = r.get("use_type", "UNKNOWN")
+        col = _use_type_to_column(r.get("use_type", "UNKNOWN"))
         units = int(r["units"]) if r.get("units") else 0
-        if ut == "PERMITTED":
-            col = "permitted"
-        elif ut == "CONDITIONAL":
-            col = "conditional"
-        elif ut in ("REZONED", "VARIES"):
-            col = "rezoned_pd"
-        else:
-            col = "unknown"
         cross.setdefault(ht, {}).setdefault(col, {"n": 0, "u": 0})
         cross[ht][col]["n"] += 1
         cross[ht][col]["u"] += units
+    return cross
 
-    def cell(ht, col):
-        d = cross.get(ht, {}).get(col, {"n": 0, "u": 0})
-        if d["n"] == 0:
-            return '<td class="zp-cell" style="text-align:center;color:#cbd5e1">—</td>'
-        return (f'<td class="zp-cell" style="text-align:right">'
-                f'{d["n"]} <span class="zp-desc">({d["u"]:,} units)</span></td>')
+
+def _stats_cell(cross, ht, col):
+    """Render one cell of the stats cross-tab."""
+    d = cross.get(ht, {}).get(col, {"n": 0, "u": 0})
+    if d["n"] == 0:
+        return '<td class="zp-cell" style="text-align:center;color:#cbd5e1">—</td>'
+    return (f'<td class="zp-cell" style="text-align:right">'
+            f'{d["n"]} <span class="zp-desc">({d["u"]:,} units)</span></td>')
+
+
+def build_stats_html(rows):
+    """Build cross-tab: housing type (rows) x permitted/conditional (columns)."""
+    cross = _build_cross_tab(rows)
 
     table_rows = []
-    for ht in ht_order:
+    for ht in HOUSING_TYPE_ORDER:
         if ht not in cross:
             continue
-        cols = ("permitted", "conditional", "rezoned_pd", "unknown")
-        total_n = sum(cross[ht].get(c, {}).get("n", 0) for c in cols)
-        total_u = sum(cross[ht].get(c, {}).get("u", 0) for c in cols)
+        total_n = sum(cross[ht].get(c, {}).get("n", 0) for c in USE_COLUMNS)
+        total_u = sum(cross[ht].get(c, {}).get("u", 0) for c in USE_COLUMNS)
+        cells = "".join(_stats_cell(cross, ht, c) for c in USE_COLUMNS)
         table_rows.append(
             f'<tr class="zp-row">'
             f'<td class="zp-cell" style="font-weight:600">{html.escape(ht)}</td>'
-            f'{cell(ht, "permitted")}'
-            f'{cell(ht, "conditional")}'
-            f'{cell(ht, "rezoned_pd")}'
-            f'{cell(ht, "unknown")}'
+            f'{cells}'
             f'<td class="zp-cell" style="text-align:right;font-weight:600">'
             f'{total_n} <span class="zp-desc">({total_u:,})</span></td>'
             f'</tr>'
         )
 
     # Totals row
-    cols = ("permitted", "conditional", "rezoned_pd", "unknown")
     tot = {}
-    for col in cols:
+    for col in USE_COLUMNS:
         tot[col] = {"n": 0, "u": 0}
         for ht in cross:
             d = cross[ht].get(col, {"n": 0, "u": 0})
             tot[col]["n"] += d["n"]
             tot[col]["u"] += d["u"]
-    grand_n = sum(tot[c]["n"] for c in cols)
-    grand_u = sum(tot[c]["u"] for c in cols)
+    grand_n = sum(tot[c]["n"] for c in USE_COLUMNS)
+    grand_u = sum(tot[c]["u"] for c in USE_COLUMNS)
 
-    def tot_cell(col):
-        return (f'<td class="zp-cell" style="text-align:right;font-weight:700">'
-                f'{tot[col]["n"]} <span class="zp-desc">({tot[col]["u"]:,})</span></td>')
-
+    tot_cells = "".join(
+        f'<td class="zp-cell" style="text-align:right;font-weight:700">'
+        f'{tot[c]["n"]} <span class="zp-desc">({tot[c]["u"]:,})</span></td>'
+        for c in USE_COLUMNS
+    )
     table_rows.append(
         f'<tr style="border-top:2px solid #cbd5e1">'
         f'<td class="zp-cell" style="font-weight:700">Total</td>'
-        f'{tot_cell("permitted")}{tot_cell("conditional")}'
-        f'{tot_cell("rezoned_pd")}{tot_cell("unknown")}'
+        f'{tot_cells}'
         f'<td class="zp-cell" style="text-align:right;font-weight:700">'
         f'{grand_n} <span class="zp-desc">({grand_u:,})</span></td>'
         f'</tr>'
@@ -216,16 +257,22 @@ def build_stats_html(rows):
     )
 
 
+# ---------------------------------------------------------------------------
+# Legend HTML
+# ---------------------------------------------------------------------------
+
+LEGEND_CATEGORIES = [
+    ("Residential", ["SR-", "TR-", "DR"]),
+    ("Mixed-Use / Commercial", ["CC", "NMX", "MXC", "TSS", "RMX", "LMX", "THV"]),
+    ("Downtown / Urban", ["UOR", "UMX", "DC"]),
+    ("Employment", ["EC", "IL", "IG", "SE", "TE", "SEC"]),
+    ("Special", ["CI", "CN", "PR", "PD", "A", "UA", "AP", "PMHP"]),
+]
+
+
 def build_legend_html(zoning_codes_used):
-    categories = [
-        ("Residential", ["SR-", "TR-", "DR"]),
-        ("Mixed-Use / Commercial", ["CC", "NMX", "MXC", "TSS", "RMX", "LMX", "THV"]),
-        ("Downtown / Urban", ["UOR", "UMX", "DC"]),
-        ("Employment", ["EC", "IL", "IG", "SE", "TE", "SEC"]),
-        ("Special", ["CI", "CN", "PR", "PD", "A", "UA", "AP", "PMHP"]),
-    ]
     parts = []
-    for cat_name, prefixes in categories:
+    for cat_name, prefixes in LEGEND_CATEGORIES:
         codes_in_cat = sorted(
             c for c in zoning_codes_used
             if c and any(c.startswith(p) for p in prefixes)
@@ -257,6 +304,58 @@ def build_legend_html(zoning_codes_used):
     return "\n".join(parts)
 
 
+# ---------------------------------------------------------------------------
+# Zoning reference panel
+# ---------------------------------------------------------------------------
+
+def _build_zoning_row(z):
+    """Build HTML for a single row (and optional detail row) in the zoning table."""
+    code = z["code"]
+    color = zoning_color(code)
+    permitted = html.escape(z.get("residential_permitted", "") or "")
+    conditional = html.escape(z.get("residential_conditional", "") or "")
+    desc_text = (z.get("description") or "").strip()
+    row_id = f'zd-{html.escape(code)}'
+
+    if desc_text:
+        name_td = (
+            f'<td class="zp-name zp-toggle" onclick="'
+            f"var r=document.getElementById('{row_id}');"
+            f"r.style.display=r.style.display==='none'?'table-row':'none';"
+            f"this.querySelector('.zp-arrow').textContent="
+            f"r.style.display==='none'?'\\u25B8':'\\u25BE'"
+            f'">'
+            f'<span class="zp-arrow">&#x25B8;</span>'
+            f'<b>{html.escape(z["name"])}</b></td>'
+        )
+        detail_row = (
+            f'<tr id="{row_id}" class="zp-detail" style="display:none">'
+            f'<td></td><td colspan="5" class="zp-desc-cell">'
+            f'{html.escape(desc_text)}</td></tr>'
+        )
+    else:
+        name_td = (
+            f'<td class="zp-name">'
+            f'<span class="zp-arrow-placeholder"></span>'
+            f'<b>{html.escape(z["name"])}</b></td>'
+        )
+        detail_row = ""
+
+    return (
+        f'<tr class="zp-row">'
+        f'<td class="zp-code">'
+        f'<span class="zp-dot" style="background:{color}"></span>'
+        f'{html.escape(code)}</td>'
+        f'{name_td}'
+        f'<td class="zp-cell">{permitted}</td>'
+        f'<td class="zp-cell">{conditional}</td>'
+        f'<td class="zp-cell zp-nowrap">{html.escape(z["max_stories"])}</td>'
+        f'<td class="zp-cell zp-nowrap zp-last">{html.escape(z["max_density"])}</td>'
+        f'</tr>'
+        f'{detail_row}'
+    )
+
+
 def build_zoning_panel_html(zoning_info):
     """Build the zoning reference panel HTML from zoning_districts.csv rows."""
     rows_by_cat = {}
@@ -266,50 +365,7 @@ def build_zoning_panel_html(zoning_info):
 
     sections = []
     for cat, items in rows_by_cat.items():
-        table_rows = []
-        for z in items:
-            code = z["code"]
-            color = zoning_color(code)
-            permitted = html.escape(z.get("residential_permitted", "") or "")
-            conditional = html.escape(z.get("residential_conditional", "") or "")
-            desc_text = (z.get("description") or "").strip()
-            row_id = f'zd-{html.escape(code)}'
-            if desc_text:
-                name_td = (
-                    f'<td class="zp-name zp-toggle" onclick="'
-                    f"var r=document.getElementById('{row_id}');"
-                    f"r.style.display=r.style.display==='none'?'table-row':'none';"
-                    f"this.querySelector('.zp-arrow').textContent="
-                    f"r.style.display==='none'?'\\u25B8':'\\u25BE'"
-                    f'">'
-                    f'<span class="zp-arrow">&#x25B8;</span>'
-                    f'<b>{html.escape(z["name"])}</b></td>'
-                )
-                detail_row = (
-                    f'<tr id="{row_id}" class="zp-detail" style="display:none">'
-                    f'<td></td><td colspan="5" class="zp-desc-cell">'
-                    f'{html.escape(desc_text)}</td></tr>'
-                )
-            else:
-                name_td = (
-                    f'<td class="zp-name">'
-                    f'<span class="zp-arrow-placeholder"></span>'
-                    f'<b>{html.escape(z["name"])}</b></td>'
-                )
-                detail_row = ""
-            table_rows.append(
-                f'<tr class="zp-row">'
-                f'<td class="zp-code">'
-                f'<span class="zp-dot" style="background:{color}"></span>'
-                f'{html.escape(code)}</td>'
-                f'{name_td}'
-                f'<td class="zp-cell">{permitted}</td>'
-                f'<td class="zp-cell">{conditional}</td>'
-                f'<td class="zp-cell zp-nowrap">{html.escape(z["max_stories"])}</td>'
-                f'<td class="zp-cell zp-nowrap zp-last">{html.escape(z["max_density"])}</td>'
-                f'</tr>'
-                f'{detail_row}'
-            )
+        table_rows = "".join(_build_zoning_row(z) for z in items)
         sections.append(
             f'<div class="zp-section">'
             f'<div class="zp-cat">{cat}</div>'
@@ -317,138 +373,58 @@ def build_zoning_panel_html(zoning_info):
             f'<tr class="zp-hdr">'
             f'<th>Code</th><th>District</th><th>Permitted</th>'
             f'<th>Conditional</th><th>Stories</th><th>Density</th></tr>'
-            f'{"".join(table_rows)}</table></div>'
+            f'{table_rows}</table></div>'
         )
 
     return "\n".join(sections)
 
 
-def main():
-    with open(INPUT_CSV, newline="") as f:
-        rows = list(csv.DictReader(f))
+# ---------------------------------------------------------------------------
+# Marker data preparation
+# ---------------------------------------------------------------------------
 
-    mappable = [r for r in rows if r.get("lat") and r.get("lng")]
-    total = len(rows)
-    mapped = len(mappable)
-    total_units = sum(int(r["units"]) for r in rows if r.get("units"))
-    zoning_codes_used = sorted(set(r.get("zoning", "") for r in rows))
-
-    # Use type counts
-    use_type_counts = {}
-    for r in rows:
-        ut = r.get("use_type", "UNKNOWN")
-        use_type_counts[ut] = use_type_counts.get(ut, 0) + 1
-    permitted_count = use_type_counts.get("PERMITTED", 0)
-    conditional_count = (use_type_counts.get("CONDITIONAL", 0)
-                        + use_type_counts.get("REZONED", 0)
-                        + use_type_counts.get("VARIES", 0))
-
+def build_marker_data(mappable):
+    """Build the JSON-serializable marker list for the Leaflet map."""
     markers = []
     for r in mappable:
-        use_type = r.get("use_type", "UNKNOWN")
         markers.append({
             "lat": float(r["lat"]),
             "lng": float(r["lng"]),
             "r": marker_base_radius(r.get("units")),
             "c": zoning_color(r.get("zoning")),
             "p": build_popup_html(r),
-            "t": use_type,
+            "t": r.get("use_type", "UNKNOWN"),
             "d": r.get("date", ""),
         })
+    return markers
 
-    # All projects for JS-side stats computation (date-filterable)
-    all_projects = []
-    for r in rows:
-        all_projects.append({
+
+def build_all_projects_data(rows):
+    """Build the compact project list used by JS for date-filterable stats."""
+    return [
+        {
             "d": r.get("date", ""),
             "t": r.get("use_type", "UNKNOWN"),
             "h": r.get("housing_type", "Unknown"),
             "u": int(r["units"]) if r.get("units") else 0,
-        })
-    all_projects_json = json.dumps(all_projects)
+        }
+        for r in rows
+    ]
 
-    # Load transit routes
-    transit_json = "[]"
-    if os.path.exists(TRANSIT_JSON):
-        with open(TRANSIT_JSON) as f:
-            transit_json = f.read()
 
-    legend_html = build_legend_html(zoning_codes_used)
-    zoning_info = load_zoning_info()
-    zoning_panel_html = build_zoning_panel_html(zoning_info)
-    markers_json = json.dumps(markers)
+# ---------------------------------------------------------------------------
+# JavaScript template
+# ---------------------------------------------------------------------------
 
-    # The JS is minimal: init map, place markers, handle zoom scaling + panel toggle
-    page_html = f"""\
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Madison WI Multi-Family Housing Permits (2015–2026)</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<link rel="stylesheet" href="style.css"/>
-</head>
-<body style="display:flex;flex-direction:column;height:100vh">
-<div id="header">
-  <div>
-    <h1>Madison WI Multi-Family Housing Permits (2015–2026)</h1>
-    <div class="stats">
-      <span>{total} projects</span>
-      <span>{total_units:,} total units</span>
-      <span>{mapped} mapped</span>
-      <span>Size = unit count (log scale)</span>
-    </div>
-  </div>
-</div>
-<div id="map-wrap">
-  <button id="legend-toggle" class="map-overlay-btn" onclick="document.getElementById('legend').classList.remove('collapsed');this.style.display='none'">Legend</button>
-  <div id="legend" class="map-overlay">
-    <button class="map-overlay-close" onclick="this.parentElement.classList.add('collapsed');document.getElementById('legend-toggle').style.display='block'">&times;</button>
-    {legend_html}
-  </div>
-  <button id="stats-toggle" class="map-overlay-btn" onclick="document.getElementById('stats-panel').classList.remove('collapsed');this.style.display='none'">Project Summary</button>
-  <div id="stats-panel" class="map-overlay">
-    <button class="map-overlay-close" onclick="this.parentElement.classList.add('collapsed');document.getElementById('stats-toggle').style.display='block'">&times;</button>
-    <div id="stats-body"></div>
-  </div>
-  <div id="filter-panel" class="map-overlay">
-    <div class="df-row">
-      <span class="df-label">Date</span>
-      <span class="df-toggle">
-        <button id="df-month" class="df-btn df-active" onclick="setGran('month')">Month</button>
-        <button id="df-year" class="df-btn" onclick="setGran('year')">Year</button>
-      </span>
-      <select id="df-from" onchange="applyFilters()"></select>
-      <span class="df-sep">to</span>
-      <select id="df-to" onchange="applyFilters()"></select>
-    </div>
-    <div class="df-row">
-      <span class="df-label">Use type</span>
-      <label class="df-cb"><input type="checkbox" value="PERMITTED" checked onchange="applyFilters()"><span style="color:#16a34a">Permitted</span></label>
-      <label class="df-cb"><input type="checkbox" value="CONDITIONAL" checked onchange="applyFilters()"><span style="color:#d97706">Conditional</span></label>
-      <label class="df-cb"><input type="checkbox" value="REZONED" checked onchange="applyFilters()"><span style="color:#7c3aed">Rezoned</span></label>
-      <label class="df-cb"><input type="checkbox" value="VARIES" checked onchange="applyFilters()"><span style="color:#7c3aed">PD</span></label>
-      <label class="df-cb"><input type="checkbox" value="UNKNOWN" checked onchange="applyFilters()"><span style="color:#6b7280">Unknown</span></label>
-      <span id="df-count" class="df-count"></span>
-    </div>
-  </div>
-  <button id="zoning-btn" onclick="document.getElementById('zoning-panel').classList.add('open');this.style.display='none'">Zoning Reference</button>
-  <div id="zoning-panel">
-    <button id="panel-close" onclick="this.parentElement.classList.remove('open');document.getElementById('zoning-btn').style.display=''">&times;</button>
-    <div id="panel-title">City of Madison Zoning District Summary</div>
-    <div id="panel-note">
-      Source: Zoning District Summary, October 17, 2025. Density = max dwelling units/acre.
-      Stories marked * allow additional with Conditional Use approval.
-      "Height Map" = determined by Downtown Height Map. "By plan" = determined by Master Plan / PD.
-      Contact: zoning@cityofmadison.com | 608-266-4551
-    </div>
-    {zoning_panel_html}
-  </div>
-  <div id="map"></div>
-</div>
-<script>
+def _build_map_js(markers_json, all_projects_json, transit_json):
+    """Return the <script> block contents for the Leaflet map.
+
+    This JS is intentionally compact — it only handles map init, marker placement,
+    zoom scaling, date filtering, and dynamic stats rebuilding. All heavy computation
+    (colors, sizes, popups) is done in Python.
+    """
+    # Double braces {{ }} are literal JS braces inside the f-string
+    return f"""\
 var m=L.map("map").setView([43.073,-89.401],12);
 L.tileLayer("https://{{s}}.tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png",{{
   attribution:'&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>',
@@ -623,11 +599,143 @@ function applyFilters(){{
   document.getElementById("df-count").textContent=shown+"/"+markers.length;
   buildStats(from,to);
 }}
-initDateFilter();
+initDateFilter();"""
+
+
+# ---------------------------------------------------------------------------
+# HTML template assembly
+# ---------------------------------------------------------------------------
+
+def _build_header_html(total, total_units, mapped):
+    return f"""\
+<div id="header">
+  <div>
+    <h1>Madison WI Multi-Family Housing Permits (2015\u20132026)</h1>
+    <div class="stats">
+      <span>{total} projects</span>
+      <span>{total_units:,} total units</span>
+      <span>{mapped} mapped</span>
+      <span>Size = unit count (log scale)</span>
+    </div>
+  </div>
+</div>"""
+
+
+def _build_filter_panel_html():
+    return """\
+  <div id="filter-panel" class="map-overlay">
+    <div class="df-row">
+      <span class="df-label">Date</span>
+      <span class="df-toggle">
+        <button id="df-month" class="df-btn df-active" onclick="setGran('month')">Month</button>
+        <button id="df-year" class="df-btn" onclick="setGran('year')">Year</button>
+      </span>
+      <select id="df-from" onchange="applyFilters()"></select>
+      <span class="df-sep">to</span>
+      <select id="df-to" onchange="applyFilters()"></select>
+    </div>
+    <div class="df-row">
+      <span class="df-label">Use type</span>
+      <label class="df-cb"><input type="checkbox" value="PERMITTED" checked onchange="applyFilters()"><span style="color:#16a34a">Permitted</span></label>
+      <label class="df-cb"><input type="checkbox" value="CONDITIONAL" checked onchange="applyFilters()"><span style="color:#d97706">Conditional</span></label>
+      <label class="df-cb"><input type="checkbox" value="REZONED" checked onchange="applyFilters()"><span style="color:#7c3aed">Rezoned</span></label>
+      <label class="df-cb"><input type="checkbox" value="VARIES" checked onchange="applyFilters()"><span style="color:#7c3aed">PD</span></label>
+      <label class="df-cb"><input type="checkbox" value="UNKNOWN" checked onchange="applyFilters()"><span style="color:#6b7280">Unknown</span></label>
+      <span id="df-count" class="df-count"></span>
+    </div>
+  </div>"""
+
+
+def _build_zoning_button_and_panel(zoning_panel_html):
+    return f"""\
+  <button id="zoning-btn" onclick="document.getElementById('zoning-panel').classList.add('open');this.style.display='none'">Zoning Reference</button>
+  <div id="zoning-panel">
+    <button id="panel-close" onclick="this.parentElement.classList.remove('open');document.getElementById('zoning-btn').style.display=''">&times;</button>
+    <div id="panel-title">City of Madison Zoning District Summary</div>
+    <div id="panel-note">
+      Source: Zoning District Summary, October 17, 2025. Density = max dwelling units/acre.
+      Stories marked * allow additional with Conditional Use approval.
+      "Height Map" = determined by Downtown Height Map. "By plan" = determined by Master Plan / PD.
+      Contact: zoning@cityofmadison.com | 608-266-4551
+    </div>
+    {zoning_panel_html}
+  </div>"""
+
+
+def build_page_html(total, total_units, mapped, legend_html,
+                    zoning_panel_html, map_js):
+    """Assemble the full HTML page from pre-built components."""
+    header = _build_header_html(total, total_units, mapped)
+    filter_panel = _build_filter_panel_html()
+    zoning_section = _build_zoning_button_and_panel(zoning_panel_html)
+
+    return f"""\
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Madison WI Multi-Family Housing Permits (2015\u20132026)</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body style="display:flex;flex-direction:column;height:100vh">
+{header}
+<div id="map-wrap">
+  <button id="legend-toggle" class="map-overlay-btn" onclick="document.getElementById('legend').classList.remove('collapsed');this.style.display='none'">Legend</button>
+  <div id="legend" class="map-overlay">
+    <button class="map-overlay-close" onclick="this.parentElement.classList.add('collapsed');document.getElementById('legend-toggle').style.display='block'">&times;</button>
+    {legend_html}
+  </div>
+  <button id="stats-toggle" class="map-overlay-btn" onclick="document.getElementById('stats-panel').classList.remove('collapsed');this.style.display='none'">Project Summary</button>
+  <div id="stats-panel" class="map-overlay">
+    <button class="map-overlay-close" onclick="this.parentElement.classList.add('collapsed');document.getElementById('stats-toggle').style.display='block'">&times;</button>
+    <div id="stats-body"></div>
+  </div>
+{filter_panel}
+{zoning_section}
+  <div id="map"></div>
+</div>
+<script>
+{map_js}
 </script>
 </body>
 </html>
 """
+
+
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
+
+def main():
+    with open(INPUT_CSV, newline="") as f:
+        rows = list(csv.DictReader(f))
+
+    mappable = [r for r in rows if r.get("lat") and r.get("lng")]
+    total = len(rows)
+    mapped = len(mappable)
+    total_units = sum(int(r["units"]) for r in rows if r.get("units"))
+    zoning_codes_used = sorted(set(r.get("zoning", "") for r in rows))
+
+    # Build data payloads
+    markers = build_marker_data(mappable)
+    all_projects = build_all_projects_data(rows)
+    transit_json = load_transit_json()
+
+    # Build HTML fragments
+    legend_html = build_legend_html(zoning_codes_used)
+    zoning_info = load_zoning_info()
+    zoning_panel_html = build_zoning_panel_html(zoning_info)
+
+    # Build JS and assemble page
+    markers_json = json.dumps(markers)
+    all_projects_json = json.dumps(all_projects)
+    map_js = _build_map_js(markers_json, all_projects_json, transit_json)
+    page_html = build_page_html(
+        total, total_units, mapped, legend_html, zoning_panel_html, map_js
+    )
 
     with open(OUTPUT_HTML, "w") as f:
         f.write(page_html)
