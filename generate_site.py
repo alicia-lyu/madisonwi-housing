@@ -356,7 +356,7 @@ def main():
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <link rel="stylesheet" href="style.css"/>
 </head>
-<body>
+<body style="display:flex;flex-direction:column;height:100vh">
 <div id="header">
   <div>
     <h1>Madison WI Multi-Family Housing Permits (2025)</h1>
@@ -367,11 +367,13 @@ def main():
       <span>Size = unit count (log scale)</span>
     </div>
   </div>
-  <div id="legend">
-    {legend_html}
-  </div>
 </div>
 <div id="map-wrap">
+  <button id="legend-toggle" onclick="document.getElementById('legend').classList.remove('collapsed');this.style.display='none'">Legend</button>
+  <div id="legend">
+    <button id="legend-close" onclick="this.parentElement.classList.add('collapsed');document.getElementById('legend-toggle').style.display=''">&times;</button>
+    {legend_html}
+  </div>
   <button id="zoning-btn" onclick="document.getElementById('zoning-panel').classList.add('open');this.style.display='none'">Zoning Reference</button>
   <div id="zoning-panel">
     <button id="panel-close" onclick="this.parentElement.classList.remove('open');document.getElementById('zoning-btn').style.display=''">&times;</button>

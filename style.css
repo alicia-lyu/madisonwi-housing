@@ -3,32 +3,61 @@ body { font-family: system-ui, -apple-system, sans-serif }
 
 /* Header & stats */
 #header {
-  background: #1e293b; color: #f8fafc; padding: 10px 20px;
+  background: #1e293b; color: #f8fafc; padding: 8px 16px;
   display: flex; align-items: flex-start; justify-content: space-between;
-  flex-wrap: wrap; gap: 8px;
+  flex-wrap: wrap; gap: 4px;
 }
-#header h1 { font-size: 18px; font-weight: 600 }
-.stats { font-size: 13px; color: #94a3b8; margin-top: 3px }
-.stats span { margin-right: 14px }
+#header h1 { font-size: 16px; font-weight: 600 }
+.stats { font-size: 12px; color: #94a3b8; margin-top: 2px }
+.stats span { margin-right: 10px }
 .stat-permitted { color: #16a34a }
 .stat-conditional { color: #d97706 }
 
-/* Legend */
-#legend { display: flex; flex-direction: column; gap: 2px }
-.leg-item { display: inline-flex; align-items: center; margin-right: 8px }
-.leg-dot {
-  width: 12px; height: 12px; border-radius: 50%;
-  display: inline-block; margin-right: 3px;
-  border: 1px solid rgba(0,0,0,0.2);
+/* Legend — collapsible on the map, not in the header */
+#legend {
+  position: absolute; top: 10px; left: 10px; z-index: 1000;
+  background: rgba(30,41,59,0.92); color: #f8fafc;
+  padding: 8px 12px; border-radius: 6px;
+  max-width: 420px; font-size: 11px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  transition: opacity 0.2s;
 }
-.leg-code { font-size: 11px }
-.leg-row { margin-bottom: 2px }
-.leg-cat { font-size: 10px; color: #94a3b8; margin-right: 6px }
-.leg-shapes { margin-top: 2px; font-size: 11px; color: #cbd5e1 }
+#legend.collapsed { display: none }
+#legend-toggle {
+  position: absolute; top: 10px; left: 10px; z-index: 999;
+  background: #1e293b; color: #f8fafc; border: none; padding: 5px 10px;
+  border-radius: 6px; cursor: pointer; font-size: 12px; font-family: inherit;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3); display: none;
+}
+#legend-toggle:hover { background: #334155 }
+#legend-close {
+  float: right; background: none; border: none; color: #94a3b8;
+  cursor: pointer; font-size: 16px; line-height: 1; margin: -2px -4px 0 8px;
+}
+#legend-close:hover { color: #f8fafc }
+.leg-item { display: inline-flex; align-items: center; margin-right: 6px }
+.leg-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  display: inline-block; margin-right: 2px;
+  border: 1px solid rgba(255,255,255,0.3);
+}
+.leg-code { font-size: 10px }
+.leg-row { margin-bottom: 1px }
+.leg-cat { font-size: 9px; color: #94a3b8; margin-right: 4px }
+.leg-shapes { margin-top: 2px; font-size: 10px; color: #cbd5e1 }
 
-/* Map */
-#map-wrap { position: relative; height: calc(100vh - 56px) }
+/* Map — fills remaining viewport below header */
+#map-wrap { position: relative; flex: 1; min-height: 0 }
 #map { height: 100%; width: 100% }
+
+/* Responsive: smaller legend on narrow screens */
+@media (max-width: 600px) {
+  #legend { max-width: 280px; font-size: 10px; padding: 6px 8px }
+  .leg-dot { width: 8px; height: 8px }
+  .leg-code { font-size: 9px }
+  #header h1 { font-size: 14px }
+  .stats { font-size: 11px }
+}
 
 /* Zoning reference button & panel */
 #zoning-btn {
