@@ -405,11 +405,33 @@ def build_all_projects_data(rows):
     ]
 
 
+def build_all_rows_data(rows):
+    """Build richer project list for the list view panel."""
+    result = []
+    for r in rows:
+        name = r.get("project_name") or r.get("address", "").split(",")[0]
+        lat = float(r["lat"]) if r.get("lat") else None
+        lng = float(r["lng"]) if r.get("lng") else None
+        result.append({
+            "n": name,
+            "a": r.get("address", ""),
+            "d": r.get("date", ""),
+            "u": int(r["units"]) if r.get("units") else 0,
+            "t": r.get("use_type", "UNKNOWN"),
+            "h": r.get("housing_type", "Unknown"),
+            "z": r.get("zoning", ""),
+            "s": r.get("status", ""),
+            "lat": lat,
+            "lng": lng,
+        })
+    return result
+
+
 # ---------------------------------------------------------------------------
 # JavaScript template
 # ---------------------------------------------------------------------------
 
-def _build_map_js(markers_json, all_projects_json, transit_json):
+def _build_map_js(markers_json, all_projects_json, all_rows_json, transit_json):
     """Return the <script> block contents for the Leaflet map.
 
     This JS is intentionally compact — it only handles map init, marker placement,
@@ -431,6 +453,7 @@ tr.forEach(function(rt){{
   );
 }});
 var allProj={all_projects_json};
+var allRows={all_rows_json};
 var d={markers_json};
 var markers=[];
 function sqSvg(sz,fill){{
@@ -591,13 +614,74 @@ function applyFilters(){{
   }});
   document.getElementById("df-count").textContent=shown+"/"+markers.length;
   buildStats(from,to);
+  buildList();
   pushHash();
+}}
+var USE_LABELS={{"PERMITTED":"Permitted","CONDITIONAL":"Conditional","REZONED":"Rezoned","VARIES":"Varies (PD)","UNKNOWN":"Unknown"}};
+function buildList(){{
+  var body=document.getElementById("list-body");
+  if(!body)return;
+  var from=document.getElementById("df-from").value;
+  var to=document.getElementById("df-to").value;
+  var useTypes=getCheckedUseTypes();
+  var filtered=allRows.filter(function(r){{
+    var k=r.d?(gran==="year"?r.d.slice(0,4):r.d.slice(0,7)):"";
+    return k&&k>=from&&k<=to&&useTypes.has(r.t);
+  }});
+  var sortKey=document.getElementById("list-sort").value;
+  if(sortKey==="date")filtered.sort(function(a,b){{return b.d.localeCompare(a.d)}});
+  else if(sortKey==="units")filtered.sort(function(a,b){{return b.u-a.u}});
+  else filtered.sort(function(a,b){{return a.n.localeCompare(b.n)}});
+  document.getElementById("list-count").textContent=filtered.length+" projects";
+  var h='<table class="list-table"><tr><th>Date</th><th>Name</th><th>Units</th><th>Type</th><th>Zoning</th><th>Use</th></tr>';
+  filtered.forEach(function(r,i){{
+    var cls=r.lat!==null?' class="list-clickable"':' class="list-nomap"';
+    var data=r.lat!==null?' data-lat="'+r.lat+'" data-lng="'+r.lng+'"':'';
+    h+='<tr'+cls+data+'><td>'+r.d+'</td><td>'+r.n+'</td><td>'+r.u+'</td><td>'+r.h+'</td><td>'+r.z+'</td><td>'+(USE_LABELS[r.t]||r.t)+'</td></tr>';
+  }});
+  h+='</table>';
+  body.innerHTML=h;
+  body.querySelectorAll("tr.list-clickable").forEach(function(tr){{
+    tr.onclick=function(){{
+      var lat=parseFloat(this.dataset.lat);
+      var lng=parseFloat(this.dataset.lng);
+      m.flyTo([lat,lng],16);
+      markers.forEach(function(mk){{
+        var ll=mk.getLatLng();
+        if(Math.abs(ll.lat-lat)<0.0001&&Math.abs(ll.lng-lng)<0.0001)mk.openPopup();
+      }});
+    }};
+  }});
+}}
+function openListPanel(){{
+  document.getElementById("list-panel").classList.add("open");
+  document.getElementById("zoning-panel").classList.remove("open");
+  document.getElementById("list-btn").style.display="none";
+  document.getElementById("zoning-btn").style.display="none";
+  buildList();
+}}
+function closeListPanel(){{
+  document.getElementById("list-panel").classList.remove("open");
+  document.getElementById("list-btn").style.display="";
+  document.getElementById("zoning-btn").style.display="";
+}}
+function openZoningPanel(){{
+  document.getElementById("zoning-panel").classList.add("open");
+  document.getElementById("list-panel").classList.remove("open");
+  document.getElementById("list-btn").style.display="none";
+  document.getElementById("zoning-btn").style.display="none";
+}}
+function closeZoningPanel(){{
+  document.getElementById("zoning-panel").classList.remove("open");
+  document.getElementById("list-btn").style.display="";
+  document.getElementById("zoning-btn").style.display="";
 }}
 function pushHash(){{
   var from=document.getElementById("df-from").value;
   var to=document.getElementById("df-to").value;
   var use=Array.from(getCheckedUseTypes()).sort().join(",");
-  var h="g="+gran+"&from="+encodeURIComponent(from)+"&to="+encodeURIComponent(to)+"&use="+encodeURIComponent(use);
+  var sort=document.getElementById("list-sort").value;
+  var h="g="+gran+"&from="+encodeURIComponent(from)+"&to="+encodeURIComponent(to)+"&use="+encodeURIComponent(use)+"&sort="+sort;
   history.replaceState(null,null,"#"+h);
 }}
 function loadHash(){{
@@ -621,6 +705,10 @@ function loadHash(){{
     document.querySelectorAll('#filter-panel input[type=checkbox]').forEach(function(cb){{
       cb.checked=enabled.has(cb.value);
     }});
+  }}
+  if(p.sort){{
+    var sel=document.getElementById("list-sort");
+    if(sel){{for(var i=0;i<sel.options.length;i++){{if(sel.options[i].value===p.sort){{sel.selectedIndex=i;break}}}}}}
   }}
   applyFilters();
   return true;
@@ -672,11 +760,29 @@ def _build_filter_panel_html():
   </div>"""
 
 
+def _build_list_button_and_panel():
+    return """\
+  <button id="list-btn" onclick="openListPanel()">Project List</button>
+  <div id="list-panel">
+    <button id="list-close" onclick="closeListPanel()">&times;</button>
+    <div id="list-header">
+      <span id="list-title">Project List</span>
+      <select id="list-sort" onchange="buildList()">
+        <option value="date">Date (newest)</option>
+        <option value="units">Units (most)</option>
+        <option value="name">Name (A-Z)</option>
+      </select>
+      <span id="list-count"></span>
+    </div>
+    <div id="list-body"></div>
+  </div>"""
+
+
 def _build_zoning_button_and_panel(zoning_panel_html):
     return f"""\
-  <button id="zoning-btn" onclick="document.getElementById('zoning-panel').classList.add('open');this.style.display='none'">Zoning Reference</button>
+  <button id="zoning-btn" onclick="openZoningPanel()">Zoning Reference</button>
   <div id="zoning-panel">
-    <button id="panel-close" onclick="this.parentElement.classList.remove('open');document.getElementById('zoning-btn').style.display=''">&times;</button>
+    <button id="panel-close" onclick="closeZoningPanel()">&times;</button>
     <div id="panel-title">City of Madison Zoning District Summary</div>
     <div id="panel-note">
       Source: Zoning District Summary, October 17, 2025. Density = max dwelling units/acre.
@@ -693,6 +799,7 @@ def build_page_html(total, total_units, mapped, legend_html,
     """Assemble the full HTML page from pre-built components."""
     header = _build_header_html(total, total_units, mapped)
     filter_panel = _build_filter_panel_html()
+    list_section = _build_list_button_and_panel()
     zoning_section = _build_zoning_button_and_panel(zoning_panel_html)
 
     return f"""\
@@ -720,6 +827,7 @@ def build_page_html(total, total_units, mapped, legend_html,
     <div id="stats-body"></div>
   </div>
 {filter_panel}
+{list_section}
 {zoning_section}
   <div id="map"></div>
 </div>
@@ -748,6 +856,7 @@ def main():
     # Build data payloads
     markers = build_marker_data(mappable)
     all_projects = build_all_projects_data(rows)
+    all_rows = build_all_rows_data(rows)
     transit_json = load_transit_json()
 
     # Build HTML fragments
@@ -758,7 +867,8 @@ def main():
     # Build JS and assemble page
     markers_json = json.dumps(markers)
     all_projects_json = json.dumps(all_projects)
-    map_js = _build_map_js(markers_json, all_projects_json, transit_json)
+    all_rows_json = json.dumps(all_rows)
+    map_js = _build_map_js(markers_json, all_projects_json, all_rows_json, transit_json)
     page_html = build_page_html(
         total, total_units, mapped, legend_html, zoning_panel_html, map_js
     )

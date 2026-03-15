@@ -174,6 +174,62 @@ body { font-family: system-ui, -apple-system, sans-serif }
 #zoning-panel::-webkit-scrollbar-thumb:hover { background: #94a3b8 }
 #stats-panel::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.25) }
 
+/* List panel button & panel */
+#list-btn {
+  position: absolute; top: 10px; right: 170px; z-index: 1000;
+  background: #1e293b; color: #f8fafc; border: none; padding: 8px 16px;
+  border-radius: 8px; cursor: pointer; font-size: 13px; font-family: inherit;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.35); transition: background 0.15s;
+}
+#list-btn:hover { background: #334155 }
+#list-panel {
+  position: absolute; top: 10px; right: 10px; z-index: 1001;
+  background: #fff; border-radius: 10px; box-shadow: 0 4px 24px rgba(0,0,0,0.28);
+  width: 820px; max-width: calc(100vw - 30px); max-height: calc(100vh - 100px);
+  overflow-y: auto; padding: 22px 26px; display: none;
+}
+#list-panel.open { display: block }
+#list-close {
+  float: right; background: none; border: none; font-size: 32px;
+  cursor: pointer; color: #64748b; line-height: 1;
+  width: 44px; height: 44px; display: inline-flex;
+  align-items: center; justify-content: center; border-radius: 8px;
+  transition: background 0.15s, color 0.15s;
+  margin: -6px -8px 0 8px;
+}
+#list-close:hover { color: #1e293b; background: #e2e8f0 }
+#list-header {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 12px;
+}
+#list-title { font-size: 17px; font-weight: 600; color: #1e293b }
+#list-sort {
+  background: #f1f5f9; color: #1e293b; border: 1px solid #cbd5e1;
+  border-radius: 6px; padding: 5px 10px; font-size: 12px; font-family: inherit;
+}
+#list-count { font-size: 12px; color: #64748b; margin-left: auto }
+.list-table { font-size: 12px; border-collapse: collapse; width: 100% }
+.list-table th {
+  text-align: left; padding: 6px 8px; font-size: 10px; color: #94a3b8;
+  text-transform: uppercase; letter-spacing: 0.04em;
+  border-bottom: 2px solid #e2e8f0; position: sticky; top: 0; background: #fff;
+}
+.list-table td { padding: 5px 8px; border-bottom: 1px solid #f1f5f9; color: #475569 }
+.list-table tr.list-clickable { cursor: pointer }
+.list-table tr.list-clickable:hover { background: rgba(59,130,246,0.06) }
+.list-table tr.list-nomap { color: #94a3b8 }
+
+/* Scrollbar for list panel */
+#list-panel::-webkit-scrollbar { width: 6px }
+#list-panel::-webkit-scrollbar-track { background: transparent }
+#list-panel::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px }
+#list-panel::-webkit-scrollbar-thumb:hover { background: #94a3b8 }
+
+/* Responsive: list panel */
+@media (max-width: 600px) {
+  #list-btn { right: 10px; top: 55px }
+  #list-panel { width: calc(100vw - 20px) }
+}
+
 /* Popup */
 .popup { font: 13px/1.5 system-ui, sans-serif; max-width: 320px }
 .popup-name { font-weight: 600; font-size: 14px; margin-bottom: 5px; color: #1e293b }
