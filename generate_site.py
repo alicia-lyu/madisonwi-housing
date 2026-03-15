@@ -453,9 +453,9 @@ def _build_map_js(markers_json, all_projects_json, all_rows_json, transit_json):
     # Double braces {{ }} are literal JS braces inside the f-string
     return f"""\
 var m=L.map("map").setView([43.073,-89.401],12);
-L.tileLayer("https://{{s}}.tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png",{{
-  attribution:'&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>',
-  maxZoom:19}}).addTo(m);
+L.tileLayer("https://{{s}}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{{z}}/{{x}}/{{y}}@2x.png",{{
+  attribution:'&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
+  subdomains:'abcd',maxZoom:20}}).addTo(m);
 var tr={transit_json};
 tr.forEach(function(rt){{
   var opts={{color:rt.color,weight:rt.weight,opacity:0.7}};
