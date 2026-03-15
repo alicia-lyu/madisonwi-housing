@@ -42,6 +42,8 @@ UNIT_PATTERNS = [
     re.compile(r"(\d+) unit", re.IGNORECASE),
 ]
 
+ZONING_CSV = "zoning_districts.csv"
+
 NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
 ZONING_URL = "https://maps.cityofmadison.com/arcgis/rest/services/Planning/Zoning/MapServer/2/query"
 USER_AGENT = "MadisonWI-HousingPermits/1.0"
@@ -193,6 +195,101 @@ def get_zoning(lat, lng, cache):
         return None
 
 
+def parse_unit_ranges(text, building_type):
+    """Parse semi-structured zoning text to extract (min, max) unit ranges for a type.
+
+    building_type: "multifamily" or "townhom" (matches townhome/townhouse).
+    Returns list of (min, max) tuples. max=float('inf') for unbounded ranges.
+    """
+    if not text:
+        return []
+    ranges = []
+    INF = float("inf")
+    # Split on commas to get individual clauses
+    for clause in text.split(","):
+        clause = clause.strip()
+        # Check if this clause mentions the building type
+        if building_type.lower() not in clause.lower():
+            continue
+        # Pattern: "4-24 unit multifamily" -> (4, 24)
+        m = re.search(r"(\d+)\s*-\s*(\d+)\s+(?:unit\s+)?" + building_type, clause, re.IGNORECASE)
+        if m:
+            ranges.append((int(m.group(1)), int(m.group(2))))
+            continue
+        # Pattern: ">24 unit multifamily" or ">8 unit townhome" -> (25, inf)
+        m = re.search(r">\s*(\d+)\s+(?:unit\s+)?" + building_type, clause, re.IGNORECASE)
+        if m:
+            ranges.append((int(m.group(1)) + 1, INF))
+            continue
+        # Pattern: "4 or > multifamily" or "4 or > unit multifamily" -> (4, inf)
+        m = re.search(r"(\d+)\s+or\s*>\s*(?:unit\s+)?" + building_type, clause, re.IGNORECASE)
+        if m:
+            ranges.append((int(m.group(1)), INF))
+            continue
+        # Pattern: "4 unit multifamily" (single number) -> (4, 4)
+        m = re.search(r"(\d+)\s+(?:unit\s+)?" + building_type, clause, re.IGNORECASE)
+        if m:
+            ranges.append((int(m.group(1)), int(m.group(1))))
+            continue
+        # Pattern: "Multifamily building" (no number) -> (1, inf)
+        m = re.search(building_type, clause, re.IGNORECASE)
+        if m:
+            ranges.append((1, INF))
+    return ranges
+
+
+def load_zoning_rules():
+    """Read zoning_districts.csv and build classification rules.
+
+    Returns dict keyed by zoning code with parsed permitted/conditional
+    ranges for both multifamily and townhouse types.
+    """
+    rules = {}
+    with open(ZONING_CSV, newline="") as f:
+        for row in csv.DictReader(f):
+            code = row["code"].strip()
+            permitted = row.get("residential_permitted", "") or ""
+            conditional = row.get("residential_conditional", "") or ""
+            rules[code] = {
+                "permitted_mf": parse_unit_ranges(permitted, "multifamily"),
+                "permitted_th": parse_unit_ranges(permitted, "townhom"),
+                "conditional_mf": parse_unit_ranges(conditional, "multifamily"),
+                "conditional_th": parse_unit_ranges(conditional, "townhom"),
+            }
+    return rules
+
+
+def classify_use(zoning, units, description, rules):
+    """Classify a project as PERMITTED, CONDITIONAL, VARIES, NOT_ALLOWED, or UNKNOWN."""
+    if not zoning or not units:
+        return "UNKNOWN"
+    if zoning.startswith("PD"):
+        return "VARIES"
+
+    rule = rules.get(zoning)
+    if not rule:
+        return "UNKNOWN"
+
+    # Detect townhouse/townhome projects
+    is_townhouse = bool(re.search(r"townho(?:me|use)", description, re.IGNORECASE))
+
+    def in_any_range(ranges, count):
+        return any(lo <= count <= hi for lo, hi in ranges)
+
+    if is_townhouse:
+        if in_any_range(rule["permitted_th"], units):
+            return "PERMITTED"
+        if in_any_range(rule["conditional_th"], units):
+            return "CONDITIONAL"
+    # Check multifamily ranges (also fallback for townhouses not matched above)
+    if in_any_range(rule["permitted_mf"], units):
+        return "PERMITTED"
+    if in_any_range(rule["conditional_mf"], units):
+        return "CONDITIONAL"
+
+    return "NOT_ALLOWED"
+
+
 def main():
     cache = load_cache()
 
@@ -232,6 +329,20 @@ def main():
         save_cache(cache)
     print(f"  Got zoning for {zoned_count}/{len(projects)} projects\n")
 
+    print("Step 5: Classifying permitted vs conditional use...")
+    zoning_rules = load_zoning_rules()
+    use_counts = {}
+    for p in projects:
+        p["use_type"] = classify_use(
+            p["zoning"], p["units"], p["description"], zoning_rules
+        )
+        use_counts[p["use_type"]] = use_counts.get(p["use_type"], 0) + 1
+        print(f"  {p['record_number']}: {p['zoning'] or '?'} / "
+              f"{p['units'] or '?'} units -> {p['use_type']}")
+    for use_type, count in sorted(use_counts.items()):
+        print(f"  {use_type}: {count}")
+    print()
+
     # Build JSON output
     output = {
         "generated": str(date.today()),
@@ -244,7 +355,7 @@ def main():
     # Build CSV output (canonical data source for generate_site.py)
     csv_fields = [
         "record_number", "date", "address", "status", "description",
-        "project_name", "units", "zoning", "lat", "lng",
+        "project_name", "units", "zoning", "lat", "lng", "use_type",
     ]
     with open(OUTPUT_CSV, "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=csv_fields, extrasaction="ignore")

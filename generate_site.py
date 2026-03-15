@@ -52,6 +52,22 @@ STATUS_STYLES = {
     "Rejected": "#ef4444", "Inspections Complete": "#10b981",
 }
 
+USE_TYPE_COLORS = {
+    "PERMITTED": "#16a34a",
+    "CONDITIONAL": "#d97706",
+    "NOT_ALLOWED": "#dc2626",
+    "VARIES": "#7c3aed",
+    "UNKNOWN": "#6b7280",
+}
+
+USE_TYPE_LABELS = {
+    "PERMITTED": "Permitted Use",
+    "CONDITIONAL": "Conditional Use",
+    "NOT_ALLOWED": "Not Allowed",
+    "VARIES": "Varies (PD)",
+    "UNKNOWN": "Unknown",
+}
+
 def load_zoning_info():
     """Load zoning district info from zoning_districts.csv."""
     with open(ZONING_CSV, newline="") as f:
@@ -85,23 +101,25 @@ def build_popup_html(row):
     zoning = row["zoning"] or "N/A"
     status = row["status"]
     status_color = STATUS_STYLES.get(status, "#6b7280")
+    use_type = row.get("use_type", "UNKNOWN")
+    use_color = USE_TYPE_COLORS.get(use_type, "#6b7280")
+    use_label = USE_TYPE_LABELS.get(use_type, use_type)
 
     return (
-        f'<div style="font:13px/1.5 system-ui,sans-serif;max-width:320px">'
-        f'<div style="font-weight:600;font-size:14px;margin-bottom:4px">'
-        f'{html.escape(name)}</div>'
-        f'<div style="color:#475569">'
+        f'<div class="popup">'
+        f'<div class="popup-name">{html.escape(name)}</div>'
+        f'<div class="popup-body">'
         f'<b>Address:</b> {html.escape(row["address"])}<br>'
         f'<b>Units:</b> {html.escape(units_str)}<br>'
         f'<b>Zoning:</b> {html.escape(zoning)}<br>'
+        f'<b>Use Type:</b> <span style="color:{use_color}" class="popup-use">'
+        f'{html.escape(use_label)}</span><br>'
         f'<b>Status:</b> <span style="color:{status_color}">'
         f'{html.escape(status)}</span><br>'
         f'<b>Date:</b> {html.escape(row["date"])}<br>'
         f'<b>Record:</b> {html.escape(row["record_number"])}'
         f'</div>'
-        f'<div style="margin-top:6px;font-size:12px;color:#64748b;'
-        f'border-top:1px solid #e2e8f0;padding-top:6px">'
-        f'{html.escape(row["description"])}</div>'
+        f'<div class="popup-desc">{html.escape(row["description"])}</div>'
         f'</div>'
     )
 
@@ -123,26 +141,27 @@ def build_legend_html(zoning_codes_used):
         if not codes_in_cat:
             continue
         dots = "".join(
-            f'<span style="display:inline-flex;align-items:center;margin-right:8px">'
-            f'<span style="width:12px;height:12px;border-radius:50%;'
-            f'background:{zoning_color(c)};display:inline-block;margin-right:3px;'
-            f'border:1px solid rgba(0,0,0,0.2)"></span>'
-            f'<span style="font-size:11px">{html.escape(c)}</span></span>'
+            f'<span class="leg-item">'
+            f'<span class="leg-dot" style="background:{zoning_color(c)}"></span>'
+            f'<span class="leg-code">{html.escape(c)}</span></span>'
             for c in codes_in_cat
         )
         parts.append(
-            f'<div style="margin-bottom:2px">'
-            f'<span style="font-size:10px;color:#94a3b8;margin-right:6px">'
-            f'{cat_name}:</span>{dots}</div>'
+            f'<div class="leg-row">'
+            f'<span class="leg-cat">{cat_name}:</span>{dots}</div>'
         )
     if any(not c for c in zoning_codes_used):
         parts.append(
-            f'<div><span style="display:inline-flex;align-items:center">'
-            f'<span style="width:12px;height:12px;border-radius:50%;'
-            f'background:{DEFAULT_ZONING_COLOR};display:inline-block;'
-            f'margin-right:3px;border:1px solid rgba(0,0,0,0.2)"></span>'
-            f'<span style="font-size:11px">Unknown</span></span></div>'
+            f'<div><span class="leg-item">'
+            f'<span class="leg-dot" style="background:{DEFAULT_ZONING_COLOR}"></span>'
+            f'<span class="leg-code">Unknown</span></span></div>'
         )
+    # Shape legend
+    parts.append(
+        '<div class="leg-shapes">'
+        '&#9679; = Permitted use &nbsp; &#9650; = Conditional use'
+        '</div>'
+    )
     return "\n".join(parts)
 
 
@@ -162,36 +181,26 @@ def build_zoning_panel_html(zoning_info):
             permitted = html.escape(z.get("residential_permitted", "") or "")
             conditional = html.escape(z.get("residential_conditional", "") or "")
             table_rows.append(
-                f'<tr style="border-bottom:1px solid #f1f5f9">'
-                f'<td style="white-space:nowrap;font-weight:600;vertical-align:top;padding:4px 8px 4px 0">'
-                f'<span style="display:inline-block;width:12px;height:12px;border-radius:50%;'
-                f'background:{color};vertical-align:middle;margin-right:4px;'
-                f'border:1px solid rgba(0,0,0,0.15)"></span>{html.escape(code)}</td>'
-                f'<td style="vertical-align:top;padding:4px 8px 4px 0;min-width:120px">'
+                f'<tr class="zp-row">'
+                f'<td class="zp-code">'
+                f'<span class="zp-dot" style="background:{color}"></span>'
+                f'{html.escape(code)}</td>'
+                f'<td class="zp-name">'
                 f'<b>{html.escape(z["name"])}</b><br>'
-                f'<span style="font-size:11px;color:#64748b">{html.escape(z["description"])}</span></td>'
-                f'<td style="vertical-align:top;padding:4px 6px;font-size:11px;color:#475569">'
-                f'{permitted}</td>'
-                f'<td style="vertical-align:top;padding:4px 6px;font-size:11px;color:#475569">'
-                f'{conditional}</td>'
-                f'<td style="white-space:nowrap;vertical-align:top;padding:4px 6px;font-size:12px;color:#475569">'
-                f'{html.escape(z["max_stories"])}</td>'
-                f'<td style="white-space:nowrap;vertical-align:top;padding:4px 0 4px 6px;font-size:12px;color:#475569">'
-                f'{html.escape(z["max_density"])}</td>'
+                f'<span class="zp-desc">{html.escape(z["description"])}</span></td>'
+                f'<td class="zp-cell">{permitted}</td>'
+                f'<td class="zp-cell">{conditional}</td>'
+                f'<td class="zp-cell zp-nowrap">{html.escape(z["max_stories"])}</td>'
+                f'<td class="zp-cell zp-nowrap zp-last">{html.escape(z["max_density"])}</td>'
                 f'</tr>'
             )
         sections.append(
-            f'<div style="margin-bottom:12px">'
-            f'<div style="font-weight:600;font-size:13px;color:#3b82f6;margin-bottom:4px;'
-            f'border-bottom:1px solid #e2e8f0;padding-bottom:3px">{cat}</div>'
-            f'<table style="font-size:12px;border-collapse:collapse;width:100%">'
-            f'<tr style="color:#94a3b8;font-size:10px;text-transform:uppercase">'
-            f'<th style="text-align:left;padding:2px 8px 2px 0">Code</th>'
-            f'<th style="text-align:left;padding:2px 8px 2px 0">District</th>'
-            f'<th style="text-align:left;padding:2px 6px">Permitted</th>'
-            f'<th style="text-align:left;padding:2px 6px">Conditional</th>'
-            f'<th style="text-align:left;padding:2px 6px">Stories</th>'
-            f'<th style="text-align:left;padding:2px 0 2px 6px">Density</th></tr>'
+            f'<div class="zp-section">'
+            f'<div class="zp-cat">{cat}</div>'
+            f'<table class="zp-table">'
+            f'<tr class="zp-hdr">'
+            f'<th>Code</th><th>District</th><th>Permitted</th>'
+            f'<th>Conditional</th><th>Stories</th><th>Density</th></tr>'
             f'{"".join(table_rows)}</table></div>'
         )
 
@@ -208,14 +217,24 @@ def main():
     total_units = sum(int(r["units"]) for r in rows if r.get("units"))
     zoning_codes_used = sorted(set(r.get("zoning", "") for r in rows))
 
+    # Use type counts
+    use_type_counts = {}
+    for r in rows:
+        ut = r.get("use_type", "UNKNOWN")
+        use_type_counts[ut] = use_type_counts.get(ut, 0) + 1
+    permitted_count = use_type_counts.get("PERMITTED", 0)
+    conditional_count = use_type_counts.get("CONDITIONAL", 0) + use_type_counts.get("NOT_ALLOWED", 0)
+
     markers = []
     for r in mappable:
+        use_type = r.get("use_type", "UNKNOWN")
         markers.append({
             "lat": float(r["lat"]),
             "lng": float(r["lng"]),
             "r": marker_base_radius(r.get("units")),
             "c": zoning_color(r.get("zoning")),
             "p": build_popup_html(r),
+            "t": use_type,
         })
 
     legend_html = build_legend_html(zoning_codes_used)
@@ -259,6 +278,36 @@ body{{font-family:system-ui,-apple-system,sans-serif}}
 #panel-close:hover{{color:#1e293b}}
 #panel-title{{font-size:15px;font-weight:600;margin-bottom:10px;color:#1e293b}}
 #panel-note{{font-size:11px;color:#94a3b8;margin-bottom:12px;line-height:1.4}}
+/* Popup */
+.popup{{font:13px/1.5 system-ui,sans-serif;max-width:320px}}
+.popup-name{{font-weight:600;font-size:14px;margin-bottom:4px}}
+.popup-body{{color:#475569}}
+.popup-use{{font-weight:600}}
+.popup-desc{{margin-top:6px;font-size:12px;color:#64748b;border-top:1px solid #e2e8f0;padding-top:6px}}
+/* Legend */
+.leg-item{{display:inline-flex;align-items:center;margin-right:8px}}
+.leg-dot{{width:12px;height:12px;border-radius:50%;display:inline-block;margin-right:3px;border:1px solid rgba(0,0,0,0.2)}}
+.leg-code{{font-size:11px}}
+.leg-row{{margin-bottom:2px}}
+.leg-cat{{font-size:10px;color:#94a3b8;margin-right:6px}}
+.leg-shapes{{margin-top:2px;font-size:11px;color:#cbd5e1}}
+/* Stats color highlights */
+.stat-permitted{{color:#16a34a}}
+.stat-conditional{{color:#d97706}}
+/* Zoning panel table */
+.zp-section{{margin-bottom:12px}}
+.zp-cat{{font-weight:600;font-size:13px;color:#3b82f6;margin-bottom:4px;border-bottom:1px solid #e2e8f0;padding-bottom:3px}}
+.zp-table{{font-size:12px;border-collapse:collapse;width:100%}}
+.zp-hdr{{color:#94a3b8;font-size:10px;text-transform:uppercase}}
+.zp-hdr th{{text-align:left;padding:2px 6px}}
+.zp-row{{border-bottom:1px solid #f1f5f9}}
+.zp-code{{white-space:nowrap;font-weight:600;vertical-align:top;padding:4px 8px 4px 0}}
+.zp-dot{{display:inline-block;width:12px;height:12px;border-radius:50%;vertical-align:middle;margin-right:4px;border:1px solid rgba(0,0,0,0.15)}}
+.zp-name{{vertical-align:top;padding:4px 8px 4px 0;min-width:120px}}
+.zp-desc{{font-size:11px;color:#64748b}}
+.zp-cell{{vertical-align:top;padding:4px 6px;font-size:11px;color:#475569}}
+.zp-nowrap{{white-space:nowrap;font-size:12px}}
+.zp-last{{padding-left:6px;padding-right:0}}
 </style>
 </head>
 <body>
@@ -269,7 +318,9 @@ body{{font-family:system-ui,-apple-system,sans-serif}}
       <span>{total} projects</span>
       <span>{total_units:,} total units</span>
       <span>{mapped} mapped</span>
-      <span>Circle size = unit count (log scale)</span>
+      <span class="stat-permitted">&#9679; {permitted_count} permitted</span>
+      <span class="stat-conditional">&#9650; {conditional_count} conditional</span>
+      <span>Size = unit count (log scale)</span>
     </div>
   </div>
   <div id="legend">
@@ -297,20 +348,60 @@ L.tileLayer("https://{{s}}.tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png",{{
   attribution:'&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>',
   maxZoom:19}}).addTo(m);
 var d={markers_json};
-var circles=[];
+var markers=[];
+function triSvg(sz,fill){{
+  var h=sz*1.73;
+  var pts=(sz/2)+",0 "+sz+","+h+" 0,"+h;
+  return '<svg width="'+sz+'" height="'+h+'" style="display:block">'
+    +'<polygon points="'+pts+'" fill="'+fill+'" stroke="#fff" stroke-width="1.5" opacity="0.85"/></svg>';
+}}
+function makeTri(r,fill){{
+  var sz=r*2;
+  var h=sz*1.73;
+  return L.divIcon({{
+    html:triSvg(sz,fill),
+    className:"",
+    iconSize:[sz,h],
+    iconAnchor:[sz/2,h/2],
+    popupAnchor:[0,-h/2]
+  }});
+}}
 d.forEach(function(x){{
-  var c=L.circleMarker([x.lat,x.lng],{{
-    radius:x.r,fillColor:x.c,color:"#fff",weight:1.5,
-    opacity:1,fillOpacity:0.85
-  }}).addTo(m).bindPopup(x.p);
-  c._baseR=x.r;
-  circles.push(c);
+  var mk;
+  if(x.t==="CONDITIONAL"||x.t==="NOT_ALLOWED"){{
+    mk=L.marker([x.lat,x.lng],{{icon:makeTri(x.r,x.c)}});
+    mk._isTri=true;
+  }}else{{
+    mk=L.circleMarker([x.lat,x.lng],{{
+      radius:x.r,fillColor:x.c,color:"#fff",weight:1.5,
+      opacity:1,fillOpacity:0.85
+    }});
+    mk._isTri=false;
+  }}
+  mk.addTo(m).bindPopup(x.p);
+  mk._baseR=x.r;
+  mk._fill=x.c;
+  markers.push(mk);
 }});
 function scaleMarkers(){{
   var z=m.getZoom();
   var s=Math.pow(2,(z-12)*1.5)*0.6;
   s=Math.max(0.15,Math.min(s,3));
-  circles.forEach(function(c){{c.setRadius(Math.max(2,c._baseR*s))}});
+  markers.forEach(function(mk){{
+    var r=Math.max(2,mk._baseR*s);
+    if(mk._isTri){{
+      var sz=r*2,h=sz*1.73;
+      mk.setIcon(L.divIcon({{
+        html:triSvg(sz,mk._fill),
+        className:"",
+        iconSize:[sz,h],
+        iconAnchor:[sz/2,h/2],
+        popupAnchor:[0,-h/2]
+      }}));
+    }}else{{
+      mk.setRadius(r);
+    }}
+  }});
 }}
 m.on("zoomend",scaleMarkers);
 scaleMarkers();
