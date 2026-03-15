@@ -489,7 +489,7 @@ function scaleMarkers(){{
 m.on("zoomend",scaleMarkers);
 scaleMarkers();
 var MONTHS=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-var gran="month";
+var gran="year";
 function dateKey(d){{return gran==="year"?d.slice(0,4):d.slice(0,7)}}
 function fmtOpt(v){{
   if(gran==="year")return v;
@@ -591,8 +591,41 @@ function applyFilters(){{
   }});
   document.getElementById("df-count").textContent=shown+"/"+markers.length;
   buildStats(from,to);
+  pushHash();
 }}
-initDateFilter();"""
+function pushHash(){{
+  var from=document.getElementById("df-from").value;
+  var to=document.getElementById("df-to").value;
+  var use=Array.from(getCheckedUseTypes()).sort().join(",");
+  var h="g="+gran+"&from="+encodeURIComponent(from)+"&to="+encodeURIComponent(to)+"&use="+encodeURIComponent(use);
+  history.replaceState(null,null,"#"+h);
+}}
+function loadHash(){{
+  var h=location.hash.slice(1);
+  if(!h)return false;
+  var p={{}};
+  h.split("&").forEach(function(kv){{var s=kv.split("=");if(s.length===2)p[s[0]]=decodeURIComponent(s[1])}});
+  if(p.g&&(p.g==="year"||p.g==="month")){{
+    gran=p.g;
+    document.getElementById("df-month").className="df-btn"+(gran==="month"?" df-active":"");
+    document.getElementById("df-year").className="df-btn"+(gran==="year"?" df-active":"");
+  }}
+  var keys=allKeys();
+  if(keys.length===0)return false;
+  fillSel(document.getElementById("df-from"),keys,0);
+  fillSel(document.getElementById("df-to"),keys,keys.length-1);
+  if(p.from){{var fi=keys.indexOf(p.from);if(fi>=0)document.getElementById("df-from").selectedIndex=fi}}
+  if(p.to){{var ti=keys.indexOf(p.to);if(ti>=0)document.getElementById("df-to").selectedIndex=ti}}
+  if(p.use){{
+    var enabled=new Set(p.use.split(","));
+    document.querySelectorAll('#filter-panel input[type=checkbox]').forEach(function(cb){{
+      cb.checked=enabled.has(cb.value);
+    }});
+  }}
+  applyFilters();
+  return true;
+}}
+if(!loadHash())initDateFilter();"""
 
 
 # ---------------------------------------------------------------------------
@@ -620,8 +653,8 @@ def _build_filter_panel_html():
     <div class="df-row">
       <span class="df-label">Date</span>
       <span class="df-toggle">
-        <button id="df-month" class="df-btn df-active" onclick="setGran('month')">Month</button>
-        <button id="df-year" class="df-btn" onclick="setGran('year')">Year</button>
+        <button id="df-month" class="df-btn" onclick="setGran('month')">Month</button>
+        <button id="df-year" class="df-btn df-active" onclick="setGran('year')">Year</button>
       </span>
       <select id="df-from" onchange="applyFilters()"></select>
       <span class="df-sep">to</span>
