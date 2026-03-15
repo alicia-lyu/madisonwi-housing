@@ -42,13 +42,25 @@ UNIT_PATTERNS = [
     re.compile(r"(\d+) unit", re.IGNORECASE),
 ]
 
+WORD_TO_NUM = {
+    "one": 1, "two": 2, "three": 3, "four": 4, "five": 5,
+    "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10,
+    "eleven": 11, "twelve": 12, "thirteen": 13, "fourteen": 14, "fifteen": 15,
+    "sixteen": 16, "seventeen": 17, "eighteen": 18, "nineteen": 19, "twenty": 20,
+}
+_WORD_PAT = "|".join(WORD_TO_NUM.keys())
+WORD_UNIT_PATTERNS = [
+    re.compile(rf"({_WORD_PAT})[- ]?(?:dwelling )?units?", re.IGNORECASE),
+    re.compile(rf"({_WORD_PAT})[- ]?(?:apartment)", re.IGNORECASE),
+]
+
 ZONING_CSV = "zoning_districts.csv"
 GTFS_DIR = "gtfs_tmp"
 TRANSIT_JSON = "transit_routes.json"
 
 # Service level classification for line weight/style (from Dec 2025 system map)
-FREQUENT_ROUTES = {"A", "B", "C", "D", "F"}
-STANDARD_ROUTES = {"E", "G", "H", "J", "O", "P", "R", "28", "38", "80"}
+FREQUENT_ROUTES = {"A", "B", "C", "D", "80"}
+STANDARD_ROUTES = {"E", "F", "G", "H", "J", "O", "P", "R", "28", "38"}
 PEAK_ROUTES = {"55", "65", "75"}
 SUPPLEMENTAL_ROUTES = {"60", "61", "62", "63", "64"}
 
@@ -101,6 +113,13 @@ def extract_units(description):
         if m:
             count = int(m.group(1))
             if count >= 2:
+                return count
+    # Fallback: spelled-out numbers ("two apartment units")
+    for pattern in WORD_UNIT_PATTERNS:
+        m = pattern.search(description)
+        if m:
+            count = WORD_TO_NUM.get(m.group(1).lower())
+            if count and count >= 2:
                 return count
     return None
 
@@ -262,8 +281,8 @@ def parse_unit_ranges(text, building_type):
         # Check if this clause mentions the building type
         if building_type.lower() not in clause.lower():
             continue
-        # Pattern: "4-24 unit multifamily" -> (4, 24)
-        m = re.search(r"(\d+)\s*-\s*(\d+)\s+(?:unit\s+)?" + building_type, clause, re.IGNORECASE)
+        # Pattern: "4-24 unit multifamily" or "2-3-unit building" -> (4, 24)
+        m = re.search(r"(\d+)\s*-\s*(\d+)[\s-]+(?:unit[\s-]+)?" + building_type, clause, re.IGNORECASE)
         if m:
             ranges.append((int(m.group(1)), int(m.group(2))))
             continue
@@ -289,6 +308,29 @@ def parse_unit_ranges(text, building_type):
     return ranges
 
 
+def parse_small_building_ranges(text):
+    """Parse 'X-Y unit building' and 'X unit building' patterns specifically.
+
+    Only matches clauses like '2-3-unit building' or '2 unit building',
+    NOT 'Single family building' or 'Mixed-use building'.
+    """
+    if not text:
+        return []
+    ranges = []
+    for clause in text.split(","):
+        clause = clause.strip()
+        # "2-3-unit building" or "2-3 unit building"
+        m = re.search(r"(\d+)\s*-\s*(\d+)[\s-]+unit[\s-]+building", clause, re.IGNORECASE)
+        if m:
+            ranges.append((int(m.group(1)), int(m.group(2))))
+            continue
+        # "2 unit building"
+        m = re.search(r"(\d+)[\s-]+unit[\s-]+building", clause, re.IGNORECASE)
+        if m:
+            ranges.append((int(m.group(1)), int(m.group(1))))
+    return ranges
+
+
 def load_zoning_rules():
     """Read zoning_districts.csv and build classification rules.
 
@@ -304,8 +346,10 @@ def load_zoning_rules():
             rules[code] = {
                 "permitted_mf": parse_unit_ranges(permitted, "multifamily"),
                 "permitted_th": parse_unit_ranges(permitted, "townhom"),
+                "permitted_bldg": parse_small_building_ranges(permitted),
                 "conditional_mf": parse_unit_ranges(conditional, "multifamily"),
                 "conditional_th": parse_unit_ranges(conditional, "townhom"),
+                "conditional_bldg": parse_small_building_ranges(conditional),
             }
     return rules
 
@@ -337,8 +381,13 @@ def classify_use(zoning, units, description, rules):
         return "PERMITTED"
     if in_any_range(rule["conditional_mf"], units):
         return "CONDITIONAL"
+    # Check generic "X unit building" ranges (e.g. "2-3 unit building")
+    if in_any_range(rule["permitted_bldg"], units):
+        return "PERMITTED"
+    if in_any_range(rule["conditional_bldg"], units):
+        return "CONDITIONAL"
 
-    return "NOT_ALLOWED"
+    return "REZONED"
 
 
 def process_gtfs():
@@ -413,7 +462,7 @@ def process_gtfs():
                 continue
             seen_coords.add(key)
 
-            # Service level -> weight and dash
+            # Use city's per-route color; service level sets weight/dash
             name = info["name"]
             if name in FREQUENT_ROUTES:
                 weight, dash = 4, None

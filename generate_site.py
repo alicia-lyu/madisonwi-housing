@@ -57,7 +57,7 @@ STATUS_STYLES = {
 USE_TYPE_COLORS = {
     "PERMITTED": "#16a34a",
     "CONDITIONAL": "#d97706",
-    "NOT_ALLOWED": "#dc2626",
+    "REZONED": "#7c3aed",
     "VARIES": "#7c3aed",
     "UNKNOWN": "#6b7280",
 }
@@ -65,7 +65,7 @@ USE_TYPE_COLORS = {
 USE_TYPE_LABELS = {
     "PERMITTED": "Permitted Use",
     "CONDITIONAL": "Conditional Use",
-    "NOT_ALLOWED": "Not Allowed",
+    "REZONED": "Rezoned",
     "VARIES": "Varies (PD)",
     "UNKNOWN": "Unknown",
 }
@@ -127,52 +127,92 @@ def build_popup_html(row):
     )
 
 
-def build_stats_html(ht_counts, ht_units, use_type_counts):
-    """Build HTML for housing type and use type stats panel."""
-    # Housing type table
+def build_stats_html(rows):
+    """Build cross-tab: housing type (rows) × permitted/conditional (columns)."""
     ht_order = ["Mid-Rise", "Mid-Rise Mixed-Use", "High-Rise", "High-Rise Mixed-Use",
                 "Townhouse", "Multiplex", "Duplex/Triplex"]
-    ht_rows = []
+    # Collect counts: ht -> {permitted: n, conditional: n, unknown: n}
+    # and units: ht -> {permitted: n, conditional: n, unknown: n}
+    cross = {}
+    for r in rows:
+        ht = r.get("housing_type", "Unknown")
+        ut = r.get("use_type", "UNKNOWN")
+        units = int(r["units"]) if r.get("units") else 0
+        if ut == "PERMITTED":
+            col = "permitted"
+        elif ut == "CONDITIONAL":
+            col = "conditional"
+        elif ut in ("REZONED", "VARIES"):
+            col = "rezoned_pd"
+        else:
+            col = "unknown"
+        cross.setdefault(ht, {}).setdefault(col, {"n": 0, "u": 0})
+        cross[ht][col]["n"] += 1
+        cross[ht][col]["u"] += units
+
+    def cell(ht, col):
+        d = cross.get(ht, {}).get(col, {"n": 0, "u": 0})
+        if d["n"] == 0:
+            return '<td class="zp-cell" style="text-align:center;color:#cbd5e1">—</td>'
+        return (f'<td class="zp-cell" style="text-align:right">'
+                f'{d["n"]} <span class="zp-desc">({d["u"]:,} units)</span></td>')
+
+    table_rows = []
     for ht in ht_order:
-        if ht not in ht_counts:
+        if ht not in cross:
             continue
-        ht_rows.append(
+        cols = ("permitted", "conditional", "rezoned_pd", "unknown")
+        total_n = sum(cross[ht].get(c, {}).get("n", 0) for c in cols)
+        total_u = sum(cross[ht].get(c, {}).get("u", 0) for c in cols)
+        table_rows.append(
             f'<tr class="zp-row">'
             f'<td class="zp-cell" style="font-weight:600">{html.escape(ht)}</td>'
-            f'<td class="zp-cell" style="text-align:right">{ht_counts[ht]}</td>'
-            f'<td class="zp-cell" style="text-align:right">{ht_units[ht]:,}</td>'
-            f'</tr>'
-        )
-    # Use type table
-    ut_order = [("PERMITTED", "Permitted"), ("CONDITIONAL", "Conditional"),
-                ("NOT_ALLOWED", "Not Allowed"), ("VARIES", "Varies (PD)"),
-                ("UNKNOWN", "Unknown")]
-    ut_rows = []
-    for code, label in ut_order:
-        count = use_type_counts.get(code, 0)
-        if count == 0:
-            continue
-        color = USE_TYPE_COLORS.get(code, "#6b7280")
-        ut_rows.append(
-            f'<tr class="zp-row">'
-            f'<td class="zp-cell"><span style="color:{color};font-weight:600">'
-            f'{html.escape(label)}</span></td>'
-            f'<td class="zp-cell" style="text-align:right">{count}</td>'
+            f'{cell(ht, "permitted")}'
+            f'{cell(ht, "conditional")}'
+            f'{cell(ht, "rezoned_pd")}'
+            f'{cell(ht, "unknown")}'
+            f'<td class="zp-cell" style="text-align:right;font-weight:600">'
+            f'{total_n} <span class="zp-desc">({total_u:,})</span></td>'
             f'</tr>'
         )
 
+    # Totals row
+    cols = ("permitted", "conditional", "rezoned_pd", "unknown")
+    tot = {}
+    for col in cols:
+        tot[col] = {"n": 0, "u": 0}
+        for ht in cross:
+            d = cross[ht].get(col, {"n": 0, "u": 0})
+            tot[col]["n"] += d["n"]
+            tot[col]["u"] += d["u"]
+    grand_n = sum(tot[c]["n"] for c in cols)
+    grand_u = sum(tot[c]["u"] for c in cols)
+
+    def tot_cell(col):
+        return (f'<td class="zp-cell" style="text-align:right;font-weight:700">'
+                f'{tot[col]["n"]} <span class="zp-desc">({tot[col]["u"]:,})</span></td>')
+
+    table_rows.append(
+        f'<tr style="border-top:2px solid #cbd5e1">'
+        f'<td class="zp-cell" style="font-weight:700">Total</td>'
+        f'{tot_cell("permitted")}{tot_cell("conditional")}'
+        f'{tot_cell("rezoned_pd")}{tot_cell("unknown")}'
+        f'<td class="zp-cell" style="text-align:right;font-weight:700">'
+        f'{grand_n} <span class="zp-desc">({grand_u:,})</span></td>'
+        f'</tr>'
+    )
+
     return (
         f'<div class="zp-section">'
-        f'<div class="zp-cat">By Housing Type</div>'
+        f'<div class="zp-cat">Project Summary</div>'
         f'<table class="zp-table">'
-        f'<tr class="zp-hdr"><th>Type</th><th style="text-align:right">Projects</th>'
-        f'<th style="text-align:right">Units</th></tr>'
-        f'{"".join(ht_rows)}</table></div>'
-        f'<div class="zp-section">'
-        f'<div class="zp-cat">By Use Classification</div>'
-        f'<table class="zp-table">'
-        f'<tr class="zp-hdr"><th>Use Type</th><th style="text-align:right">Projects</th></tr>'
-        f'{"".join(ut_rows)}</table></div>'
+        f'<tr class="zp-hdr"><th>Housing Type</th>'
+        f'<th style="text-align:right;color:#16a34a">Permitted</th>'
+        f'<th style="text-align:right;color:#d97706">Conditional</th>'
+        f'<th style="text-align:right;color:#7c3aed">Rezoned / PD</th>'
+        f'<th style="text-align:right;color:#6b7280">Unknown</th>'
+        f'<th style="text-align:right">Total</th></tr>'
+        f'{"".join(table_rows)}</table></div>'
     )
 
 
@@ -211,7 +251,7 @@ def build_legend_html(zoning_codes_used):
     # Shape legend
     parts.append(
         '<div class="leg-shapes">'
-        '&#9679; = Permitted use &nbsp; &#9632; = Conditional/Varies'
+        '&#9679; = Permitted &nbsp; &#9632; = Conditional / Rezoned / PD / Unknown'
         '</div>'
     )
     return "\n".join(parts)
@@ -276,7 +316,7 @@ def main():
         use_type_counts[ut] = use_type_counts.get(ut, 0) + 1
     permitted_count = use_type_counts.get("PERMITTED", 0)
     conditional_count = (use_type_counts.get("CONDITIONAL", 0)
-                        + use_type_counts.get("NOT_ALLOWED", 0)
+                        + use_type_counts.get("REZONED", 0)
                         + use_type_counts.get("VARIES", 0))
 
     markers = []
@@ -291,15 +331,7 @@ def main():
             "t": use_type,
         })
 
-    # Housing type counts (for stats panel)
-    ht_counts = {}
-    ht_units = {}
-    for r in rows:
-        ht = r.get("housing_type", "Unknown")
-        units = int(r["units"]) if r.get("units") else 0
-        ht_counts[ht] = ht_counts.get(ht, 0) + 1
-        ht_units[ht] = ht_units.get(ht, 0) + units
-    stats_html = build_stats_html(ht_counts, ht_units, use_type_counts)
+    stats_html = build_stats_html(rows)
 
     # Load transit routes
     transit_json = "[]"
@@ -332,8 +364,6 @@ def main():
       <span>{total} projects</span>
       <span>{total_units:,} total units</span>
       <span>{mapped} mapped</span>
-      <span class="stat-permitted">&#9679; {permitted_count} permitted</span>
-      <span class="stat-conditional">&#9632; {conditional_count} conditional</span>
       <span>Size = unit count (log scale)</span>
     </div>
   </div>
@@ -359,8 +389,8 @@ def main():
 </div>
 <script>
 var m=L.map("map").setView([43.073,-89.401],12);
-L.tileLayer("https://tileserver.memomaps.de/tilegen/{{z}}/{{x}}/{{y}}.png",{{
-  attribution:'Map <a href="https://memomaps.de/">memomaps.de</a> <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, map data &copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>',
+L.tileLayer("https://{{s}}.tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png",{{
+  attribution:'&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>',
   maxZoom:19}}).addTo(m);
 var tr={transit_json};
 tr.forEach(function(rt){{
@@ -386,7 +416,7 @@ function makeSq(r,fill){{
     popupAnchor:[0,-sz/2]
   }});
 }}
-var SQ_TYPES={{"CONDITIONAL":1,"NOT_ALLOWED":1,"VARIES":1}};
+var SQ_TYPES={{"CONDITIONAL":1,"REZONED":1,"VARIES":1,"UNKNOWN":1}};
 d.forEach(function(x){{
   var mk;
   if(SQ_TYPES[x.t]){{
