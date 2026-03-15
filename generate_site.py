@@ -850,7 +850,7 @@ def build_page_html(total, total_units, mapped, legend_html,
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <link rel="stylesheet" href="style.css"/>
 </head>
-<body style="display:flex;flex-direction:column;height:100vh">
+<body style="display:flex;flex-direction:column;min-height:100vh">
 {header}
 <div id="map-wrap">
   <button id="legend-toggle" class="map-overlay-btn" onclick="document.getElementById('legend').classList.remove('collapsed');this.style.display='none'">Legend</button>
@@ -868,6 +868,13 @@ def build_page_html(total, total_units, mapped, legend_html,
 {zoning_section}
   <div id="map"></div>
 </div>
+<footer id="site-footer">
+  <div class="footer-inner">
+    <p class="footer-license">Released under the <a href="https://opensource.org/licenses/MIT" target="_blank">MIT License</a>.</p>
+    <p class="footer-disclaimer"><strong>Data sources:</strong> Permit records from the <a href="https://www.cityofmadison.com/dpced/bi/" target="_blank">City of Madison Building Inspection Division</a>. Zoning data from <a href="https://geodata.wisc.edu/" target="_blank">Madison/Dane County GIS</a>. Transit routes from <a href="https://www.cityofmadison.com/metro" target="_blank">Metro Transit GTFS</a>. Geocoding via <a href="https://nominatim.openstreetmap.org/" target="_blank">OpenStreetMap Nominatim</a>.</p>
+    <p class="footer-disclaimer"><strong>Classification logic:</strong> Permitted vs. Conditional Use is determined by rule-based matching of each project's unit count against the density ranges defined in Madison's zoning code for its district. Project outcomes (Built, Active, Did Not Proceed) are inferred from permit status and date. Some projects could not be geocoded to a map location and are excluded from the map but included in summary statistics. These classifications are automated approximations and may contain errors. This site is not an official City of Madison resource.</p>
+  </div>
+</footer>
 <script>
 {map_js}
 </script>
