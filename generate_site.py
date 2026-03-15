@@ -290,8 +290,8 @@ def main():
 </div>
 <script>
 var m=L.map("map").setView([43.073,-89.401],12);
-L.tileLayer("https://{{s}}.tile.openstreetmap.org/{{z}}/{{x}}/{{y}}.png",{{
-  attribution:'&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>',
+L.tileLayer("https://tileserver.memomaps.de/tilegen/{{z}}/{{x}}/{{y}}.png",{{
+  attribution:'Map <a href="https://memomaps.de/">memomaps.de</a> <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, map data &copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>',
   maxZoom:19}}).addTo(m);
 var d={markers_json};
 var markers=[];
