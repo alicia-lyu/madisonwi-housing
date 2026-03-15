@@ -3,13 +3,13 @@ body { font-family: system-ui, -apple-system, sans-serif }
 
 /* Header & stats */
 #header {
-  background: #1e293b; color: #f8fafc; padding: 8px 16px;
+  background: #1e293b; color: #f8fafc; padding: 10px 20px;
   display: flex; align-items: flex-start; justify-content: space-between;
-  flex-wrap: wrap; gap: 4px;
+  flex-wrap: wrap; gap: 6px;
 }
-#header h1 { font-size: 16px; font-weight: 600 }
-.stats { font-size: 12px; color: #94a3b8; margin-top: 2px }
-.stats span { margin-right: 10px }
+#header h1 { font-size: 16px; font-weight: 600; letter-spacing: -0.01em }
+.stats { font-size: 12px; color: #94a3b8; margin-top: 3px; line-height: 1.4 }
+.stats span { margin-right: 12px }
 .stat-permitted { color: #16a34a }
 .stat-conditional { color: #d97706 }
 
@@ -17,21 +17,26 @@ body { font-family: system-ui, -apple-system, sans-serif }
 /* Floating overlay panels (shared) */
 .map-overlay {
   position: absolute; z-index: 1000;
-  background: rgba(30,41,59,0.92); color: #f8fafc;
-  padding: 8px 12px; border-radius: 6px; font-size: 11px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  background: rgba(30,41,59,0.93); color: #f8fafc;
+  padding: 10px 14px; border-radius: 8px; font-size: 11px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
 }
 .map-overlay.collapsed { display: none }
 .map-overlay-close {
   float: right; background: none; border: none; color: #94a3b8;
-  cursor: pointer; font-size: 16px; line-height: 1; margin: -2px -4px 0 8px;
+  cursor: pointer; font-size: 22px; line-height: 1; margin: -6px -8px 0 8px;
+  width: 32px; height: 32px; display: inline-flex;
+  align-items: center; justify-content: center; border-radius: 6px;
+  transition: background 0.15s, color 0.15s;
 }
-.map-overlay-close:hover { color: #f8fafc }
+.map-overlay-close:hover { color: #f8fafc; background: rgba(255,255,255,0.12) }
 .map-overlay-btn {
   position: absolute; z-index: 999;
-  background: #1e293b; color: #f8fafc; border: none; padding: 5px 10px;
-  border-radius: 6px; cursor: pointer; font-size: 12px; font-family: inherit;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3); display: none;
+  background: #1e293b; color: #f8fafc; border: none; padding: 7px 14px;
+  border-radius: 8px; cursor: pointer; font-size: 12px; font-family: inherit;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.35); display: none;
+  transition: background 0.15s;
 }
 .map-overlay-btn:hover { background: #334155 }
 
@@ -48,26 +53,27 @@ body { font-family: system-ui, -apple-system, sans-serif }
 #stats-panel .zp-desc { color: #94a3b8 }
 #stats-panel .zp-row { border-bottom-color: rgba(255,255,255,0.1) }
 #stats-toggle { bottom: 25px; right: 10px }
-.leg-item { display: inline-flex; align-items: center; margin-right: 6px }
+.leg-item { display: inline-flex; align-items: center; margin-right: 8px }
 .leg-dot {
   width: 10px; height: 10px; border-radius: 50%;
-  display: inline-block; margin-right: 2px;
+  display: inline-block; margin-right: 3px;
   border: 1px solid rgba(255,255,255,0.3);
 }
 .leg-code { font-size: 10px }
-.leg-row { margin-bottom: 1px }
-.leg-cat { font-size: 9px; color: #94a3b8; margin-right: 4px }
-.leg-shapes { margin-top: 2px; font-size: 10px; color: #cbd5e1 }
+.leg-row { margin-bottom: 3px; line-height: 1.5 }
+.leg-cat { font-size: 9px; color: #94a3b8; margin-right: 5px; text-transform: uppercase; letter-spacing: 0.03em }
+.leg-shapes { margin-top: 4px; font-size: 10px; color: #cbd5e1; padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.1) }
 
 /* Date filter — top left */
-#filter-panel { top: 10px; left: 60px; bottom: auto; padding: 6px 10px }
-.df-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap }
-.df-row + .df-row { margin-top: 4px }
-.df-label { font-weight: 600; font-size: 12px }
+#filter-panel { top: 10px; left: 60px; bottom: auto; padding: 8px 12px }
+.df-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap }
+.df-row + .df-row { margin-top: 5px }
+.df-label { font-weight: 600; font-size: 12px; min-width: 52px }
 .df-toggle { display: inline-flex; gap: 0 }
 .df-btn {
   background: #334155; color: #94a3b8; border: 1px solid #475569;
-  padding: 2px 8px; font-size: 11px; cursor: pointer; font-family: inherit;
+  padding: 4px 11px; font-size: 11px; cursor: pointer; font-family: inherit;
+  transition: background 0.15s, color 0.15s;
 }
 .df-btn:first-child { border-radius: 4px 0 0 4px }
 .df-btn:last-child { border-radius: 0 4px 4px 0; border-left: none }
@@ -81,7 +87,7 @@ body { font-family: system-ui, -apple-system, sans-serif }
 .df-cb input { margin: 0; accent-color: #2563eb }
 #df-from, #df-to {
   background: #334155; color: #f8fafc; border: 1px solid #475569;
-  border-radius: 4px; padding: 2px 6px; font-size: 11px; font-family: inherit;
+  border-radius: 4px; padding: 4px 8px; font-size: 11px; font-family: inherit;
 }
 
 /* Map — fills remaining viewport below header */
@@ -100,60 +106,75 @@ body { font-family: system-ui, -apple-system, sans-serif }
 /* Zoning reference button & panel */
 #zoning-btn {
   position: absolute; top: 10px; right: 10px; z-index: 1000;
-  background: #1e293b; color: #f8fafc; border: none; padding: 7px 14px;
-  border-radius: 6px; cursor: pointer; font-size: 13px; font-family: inherit;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  background: #1e293b; color: #f8fafc; border: none; padding: 8px 16px;
+  border-radius: 8px; cursor: pointer; font-size: 13px; font-family: inherit;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.35); transition: background 0.15s;
 }
 #zoning-btn:hover { background: #334155 }
 #zoning-panel {
   position: absolute; top: 10px; right: 10px; z-index: 1001;
-  background: #fff; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+  background: #fff; border-radius: 10px; box-shadow: 0 4px 24px rgba(0,0,0,0.28);
   width: 900px; max-width: calc(100vw - 30px); max-height: calc(100vh - 100px);
-  overflow-y: auto; padding: 16px; display: none;
+  overflow-y: auto; padding: 22px 26px; display: none;
 }
 #zoning-panel.open { display: block }
 #panel-close {
-  float: right; background: none; border: none; font-size: 20px;
+  float: right; background: none; border: none; font-size: 32px;
   cursor: pointer; color: #64748b; line-height: 1;
+  width: 44px; height: 44px; display: inline-flex;
+  align-items: center; justify-content: center; border-radius: 8px;
+  transition: background 0.15s, color 0.15s;
+  margin: -6px -8px 0 8px;
 }
-#panel-close:hover { color: #1e293b }
-#panel-title { font-size: 15px; font-weight: 600; margin-bottom: 10px; color: #1e293b }
-#panel-note { font-size: 11px; color: #94a3b8; margin-bottom: 12px; line-height: 1.4 }
+#panel-close:hover { color: #1e293b; background: #e2e8f0 }
+#panel-title { font-size: 17px; font-weight: 600; margin-bottom: 12px; color: #1e293b; letter-spacing: -0.01em }
+#panel-note { font-size: 11px; color: #64748b; margin-bottom: 16px; line-height: 1.6 }
 
 /* Zoning panel table */
-.zp-section { margin-bottom: 12px }
+.zp-section { margin-bottom: 20px }
 .zp-cat {
   font-weight: 600; font-size: 13px; color: #3b82f6;
-  margin-bottom: 4px; border-bottom: 1px solid #e2e8f0; padding-bottom: 3px;
+  margin-bottom: 8px; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px;
 }
 .zp-table { font-size: 12px; border-collapse: collapse; width: 100% }
-.zp-hdr { color: #94a3b8; font-size: 10px; text-transform: uppercase }
-.zp-hdr th { text-align: left; padding: 2px 6px }
+.zp-hdr { color: #94a3b8; font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em }
+.zp-hdr th { text-align: left; padding: 6px 6px 4px }
 .zp-row { border-bottom: 1px solid #f1f5f9 }
-.zp-code { white-space: nowrap; font-weight: 600; vertical-align: top; padding: 4px 8px 4px 0 }
+.zp-row:hover { background: rgba(59,130,246,0.03) }
+.zp-code { white-space: nowrap; font-weight: 600; vertical-align: top; padding: 6px 8px 6px 0 }
 .zp-dot {
   display: inline-block; width: 12px; height: 12px; border-radius: 50%;
   vertical-align: middle; margin-right: 4px;
   border: 1px solid rgba(0,0,0,0.15);
 }
-.zp-name { vertical-align: top; padding: 4px 8px 4px 0; min-width: 120px }
+.zp-name { vertical-align: top; padding: 6px 8px 6px 0; min-width: 120px }
 .zp-toggle { cursor: pointer }
 .zp-toggle:hover { background: rgba(59,130,246,0.08) }
 .zp-arrow { display: inline-block; width: 12px; font-size: 10px; color: #94a3b8 }
 .zp-arrow-placeholder { display: inline-block}
 .zp-detail td { padding: 0 }
-.zp-desc-cell { padding: 2px 8px 8px 0; font-size: 11px; color: #64748b; line-height: 1.4 }
+.zp-desc-cell { padding: 4px 8px 10px 0; font-size: 11px; color: #64748b; line-height: 1.5 }
 .zp-desc { font-size: 11px; color: #64748b }
-.zp-cell { vertical-align: top; padding: 4px 6px; font-size: 11px; color: #475569 }
+.zp-cell { vertical-align: top; padding: 6px 6px; font-size: 11px; color: #475569; line-height: 1.4 }
 .zp-nowrap { white-space: nowrap; font-size: 12px }
 .zp-last { padding-left: 6px; padding-right: 0 }
 
+/* Scrollbar styling for panels */
+#zoning-panel::-webkit-scrollbar,
+#stats-panel::-webkit-scrollbar { width: 6px }
+#zoning-panel::-webkit-scrollbar-track,
+#stats-panel::-webkit-scrollbar-track { background: transparent }
+#zoning-panel::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px }
+#stats-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px }
+#zoning-panel::-webkit-scrollbar-thumb:hover { background: #94a3b8 }
+#stats-panel::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.25) }
+
 /* Popup */
 .popup { font: 13px/1.5 system-ui, sans-serif; max-width: 320px }
-.popup-name { font-weight: 600; font-size: 14px; margin-bottom: 4px }
-.popup-body { color: #475569 }
+.popup-name { font-weight: 600; font-size: 14px; margin-bottom: 5px; color: #1e293b }
+.popup-body { color: #475569; line-height: 1.5 }
 .popup-use { font-weight: 600 }
 .popup-desc {
-  margin-top: 6px; font-size: 12px; color: #64748b;
-  border-top: 1px solid #e2e8f0; padding-top: 6px;
+  margin-top: 8px; font-size: 12px; color: #64748b;
+  border-top: 1px solid #e2e8f0; padding-top: 8px; line-height: 1.5;
 }
