@@ -104,6 +104,9 @@ STANDARD_ROUTES = {"E", "F", "G", "H", "J", "O", "P", "R", "28", "38"}
 PEAK_ROUTES = {"55", "65", "75"}
 SUPPLEMENTAL_ROUTES = {"60", "61", "62", "63", "64"}
 
+# Cutoff for classifying old "Issued" permits as stale (did not proceed)
+STALE_ISSUED_CUTOFF = "2024-01-01"
+
 # ---------------------------------------------------------------------------
 # CSV output field order
 # ---------------------------------------------------------------------------
@@ -111,6 +114,7 @@ SUPPLEMENTAL_ROUTES = {"60", "61", "62", "63", "64"}
 CSV_FIELDS = [
     "record_number", "date", "address", "status", "description",
     "project_name", "units", "zoning", "lat", "lng", "use_type", "housing_type",
+    "outcome",
 ]
 
 
@@ -695,6 +699,34 @@ def _step_classify_use(projects):
     print()
 
 
+def classify_outcome(status, date_str):
+    """Classify project outcome based on permit status and date.
+
+    BUILT: Certificate of Occupancy issued (Closed, Inspections Complete, Ready for CoO)
+    DID_NOT_PROCEED: Rejected, or Issued but stale (before cutoff date)
+    ACTIVE: Currently in progress (Issued recent, In Process, or fallback)
+    """
+    if status in ("Closed", "Inspections Complete", "Ready for CoO"):
+        return "BUILT"
+    if status == "Rejected":
+        return "DID_NOT_PROCEED"
+    if status == "Issued" and date_str < STALE_ISSUED_CUTOFF:
+        return "DID_NOT_PROCEED"
+    return "ACTIVE"
+
+
+def _step_classify_outcome(projects):
+    """Step 5b: classify project outcome (built / active / did not proceed)."""
+    print("Step 5b: Classifying project outcomes...")
+    outcome_counts = {}
+    for p in projects:
+        p["outcome"] = classify_outcome(p["status"], p["date"])
+        outcome_counts[p["outcome"]] = outcome_counts.get(p["outcome"], 0) + 1
+    for outcome, count in sorted(outcome_counts.items()):
+        print(f"  {outcome}: {count}")
+    print()
+
+
 def _step_transit():
     """Step 6: process GTFS transit routes."""
     print("Step 6: Processing GTFS transit routes...")
@@ -749,6 +781,7 @@ def main():
     _step_geocode(projects, cache)
     _step_fetch_zoning(projects, cache)
     _step_classify_use(projects)
+    _step_classify_outcome(projects)
     _step_transit()
     _write_outputs(projects)
 

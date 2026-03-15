@@ -71,6 +71,9 @@ USE_TYPE_LABELS = {
     "UNKNOWN": "Unknown",
 }
 
+OUTCOME_COLORS = {"BUILT": "#10b981", "ACTIVE": "#2563eb", "DID_NOT_PROCEED": "#ef4444"}
+OUTCOME_LABELS = {"BUILT": "Built", "ACTIVE": "Active", "DID_NOT_PROCEED": "Did Not Proceed"}
+
 # ---------------------------------------------------------------------------
 # Zoning color lookup
 # ---------------------------------------------------------------------------
@@ -133,6 +136,10 @@ def build_popup_html(row):
     use_color = USE_TYPE_COLORS.get(use_type, "#6b7280")
     use_label = USE_TYPE_LABELS.get(use_type, use_type)
 
+    outcome = row.get("outcome", "BUILT")
+    outcome_color = OUTCOME_COLORS.get(outcome, "#6b7280")
+    outcome_label = OUTCOME_LABELS.get(outcome, outcome)
+
     return (
         f'<div class="popup">'
         f'<div class="popup-name">{html.escape(name)}</div>'
@@ -143,6 +150,8 @@ def build_popup_html(row):
         f'<b>Zoning:</b> {html.escape(zoning)}<br>'
         f'<b>Use Type:</b> <span style="color:{use_color}" class="popup-use">'
         f'{html.escape(use_label)}</span><br>'
+        f'<b>Outcome:</b> <span style="color:{outcome_color}">'
+        f'{html.escape(outcome_label)}</span><br>'
         f'<b>Status:</b> <span style="color:{status_color}">'
         f'{html.escape(status)}</span><br>'
         f'<b>Date:</b> {html.escape(row["date"])}<br>'
@@ -388,6 +397,7 @@ def build_marker_data(mappable):
             "p": build_popup_html(r),
             "t": r.get("use_type", "UNKNOWN"),
             "d": r.get("date", ""),
+            "o": r.get("outcome", "BUILT"),
         })
     return markers
 
@@ -400,6 +410,7 @@ def build_all_projects_data(rows):
             "t": r.get("use_type", "UNKNOWN"),
             "h": r.get("housing_type", "Unknown"),
             "u": int(r["units"]) if r.get("units") else 0,
+            "o": r.get("outcome", "BUILT"),
         }
         for r in rows
     ]
@@ -421,6 +432,7 @@ def build_all_rows_data(rows):
             "h": r.get("housing_type", "Unknown"),
             "z": r.get("zoning", ""),
             "s": r.get("status", ""),
+            "o": r.get("outcome", "BUILT"),
             "lat": lat,
             "lng": lng,
         })
@@ -488,6 +500,7 @@ d.forEach(function(x){{
   mk._fill=x.c;
   mk._date=x.d||"";
   mk._useType=x.t||"";
+  mk._outcome=x.o||"";
   markers.push(mk);
 }});
 function scaleMarkers(){{
@@ -534,11 +547,11 @@ var HT_ORDER=["Mid-Rise","Mid-Rise Mixed-Use","High-Rise","High-Rise Mixed-Use",
   "Townhouse","Multiplex","Duplex/Triplex"];
 var COL_KEYS=["permitted","conditional","rezoned_pd","unknown"];
 var COL_LABELS=[["Permitted","#16a34a"],["Conditional","#d97706"],["Rezoned / PD","#7c3aed"],["Unknown","#6b7280"]];
-function buildStats(from,to){{
+function buildStats(from,to,useTypes,outcomes){{
   var cross={{}};
   var fProj=allProj.filter(function(p){{
     var k=gran==="year"?p.d.slice(0,4):p.d.slice(0,7);
-    return k&&k>=from&&k<=to;
+    return k&&k>=from&&k<=to&&useTypes.has(p.t)&&outcomes.has(p.o||"BUILT");
   }});
   fProj.forEach(function(p){{
     var col=p.t==="PERMITTED"?"permitted":p.t==="CONDITIONAL"?"conditional":
@@ -591,7 +604,14 @@ function setGran(g){{
 }}
 function getCheckedUseTypes(){{
   var s=new Set();
-  document.querySelectorAll('#filter-panel input[type=checkbox]:checked').forEach(function(cb){{
+  document.querySelectorAll('input[name=usetype]:checked').forEach(function(cb){{
+    s.add(cb.value);
+  }});
+  return s;
+}}
+function getCheckedOutcomes(){{
+  var s=new Set();
+  document.querySelectorAll('input[name=outcome]:checked').forEach(function(cb){{
     s.add(cb.value);
   }});
   return s;
@@ -600,12 +620,14 @@ function applyFilters(){{
   var from=document.getElementById("df-from").value;
   var to=document.getElementById("df-to").value;
   var useTypes=getCheckedUseTypes();
+  var outcomes=getCheckedOutcomes();
   var shown=0;
   markers.forEach(function(mk){{
     var k=mk._date?dateKey(mk._date):"";
     var dateOk=k&&k>=from&&k<=to;
     var typeOk=useTypes.has(mk._useType);
-    if(dateOk&&typeOk){{
+    var outcomeOk=outcomes.has(mk._outcome);
+    if(dateOk&&typeOk&&outcomeOk){{
       if(!m.hasLayer(mk))mk.addTo(m);
       shown++;
     }}else{{
@@ -613,7 +635,7 @@ function applyFilters(){{
     }}
   }});
   document.getElementById("df-count").textContent=shown+"/"+markers.length;
-  buildStats(from,to);
+  buildStats(from,to,useTypes,outcomes);
   buildList();
   pushHash();
 }}
@@ -624,9 +646,10 @@ function buildList(){{
   var from=document.getElementById("df-from").value;
   var to=document.getElementById("df-to").value;
   var useTypes=getCheckedUseTypes();
+  var outcomes=getCheckedOutcomes();
   var filtered=allRows.filter(function(r){{
     var k=r.d?(gran==="year"?r.d.slice(0,4):r.d.slice(0,7)):"";
-    return k&&k>=from&&k<=to&&useTypes.has(r.t);
+    return k&&k>=from&&k<=to&&useTypes.has(r.t)&&outcomes.has(r.o||"BUILT");
   }});
   var sortKey=document.getElementById("list-sort").value;
   if(sortKey==="date")filtered.sort(function(a,b){{return b.d.localeCompare(a.d)}});
@@ -680,8 +703,9 @@ function pushHash(){{
   var from=document.getElementById("df-from").value;
   var to=document.getElementById("df-to").value;
   var use=Array.from(getCheckedUseTypes()).sort().join(",");
+  var outc=Array.from(getCheckedOutcomes()).sort().join(",");
   var sort=document.getElementById("list-sort").value;
-  var h="g="+gran+"&from="+encodeURIComponent(from)+"&to="+encodeURIComponent(to)+"&use="+encodeURIComponent(use)+"&sort="+sort;
+  var h="g="+gran+"&from="+encodeURIComponent(from)+"&to="+encodeURIComponent(to)+"&use="+encodeURIComponent(use)+"&outc="+encodeURIComponent(outc)+"&sort="+sort;
   history.replaceState(null,null,"#"+h);
 }}
 function loadHash(){{
@@ -702,8 +726,14 @@ function loadHash(){{
   if(p.to){{var ti=keys.indexOf(p.to);if(ti>=0)document.getElementById("df-to").selectedIndex=ti}}
   if(p.use){{
     var enabled=new Set(p.use.split(","));
-    document.querySelectorAll('#filter-panel input[type=checkbox]').forEach(function(cb){{
+    document.querySelectorAll('input[name=usetype]').forEach(function(cb){{
       cb.checked=enabled.has(cb.value);
+    }});
+  }}
+  if(p.outc){{
+    var oe=new Set(p.outc.split(","));
+    document.querySelectorAll('input[name=outcome]').forEach(function(cb){{
+      cb.checked=oe.has(cb.value);
     }});
   }}
   if(p.sort){{
@@ -750,12 +780,18 @@ def _build_filter_panel_html():
     </div>
     <div class="df-row">
       <span class="df-label">Use type</span>
-      <label class="df-cb"><input type="checkbox" value="PERMITTED" checked onchange="applyFilters()"><span style="color:#16a34a">Permitted</span></label>
-      <label class="df-cb"><input type="checkbox" value="CONDITIONAL" checked onchange="applyFilters()"><span style="color:#d97706">Conditional</span></label>
-      <label class="df-cb"><input type="checkbox" value="REZONED" checked onchange="applyFilters()"><span style="color:#7c3aed">Rezoned</span></label>
-      <label class="df-cb"><input type="checkbox" value="VARIES" checked onchange="applyFilters()"><span style="color:#7c3aed">PD</span></label>
-      <label class="df-cb"><input type="checkbox" value="UNKNOWN" checked onchange="applyFilters()"><span style="color:#6b7280">Unknown</span></label>
+      <label class="df-cb"><input type="checkbox" name="usetype" value="PERMITTED" checked onchange="applyFilters()"><span style="color:#16a34a">Permitted</span></label>
+      <label class="df-cb"><input type="checkbox" name="usetype" value="CONDITIONAL" checked onchange="applyFilters()"><span style="color:#d97706">Conditional</span></label>
+      <label class="df-cb"><input type="checkbox" name="usetype" value="REZONED" checked onchange="applyFilters()"><span style="color:#7c3aed">Rezoned</span></label>
+      <label class="df-cb"><input type="checkbox" name="usetype" value="VARIES" checked onchange="applyFilters()"><span style="color:#7c3aed">PD</span></label>
+      <label class="df-cb"><input type="checkbox" name="usetype" value="UNKNOWN" checked onchange="applyFilters()"><span style="color:#6b7280">Unknown</span></label>
       <span id="df-count" class="df-count"></span>
+    </div>
+    <div class="df-row">
+      <span class="df-label">Outcome</span>
+      <label class="df-cb"><input type="checkbox" name="outcome" value="BUILT" checked onchange="applyFilters()"><span style="color:#10b981">Built</span></label>
+      <label class="df-cb"><input type="checkbox" name="outcome" value="ACTIVE" checked onchange="applyFilters()"><span style="color:#2563eb">Active</span></label>
+      <label class="df-cb"><input type="checkbox" name="outcome" value="DID_NOT_PROCEED" checked onchange="applyFilters()"><span style="color:#ef4444">Did Not Proceed</span></label>
     </div>
   </div>"""
 
