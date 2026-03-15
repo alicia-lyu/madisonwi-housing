@@ -369,10 +369,15 @@ def main():
   </div>
 </div>
 <div id="map-wrap">
-  <button id="legend-toggle" onclick="document.getElementById('legend').classList.remove('collapsed');this.style.display='none'">Legend</button>
-  <div id="legend">
-    <button id="legend-close" onclick="this.parentElement.classList.add('collapsed');document.getElementById('legend-toggle').style.display=''">&times;</button>
+  <button id="legend-toggle" class="map-overlay-btn" onclick="document.getElementById('legend').classList.remove('collapsed');this.style.display='none'">Legend</button>
+  <div id="legend" class="map-overlay">
+    <button class="map-overlay-close" onclick="this.parentElement.classList.add('collapsed');document.getElementById('legend-toggle').style.display='block'">&times;</button>
     {legend_html}
+  </div>
+  <button id="stats-toggle" class="map-overlay-btn" onclick="document.getElementById('stats-panel').classList.remove('collapsed');this.style.display='none'">Project Summary</button>
+  <div id="stats-panel" class="map-overlay">
+    <button class="map-overlay-close" onclick="this.parentElement.classList.add('collapsed');document.getElementById('stats-toggle').style.display='block'">&times;</button>
+    {stats_html}
   </div>
   <button id="zoning-btn" onclick="document.getElementById('zoning-panel').classList.add('open');this.style.display='none'">Zoning Reference</button>
   <div id="zoning-panel">
@@ -384,7 +389,6 @@ def main():
       "Height Map" = determined by Downtown Height Map. "By plan" = determined by Master Plan / PD.
       Contact: zoning@cityofmadison.com | 608-266-4551
     </div>
-    {stats_html}
     {zoning_panel_html}
   </div>
   <div id="map"></div>
