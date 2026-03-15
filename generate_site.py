@@ -586,7 +586,8 @@ function fillSel(sel,opts,idx){{
   opts.forEach(function(v){{
     var o=document.createElement("option");o.value=v;
     var ml=gran==="year"?ML_Y:ML_M;
-    o.text=ml[v]?fmtOpt(v)+" \u00b7 "+ml[v]:fmtOpt(v);sel.appendChild(o);
+    if(ml[v]){{o.text=fmtOpt(v)+" \u25c6";o.title=fmtOpt(v)+" \u00b7 "+ml[v]}}else{{o.text=fmtOpt(v)}}
+    sel.appendChild(o);
   }});
   sel.selectedIndex=Math.min(idx,opts.length-1);
 }}
