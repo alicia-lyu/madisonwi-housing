@@ -43,6 +43,14 @@ UNIT_PATTERNS = [
 ]
 
 ZONING_CSV = "zoning_districts.csv"
+GTFS_DIR = "gtfs_tmp"
+TRANSIT_JSON = "transit_routes.json"
+
+# Service level classification for line weight/style (from Dec 2025 system map)
+FREQUENT_ROUTES = {"A", "B", "C", "D", "F"}
+STANDARD_ROUTES = {"E", "G", "H", "J", "O", "P", "R", "28", "38", "80"}
+PEAK_ROUTES = {"55", "65", "75"}
+SUPPLEMENTAL_ROUTES = {"60", "61", "62", "63", "64"}
 
 NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
 ZONING_URL = "https://maps.cityofmadison.com/arcgis/rest/services/Planning/Zoning/MapServer/2/query"
@@ -95,6 +103,49 @@ def extract_units(description):
             if count >= 2:
                 return count
     return None
+
+
+def extract_stories(description):
+    """Extract story count from description text."""
+    m = re.search(r"(\d+)\s*stor(?:y|ies)", description, re.IGNORECASE)
+    return int(m.group(1)) if m else None
+
+
+def classify_housing_type(description, units):
+    """Classify housing type using Missing Middle Housing typology.
+
+    Categories (from Daniel Parolek's Missing Middle framework):
+    - Duplex/Triplex: 2-3 unit buildings
+    - Townhouse: attached rowhouses with individual entries
+    - Multiplex: small 4-8 unit buildings
+    - Mixed-Use: ground-floor commercial + upper residential
+    - Mid-Rise: multi-story apartment, typically 4-7 stories
+    - High-Rise: 8+ story apartment tower
+    """
+    desc = description.lower()
+    stories = extract_stories(description)
+
+    # Townhouse/rowhouse — explicit in description
+    if re.search(r"townho(?:me|use)|row\s?house", desc):
+        return "Townhouse"
+
+    # Mixed-use — has commercial/retail component
+    if re.search(r"mixed.?use|multiuse|shell commercial|commercial space", desc):
+        if stories and stories >= 8:
+            return "High-Rise Mixed-Use"
+        return "Mid-Rise Mixed-Use"
+
+    # By unit count and stories
+    if units and units <= 3:
+        return "Duplex/Triplex"
+
+    if units and units <= 8:
+        return "Multiplex"
+
+    if stories and stories >= 8:
+        return "High-Rise"
+
+    return "Mid-Rise"
 
 
 def clean_address(address):
@@ -290,6 +341,102 @@ def classify_use(zoning, units, description, rules):
     return "NOT_ALLOWED"
 
 
+def process_gtfs():
+    """Process GTFS data into transit route lines with colors and service levels."""
+    routes_file = os.path.join(GTFS_DIR, "routes.txt")
+    trips_file = os.path.join(GTFS_DIR, "trips.txt")
+    shapes_file = os.path.join(GTFS_DIR, "shapes.txt")
+
+    if not all(os.path.exists(f) for f in [routes_file, trips_file, shapes_file]):
+        print("  GTFS files not found, skipping transit overlay")
+        return None
+
+    # Load routes
+    route_info = {}
+    with open(routes_file, newline="") as f:
+        for r in csv.DictReader(f):
+            route_info[r["route_id"]] = {
+                "name": r["route_short_name"],
+                "color": "#" + r["route_color"],
+                "long_name": r["route_long_name"],
+            }
+
+    # Map route_id -> set of shape_ids via trips
+    route_shapes = {}
+    with open(trips_file, newline="") as f:
+        for r in csv.DictReader(f):
+            route_shapes.setdefault(r["route_id"], set()).add(r["shape_id"])
+
+    # Load all shape points
+    shapes = {}
+    with open(shapes_file, newline="") as f:
+        for r in csv.DictReader(f):
+            sid = r["shape_id"]
+            shapes.setdefault(sid, []).append((
+                int(r["shape_pt_sequence"]),
+                float(r["shape_pt_lat"]),
+                float(r["shape_pt_lon"]),
+            ))
+
+    # Sort each shape by sequence
+    for sid in shapes:
+        shapes[sid].sort(key=lambda x: x[0])
+
+    # For each route, pick the two longest shapes (one per direction typically)
+    transit_routes = []
+    for rid, info in sorted(route_info.items(), key=lambda x: x[1]["name"]):
+        sids = route_shapes.get(rid, set())
+        if not sids:
+            continue
+
+        # Pick shapes with most points (covers full route)
+        shape_lengths = [(sid, len(shapes.get(sid, []))) for sid in sids]
+        shape_lengths.sort(key=lambda x: -x[1])
+
+        # Take up to 2 longest shapes (typically 2 directions)
+        seen_coords = set()
+        for sid, _ in shape_lengths[:2]:
+            pts = shapes.get(sid, [])
+            if not pts:
+                continue
+            # Simplify: take every Nth point to reduce size
+            step = max(1, len(pts) // 200)
+            coords = [[round(p[1], 5), round(p[2], 5)] for p in pts[::step]]
+            # Always include last point
+            last = [round(pts[-1][1], 5), round(pts[-1][2], 5)]
+            if coords[-1] != last:
+                coords.append(last)
+
+            # Skip near-duplicate shapes
+            key = (coords[0][0], coords[0][1], coords[-1][0], coords[-1][1])
+            if key in seen_coords:
+                continue
+            seen_coords.add(key)
+
+            # Service level -> weight and dash
+            name = info["name"]
+            if name in FREQUENT_ROUTES:
+                weight, dash = 4, None
+            elif name in STANDARD_ROUTES:
+                weight, dash = 3, None
+            elif name in PEAK_ROUTES:
+                weight, dash = 2, "8 6"
+            elif name in SUPPLEMENTAL_ROUTES:
+                weight, dash = 2, "4 4"
+            else:
+                weight, dash = 2, None
+
+            transit_routes.append({
+                "name": name,
+                "color": info["color"],
+                "weight": weight,
+                "dash": dash,
+                "coords": coords,
+            })
+
+    return transit_routes
+
+
 def main():
     cache = load_cache()
 
@@ -302,6 +449,16 @@ def main():
         p["units"] = extract_units(p["description"])
         units_str = str(p["units"]) if p["units"] else "?"
         print(f"  {p['record_number']}: {units_str} units — {p['description'][:80]}")
+    print()
+
+    print("Step 2b: Classifying housing type...")
+    type_counts = {}
+    for p in projects:
+        p["housing_type"] = classify_housing_type(p["description"], p["units"])
+        type_counts[p["housing_type"]] = type_counts.get(p["housing_type"], 0) + 1
+        print(f"  {p['record_number']}: {p['housing_type']}")
+    for ht, count in sorted(type_counts.items()):
+        print(f"  {ht}: {count}")
     print()
 
     print("Step 3: Geocoding addresses...")
@@ -343,6 +500,17 @@ def main():
         print(f"  {use_type}: {count}")
     print()
 
+    print("Step 6: Processing GTFS transit routes...")
+    transit_routes = process_gtfs()
+    if transit_routes:
+        with open(TRANSIT_JSON, "w") as f:
+            json.dump(transit_routes, f)
+        total_pts = sum(len(r["coords"]) for r in transit_routes)
+        print(f"  Wrote {len(transit_routes)} route shapes ({total_pts} points) "
+              f"to {TRANSIT_JSON}\n")
+    else:
+        print("  No transit data generated\n")
+
     # Build JSON output
     output = {
         "generated": str(date.today()),
@@ -355,7 +523,7 @@ def main():
     # Build CSV output (canonical data source for generate_site.py)
     csv_fields = [
         "record_number", "date", "address", "status", "description",
-        "project_name", "units", "zoning", "lat", "lng", "use_type",
+        "project_name", "units", "zoning", "lat", "lng", "use_type", "housing_type",
     ]
     with open(OUTPUT_CSV, "w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=csv_fields, extrasaction="ignore")

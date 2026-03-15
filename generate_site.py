@@ -10,9 +10,11 @@ import csv
 import html
 import json
 import math
+import os
 
 INPUT_CSV = "projects.csv"
 ZONING_CSV = "zoning_districts.csv"
+TRANSIT_JSON = "transit_routes.json"
 OUTPUT_HTML = "index.html"
 
 # ---------------------------------------------------------------------------
@@ -111,6 +113,7 @@ def build_popup_html(row):
         f'<div class="popup-body">'
         f'<b>Address:</b> {html.escape(row["address"])}<br>'
         f'<b>Units:</b> {html.escape(units_str)}<br>'
+        f'<b>Type:</b> {html.escape(row.get("housing_type", ""))}<br>'
         f'<b>Zoning:</b> {html.escape(zoning)}<br>'
         f'<b>Use Type:</b> <span style="color:{use_color}" class="popup-use">'
         f'{html.escape(use_label)}</span><br>'
@@ -121,6 +124,55 @@ def build_popup_html(row):
         f'</div>'
         f'<div class="popup-desc">{html.escape(row["description"])}</div>'
         f'</div>'
+    )
+
+
+def build_stats_html(ht_counts, ht_units, use_type_counts):
+    """Build HTML for housing type and use type stats panel."""
+    # Housing type table
+    ht_order = ["Mid-Rise", "Mid-Rise Mixed-Use", "High-Rise", "High-Rise Mixed-Use",
+                "Townhouse", "Multiplex", "Duplex/Triplex"]
+    ht_rows = []
+    for ht in ht_order:
+        if ht not in ht_counts:
+            continue
+        ht_rows.append(
+            f'<tr class="zp-row">'
+            f'<td class="zp-cell" style="font-weight:600">{html.escape(ht)}</td>'
+            f'<td class="zp-cell" style="text-align:right">{ht_counts[ht]}</td>'
+            f'<td class="zp-cell" style="text-align:right">{ht_units[ht]:,}</td>'
+            f'</tr>'
+        )
+    # Use type table
+    ut_order = [("PERMITTED", "Permitted"), ("CONDITIONAL", "Conditional"),
+                ("NOT_ALLOWED", "Not Allowed"), ("VARIES", "Varies (PD)"),
+                ("UNKNOWN", "Unknown")]
+    ut_rows = []
+    for code, label in ut_order:
+        count = use_type_counts.get(code, 0)
+        if count == 0:
+            continue
+        color = USE_TYPE_COLORS.get(code, "#6b7280")
+        ut_rows.append(
+            f'<tr class="zp-row">'
+            f'<td class="zp-cell"><span style="color:{color};font-weight:600">'
+            f'{html.escape(label)}</span></td>'
+            f'<td class="zp-cell" style="text-align:right">{count}</td>'
+            f'</tr>'
+        )
+
+    return (
+        f'<div class="zp-section">'
+        f'<div class="zp-cat">By Housing Type</div>'
+        f'<table class="zp-table">'
+        f'<tr class="zp-hdr"><th>Type</th><th style="text-align:right">Projects</th>'
+        f'<th style="text-align:right">Units</th></tr>'
+        f'{"".join(ht_rows)}</table></div>'
+        f'<div class="zp-section">'
+        f'<div class="zp-cat">By Use Classification</div>'
+        f'<table class="zp-table">'
+        f'<tr class="zp-hdr"><th>Use Type</th><th style="text-align:right">Projects</th></tr>'
+        f'{"".join(ut_rows)}</table></div>'
     )
 
 
@@ -239,6 +291,22 @@ def main():
             "t": use_type,
         })
 
+    # Housing type counts (for stats panel)
+    ht_counts = {}
+    ht_units = {}
+    for r in rows:
+        ht = r.get("housing_type", "Unknown")
+        units = int(r["units"]) if r.get("units") else 0
+        ht_counts[ht] = ht_counts.get(ht, 0) + 1
+        ht_units[ht] = ht_units.get(ht, 0) + units
+    stats_html = build_stats_html(ht_counts, ht_units, use_type_counts)
+
+    # Load transit routes
+    transit_json = "[]"
+    if os.path.exists(TRANSIT_JSON):
+        with open(TRANSIT_JSON) as f:
+            transit_json = f.read()
+
     legend_html = build_legend_html(zoning_codes_used)
     zoning_info = load_zoning_info()
     zoning_panel_html = build_zoning_panel_html(zoning_info)
@@ -284,6 +352,7 @@ def main():
       "Height Map" = determined by Downtown Height Map. "By plan" = determined by Master Plan / PD.
       Contact: zoning@cityofmadison.com | 608-266-4551
     </div>
+    {stats_html}
     {zoning_panel_html}
   </div>
   <div id="map"></div>
@@ -293,6 +362,14 @@ var m=L.map("map").setView([43.073,-89.401],12);
 L.tileLayer("https://tileserver.memomaps.de/tilegen/{{z}}/{{x}}/{{y}}.png",{{
   attribution:'Map <a href="https://memomaps.de/">memomaps.de</a> <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, map data &copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>',
   maxZoom:19}}).addTo(m);
+var tr={transit_json};
+tr.forEach(function(rt){{
+  var opts={{color:rt.color,weight:rt.weight,opacity:0.7}};
+  if(rt.dash)opts.dashArray=rt.dash;
+  L.polyline(rt.coords,opts).addTo(m).bindPopup(
+    '<b>Route '+rt.name+'</b>'
+  );
+}});
 var d={markers_json};
 var markers=[];
 function sqSvg(sz,fill){{
