@@ -159,18 +159,24 @@ def build_zoning_panel_html(zoning_info):
         for z in items:
             code = z["code"]
             color = zoning_color(code)
+            permitted = html.escape(z.get("residential_permitted", "") or "")
+            conditional = html.escape(z.get("residential_conditional", "") or "")
             table_rows.append(
-                f'<tr>'
+                f'<tr style="border-bottom:1px solid #f1f5f9">'
                 f'<td style="white-space:nowrap;font-weight:600;vertical-align:top;padding:4px 8px 4px 0">'
                 f'<span style="display:inline-block;width:12px;height:12px;border-radius:50%;'
                 f'background:{color};vertical-align:middle;margin-right:4px;'
                 f'border:1px solid rgba(0,0,0,0.15)"></span>{html.escape(code)}</td>'
-                f'<td style="vertical-align:top;padding:4px 8px 4px 0">'
+                f'<td style="vertical-align:top;padding:4px 8px 4px 0;min-width:120px">'
                 f'<b>{html.escape(z["name"])}</b><br>'
                 f'<span style="font-size:11px;color:#64748b">{html.escape(z["description"])}</span></td>'
-                f'<td style="white-space:nowrap;vertical-align:top;padding:4px 0;font-size:12px;color:#475569">'
+                f'<td style="vertical-align:top;padding:4px 6px;font-size:11px;color:#475569">'
+                f'{permitted}</td>'
+                f'<td style="vertical-align:top;padding:4px 6px;font-size:11px;color:#475569">'
+                f'{conditional}</td>'
+                f'<td style="white-space:nowrap;vertical-align:top;padding:4px 6px;font-size:12px;color:#475569">'
                 f'{html.escape(z["max_stories"])}</td>'
-                f'<td style="white-space:nowrap;vertical-align:top;padding:4px 0 4px 8px;font-size:12px;color:#475569">'
+                f'<td style="white-space:nowrap;vertical-align:top;padding:4px 0 4px 6px;font-size:12px;color:#475569">'
                 f'{html.escape(z["max_density"])}</td>'
                 f'</tr>'
             )
@@ -182,8 +188,10 @@ def build_zoning_panel_html(zoning_info):
             f'<tr style="color:#94a3b8;font-size:10px;text-transform:uppercase">'
             f'<th style="text-align:left;padding:2px 8px 2px 0">Code</th>'
             f'<th style="text-align:left;padding:2px 8px 2px 0">District</th>'
-            f'<th style="text-align:left;padding:2px 0">Stories</th>'
-            f'<th style="text-align:left;padding:2px 0 2px 8px">Density</th></tr>'
+            f'<th style="text-align:left;padding:2px 6px">Permitted</th>'
+            f'<th style="text-align:left;padding:2px 6px">Conditional</th>'
+            f'<th style="text-align:left;padding:2px 6px">Stories</th>'
+            f'<th style="text-align:left;padding:2px 0 2px 6px">Density</th></tr>'
             f'{"".join(table_rows)}</table></div>'
         )
 
@@ -243,7 +251,7 @@ body{{font-family:system-ui,-apple-system,sans-serif}}
 #zoning-btn:hover{{background:#334155}}
 #zoning-panel{{position:absolute;top:10px;right:10px;z-index:1001;
   background:#fff;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.25);
-  width:580px;max-width:calc(100vw - 30px);max-height:calc(100vh - 100px);
+  width:900px;max-width:calc(100vw - 30px);max-height:calc(100vh - 100px);
   overflow-y:auto;padding:16px;display:none}}
 #zoning-panel.open{{display:block}}
 #panel-close{{float:right;background:none;border:none;font-size:20px;
@@ -300,9 +308,9 @@ d.forEach(function(x){{
 }});
 function scaleMarkers(){{
   var z=m.getZoom();
-  var s=Math.pow(2,z-12)*0.8;
-  s=Math.max(0.3,Math.min(s,3));
-  circles.forEach(function(c){{c.setRadius(c._baseR*s)}});
+  var s=Math.pow(2,(z-12)*1.5)*0.6;
+  s=Math.max(0.15,Math.min(s,3));
+  circles.forEach(function(c){{c.setRadius(Math.max(2,c._baseR*s))}});
 }}
 m.on("zoomend",scaleMarkers);
 scaleMarkers();
