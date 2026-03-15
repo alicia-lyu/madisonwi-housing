@@ -10,7 +10,7 @@ import time
 import urllib.request
 import urllib.parse
 import urllib.error
-from datetime import date
+from datetime import date, datetime
 
 CSV_FILE = "RecordList20260314-2.csv"
 OUTPUT_JSON = "projects.json"
@@ -95,9 +95,14 @@ def parse_csv():
             if not MULTI_FAMILY_RE.search(desc):
                 continue
 
+            raw_date = row.get("Date", "").strip()
+            try:
+                iso_date = datetime.strptime(raw_date, "%m/%d/%Y").strftime("%Y-%m-%d")
+            except ValueError:
+                iso_date = raw_date
             projects.append({
                 "record_number": record,
-                "date": row.get("Date", "").strip(),
+                "date": iso_date,
                 "address": row.get("Address", "").strip(),
                 "status": row.get("Status", "").strip(),
                 "description": desc.strip(),

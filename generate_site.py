@@ -329,6 +329,7 @@ def main():
             "c": zoning_color(r.get("zoning")),
             "p": build_popup_html(r),
             "t": use_type,
+            "d": r.get("date", ""),
         })
 
     stats_html = build_stats_html(rows)
@@ -378,6 +379,21 @@ def main():
   <div id="stats-panel" class="map-overlay">
     <button class="map-overlay-close" onclick="this.parentElement.classList.add('collapsed');document.getElementById('stats-toggle').style.display='block'">&times;</button>
     {stats_html}
+  </div>
+  <div id="date-filter" class="map-overlay">
+    <div class="df-row">
+      <span class="df-label">Filter by date</span>
+      <span class="df-toggle">
+        <button id="df-month" class="df-btn df-active" onclick="setGran('month')">Month</button>
+        <button id="df-year" class="df-btn" onclick="setGran('year')">Year</button>
+      </span>
+    </div>
+    <div class="df-row">
+      <select id="df-from" onchange="applyDateFilter()"></select>
+      <span class="df-sep">to</span>
+      <select id="df-to" onchange="applyDateFilter()"></select>
+      <span id="df-count" class="df-count"></span>
+    </div>
   </div>
   <button id="zoning-btn" onclick="document.getElementById('zoning-panel').classList.add('open');this.style.display='none'">Zoning Reference</button>
   <div id="zoning-panel">
@@ -438,6 +454,7 @@ d.forEach(function(x){{
   mk.addTo(m).bindPopup(x.p);
   mk._baseR=x.r;
   mk._fill=x.c;
+  mk._date=x.d||"";
   markers.push(mk);
 }});
 function scaleMarkers(){{
@@ -461,6 +478,54 @@ function scaleMarkers(){{
 }}
 m.on("zoomend",scaleMarkers);
 scaleMarkers();
+var MONTHS=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+var gran="month";
+function dateKey(d){{return gran==="year"?d.slice(0,4):d.slice(0,7)}}
+function fmtOpt(v){{
+  if(gran==="year")return v;
+  var p=v.split("-");return MONTHS[parseInt(p[1])-1]+" "+p[0];
+}}
+function allKeys(){{
+  var s=new Set();
+  markers.forEach(function(mk){{if(mk._date)s.add(dateKey(mk._date))}});
+  return Array.from(s).sort();
+}}
+function fillSel(sel,opts,idx){{
+  sel.innerHTML="";
+  opts.forEach(function(v){{
+    var o=document.createElement("option");o.value=v;o.text=fmtOpt(v);sel.appendChild(o);
+  }});
+  sel.selectedIndex=Math.min(idx,opts.length-1);
+}}
+function initDateFilter(){{
+  var keys=allKeys();
+  if(keys.length===0)return;
+  fillSel(document.getElementById("df-from"),keys,0);
+  fillSel(document.getElementById("df-to"),keys,keys.length-1);
+  applyDateFilter();
+}}
+function setGran(g){{
+  gran=g;
+  document.getElementById("df-month").className="df-btn"+(g==="month"?" df-active":"");
+  document.getElementById("df-year").className="df-btn"+(g==="year"?" df-active":"");
+  initDateFilter();
+}}
+function applyDateFilter(){{
+  var from=document.getElementById("df-from").value;
+  var to=document.getElementById("df-to").value;
+  var shown=0;
+  markers.forEach(function(mk){{
+    var k=mk._date?dateKey(mk._date):"";
+    if(k&&k>=from&&k<=to){{
+      if(!m.hasLayer(mk))mk.addTo(m);
+      shown++;
+    }}else{{
+      if(m.hasLayer(mk))mk.remove();
+    }}
+  }});
+  document.getElementById("df-count").textContent=shown+"/"+markers.length;
+}}
+initDateFilter();
 </script>
 </body>
 </html>

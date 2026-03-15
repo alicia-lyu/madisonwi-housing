@@ -59,6 +59,26 @@ body { font-family: system-ui, -apple-system, sans-serif }
 .leg-cat { font-size: 9px; color: #94a3b8; margin-right: 4px }
 .leg-shapes { margin-top: 2px; font-size: 10px; color: #cbd5e1 }
 
+/* Date filter — top left */
+#date-filter { top: 10px; left: 60px; bottom: auto; padding: 6px 10px }
+.df-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap }
+.df-row + .df-row { margin-top: 4px }
+.df-label { font-weight: 600; font-size: 12px }
+.df-toggle { display: inline-flex; gap: 0 }
+.df-btn {
+  background: #334155; color: #94a3b8; border: 1px solid #475569;
+  padding: 2px 8px; font-size: 11px; cursor: pointer; font-family: inherit;
+}
+.df-btn:first-child { border-radius: 4px 0 0 4px }
+.df-btn:last-child { border-radius: 0 4px 4px 0; border-left: none }
+.df-btn.df-active { background: #2563eb; color: #f8fafc; border-color: #2563eb }
+.df-sep { font-size: 11px; color: #94a3b8 }
+.df-count { font-size: 11px; color: #94a3b8; margin-left: 4px }
+#df-from, #df-to {
+  background: #334155; color: #f8fafc; border: 1px solid #475569;
+  border-radius: 4px; padding: 2px 6px; font-size: 11px; font-family: inherit;
+}
+
 /* Map — fills remaining viewport below header */
 #map-wrap { position: relative; flex: 1; min-height: 0 }
 #map { height: 100%; width: 100% }
