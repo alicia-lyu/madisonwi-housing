@@ -89,9 +89,34 @@ body { font-family: system-ui, -apple-system, sans-serif }
   font-size: 11px; cursor: pointer; white-space: nowrap;
 }
 .df-cb input { margin: 0; accent-color: #2563eb }
-#df-from, #df-to {
+/* Custom date dropdowns */
+.df-drop { position: relative; display: inline-block; }
+.df-drop-btn {
   background: #334155; color: #f8fafc; border: 1px solid #475569;
   border-radius: 4px; padding: 4px 8px; font-size: 11px; font-family: inherit;
+  cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; gap: 3px;
+}
+.df-drop-btn:hover { background: #3e4f6a }
+.df-drop-list {
+  display: none; position: absolute; top: 100%; left: 0; z-index: 2000;
+  background: #1e293b; border: 1px solid #475569; border-radius: 6px;
+  max-height: 260px; overflow-y: auto; margin-top: 2px; min-width: 100%;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+.df-drop-list.df-drop-open { display: block }
+.df-drop-opt {
+  padding: 4px 10px; cursor: pointer; font-size: 11px; color: #cbd5e1;
+  white-space: nowrap; display: flex; align-items: center; gap: 4px;
+}
+.df-drop-opt:hover { background: #334155 }
+.df-drop-opt.df-drop-sel { background: #2563eb; color: #f8fafc }
+.df-policy-icon { font-size: 10px; flex-shrink: 0 }
+.df-tip {
+  display: none; position: fixed; z-index: 3000;
+  background: #0f172a; color: #fbbf24; border: 1px solid #475569;
+  border-radius: 5px; padding: 4px 10px; font-size: 11px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4); white-space: nowrap;
+  pointer-events: none; max-width: 340px; white-space: normal;
 }
 
 /* Map — fills remaining viewport below header */

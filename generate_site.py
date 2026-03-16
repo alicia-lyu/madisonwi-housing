@@ -106,6 +106,34 @@ USE_TYPE_LABELS = {
 OUTCOME_COLORS = {"BUILT": "#10b981", "ACTIVE": "#d97706", "DID_NOT_PROCEED": "#ef4444"}
 OUTCOME_LABELS = {"BUILT": "Built", "ACTIVE": "Active", "DID_NOT_PROCEED": "Did Not Proceed"}
 
+# Policy milestones — annotate date filter dropdowns
+# Major: shown in both year and month dropdowns
+POLICY_MAJOR = [
+    ("2018-08", "Imagine Madison Plan"),
+    ("2023-01", "TOD Overlay District"),
+    ("2024-04", "ADU Expansion"),
+    ("2024-09", "BRT Launch"),
+    ("2025-02", "Housing Forward Pkg 1"),
+    ("2025-07", "Housing Forward Pkg 2"),
+    ("2025-10", "Housing Forward Pkg 3"),
+]
+# Area/neighborhood plans: shown only in month dropdown
+POLICY_AREA_PLANS = [
+    ("2016-01", "Emerson East-Eken Park-Yahara Neighborhood Plan"),
+    ("2017-01", "High Point-Raymond Neighborhood Plan"),
+    ("2017-09", "Darbo Worthington Starkweather Neighborhood Plan"),
+    ("2017-10", "Cottage Grove Rd Area Plan"),
+    ("2018-01", "Elderberry, Junction, Pioneer Neighborhood Plans"),
+    ("2018-12", "Milwaukee St Area Plan"),
+    ("2019-01", "Triangle Monona Bay Neighborhood Plan"),
+    ("2019-11", "Mifflandia, Nelson Neighborhood Plans"),
+    ("2020-07", "Oscar Mayer Area Plan"),
+    ("2022-01", "South Madison, Yahara Hills Neighborhood Plans"),
+    ("2023-01", "Rattman, Reiner, Shady Wood Neighborhood Plans"),
+    ("2024-09", "Northeast, West Area Plans"),
+    ("2025-01", "Lamp House Block Neighborhood Plan"),
+]
+
 # ---------------------------------------------------------------------------
 # Zoning color lookup
 # ---------------------------------------------------------------------------
@@ -581,15 +609,74 @@ function allKeys(){{
   markers.forEach(function(mk){{if(mk._date)s.add(dateKey(mk._date))}});
   return Array.from(s).sort();
 }}
-function fillSel(sel,opts,idx){{
-  sel.innerHTML="";
-  opts.forEach(function(v){{
-    var o=document.createElement("option");o.value=v;
-    var ml=gran==="year"?ML_Y:ML_M;
-    if(ml[v]){{o.text=fmtOpt(v)+" \u25c6";o.title=fmtOpt(v)+" \u00b7 "+ml[v]}}else{{o.text=fmtOpt(v)}}
-    sel.appendChild(o);
+var tip=document.getElementById("df-tip");
+function fillSel(wrap,opts,idx){{
+  var ml=gran==="year"?ML_Y:ML_M;
+  var si=Math.min(idx,opts.length-1);
+  var btn=document.createElement("button");
+  btn.className="df-drop-btn";
+  btn.textContent=fmtOpt(opts[si]);
+  wrap._val=opts[si];
+  wrap.innerHTML="";
+  wrap.appendChild(btn);
+  var list=document.createElement("div");
+  list.className="df-drop-list";
+  opts.forEach(function(v,i){{
+    var d=document.createElement("div");
+    d.className="df-drop-opt"+(i===si?" df-drop-sel":"");
+    d.dataset.val=v;
+    var txt=document.createElement("span");
+    txt.textContent=fmtOpt(v);
+    d.appendChild(txt);
+    if(ml[v]){{
+      var ic=document.createElement("span");
+      ic.className="df-policy-icon";
+      ic.innerHTML="\U0001f3db\ufe0f";
+      d.appendChild(ic);
+      d.addEventListener("mouseenter",function(e){{
+        tip.textContent=ml[v];
+        tip.style.display="block";
+        var r=d.getBoundingClientRect();
+        tip.style.left=r.right+6+"px";
+        tip.style.top=r.top+"px";
+      }});
+      d.addEventListener("mouseleave",function(){{tip.style.display="none"}});
+    }}
+    d.addEventListener("click",function(){{
+      wrap._val=v;
+      btn.textContent=fmtOpt(v);
+      if(ml[v])btn.innerHTML=fmtOpt(v)+' <span class="df-policy-icon">\U0001f3db\ufe0f</span>';
+      list.querySelectorAll(".df-drop-opt").forEach(function(x){{x.classList.remove("df-drop-sel")}});
+      d.classList.add("df-drop-sel");
+      list.classList.remove("df-drop-open");
+      applyFilters();
+    }});
+    list.appendChild(d);
   }});
-  sel.selectedIndex=Math.min(idx,opts.length-1);
+  wrap.appendChild(list);
+  if(ml[opts[si]])btn.innerHTML=fmtOpt(opts[si])+' <span class="df-policy-icon">\U0001f3db\ufe0f</span>';
+  btn.addEventListener("click",function(e){{
+    e.stopPropagation();
+    document.querySelectorAll(".df-drop-list").forEach(function(l){{if(l!==list)l.classList.remove("df-drop-open")}});
+    list.classList.toggle("df-drop-open");
+    var sel=list.querySelector(".df-drop-sel");
+    if(sel)sel.scrollIntoView({{block:"center"}});
+  }});
+}}
+document.addEventListener("click",function(){{
+  document.querySelectorAll(".df-drop-list").forEach(function(l){{l.classList.remove("df-drop-open")}});
+  tip.style.display="none";
+}});
+function selDropVal(id,val){{
+  var wrap=document.getElementById(id);
+  var ml=gran==="year"?ML_Y:ML_M;
+  wrap._val=val;
+  var btn=wrap.querySelector(".df-drop-btn");
+  if(ml[val])btn.innerHTML=fmtOpt(val)+' <span class="df-policy-icon">\U0001f3db\ufe0f</span>';
+  else btn.textContent=fmtOpt(val);
+  wrap.querySelectorAll(".df-drop-opt").forEach(function(d){{
+    d.classList.toggle("df-drop-sel",d.dataset.val===val);
+  }});
 }}
 var HT_ORDER=["Mid-Rise","Mid-Rise Mixed-Use","High-Rise","High-Rise Mixed-Use",
   "Townhouse","Multiplex","Duplex/Triplex"];
@@ -665,8 +752,8 @@ function getCheckedOutcomes(){{
   return s;
 }}
 function applyFilters(){{
-  var from=document.getElementById("df-from").value;
-  var to=document.getElementById("df-to").value;
+  var from=document.getElementById("df-from")._val;
+  var to=document.getElementById("df-to")._val;
   var useTypes=getCheckedUseTypes();
   var outcomes=getCheckedOutcomes();
   var shown=0;
@@ -748,8 +835,8 @@ function closeZoningPanel(){{
   document.getElementById("zoning-btn").style.display="";
 }}
 function pushHash(){{
-  var from=document.getElementById("df-from").value;
-  var to=document.getElementById("df-to").value;
+  var from=document.getElementById("df-from")._val;
+  var to=document.getElementById("df-to")._val;
   var use=Array.from(getCheckedUseTypes()).sort().join(",");
   var outc=Array.from(getCheckedOutcomes()).sort().join(",");
   var sort=document.getElementById("list-sort").value;
@@ -770,8 +857,8 @@ function loadHash(){{
   if(keys.length===0)return false;
   fillSel(document.getElementById("df-from"),keys,0);
   fillSel(document.getElementById("df-to"),keys,keys.length-1);
-  if(p.from){{var fi=keys.indexOf(p.from);if(fi>=0)document.getElementById("df-from").selectedIndex=fi}}
-  if(p.to){{var ti=keys.indexOf(p.to);if(ti>=0)document.getElementById("df-to").selectedIndex=ti}}
+  if(p.from){{var fi=keys.indexOf(p.from);if(fi>=0)selDropVal("df-from",p.from)}}
+  if(p.to){{var ti=keys.indexOf(p.to);if(ti>=0)selDropVal("df-to",p.to)}}
   if(p.use){{
     var enabled=new Set(p.use.split(","));
     document.querySelectorAll('input[name=usetype]').forEach(function(cb){{
@@ -836,9 +923,10 @@ def _build_filter_panel_html():
         <button id="df-month" class="df-btn" onclick="setGran('month')">Month</button>
         <button id="df-year" class="df-btn df-active" onclick="setGran('year')">Year</button>
       </span>
-      <select id="df-from" onchange="applyFilters()"></select>
+      <div id="df-from" class="df-drop"></div>
       <span class="df-sep">to</span>
-      <select id="df-to" onchange="applyFilters()"></select>
+      <div id="df-to" class="df-drop"></div>
+      <div id="df-tip" class="df-tip"></div>
     </div>
     <div class="df-row">
       <span class="df-label">Use type</span>
