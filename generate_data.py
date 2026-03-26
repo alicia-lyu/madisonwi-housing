@@ -24,6 +24,7 @@ ZONING_CSV = "zoning_districts.csv"
 GTFS_DIR = "gtfs_tmp"
 TRANSIT_JSON = "transit_routes.json"
 OUTCOME_OVERRIDES_CSV = "outcome_overrides.csv"
+LOW_QUALITY_CSV = "projects_low_quality.csv"
 
 # ---------------------------------------------------------------------------
 # API endpoints
@@ -43,8 +44,6 @@ LEGISTAR_ADDR_RE = re.compile(
     re.I
 )
 LEGISTAR_REZONE_KEYWORDS = ("rezone", "rezoning", "zoning map amendment")
-
-ARCGIS_GEOCODE_URL = "https://maps.cityofmadison.com/arcgis/rest/services/Composite_Locator/GeocodeServer/findAddressCandidates"
 
 # ---------------------------------------------------------------------------
 # Records to exclude (false positives identified during manual review)
@@ -710,48 +709,7 @@ def _step_classify_use(projects):
               f"{p['units'] or '?'} units -> {p['use_type']}")
     for use_type, count in sorted(use_counts.items()):
         print(f"  {use_type}: {count}")
-
-    # Low-confidence fallback for records still UNKNOWN with known unit count
-    heuristic_count = 0
-    for p in projects:
-        if p["use_type"] != "UNKNOWN" or not p["units"]:
-            continue
-        u = p["units"]
-        ht = p.get("housing_type", "")
-        if u <= 3:
-            p["use_type"] = "PERMITTED"
-        elif "Townhouse" in ht and u <= 9:
-            p["use_type"] = "CONDITIONAL"
-        elif any(x in ht for x in ("Mid-Rise", "High-Rise")):
-            p["use_type"] = "CONDITIONAL"
-        else:
-            p["use_type"] = "PERMITTED"
-        heuristic_count += 1
-    if heuristic_count:
-        print(f"  ({heuristic_count} low-confidence heuristic classifications)")
     print()
-
-
-def _geocode_arcgis(address):
-    """Fallback geocoder using Madison's ArcGIS composite locator."""
-    params = urllib.parse.urlencode({
-        "SingleLine": address,
-        "maxLocations": 1,
-        "outFields": "",
-        "f": "json",
-    })
-    url = f"{ARCGIS_GEOCODE_URL}?{params}"
-    try:
-        req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            data = json.loads(resp.read().decode())
-        candidates = data.get("candidates", [])
-        if candidates and candidates[0].get("score", 0) >= 80:
-            loc = candidates[0]["location"]
-            return loc["y"], loc["x"]  # lat, lng
-    except Exception:
-        pass
-    return None, None
 
 
 def _normalize_addr(addr):
@@ -822,23 +780,6 @@ def _build_legistar_index(matters):
             matched += 1
     print(f"  Address index: {matched}/{len(matters)} titles had extractable addresses")
     return index
-
-
-def _step_geocode_retry(projects, cache):
-    """Step 4b: retry geocoding for unit-bearing projects with no coordinates via ArcGIS fallback."""
-    candidates = [p for p in projects if p["units"] and not p["lat"]]
-    print(f"Step 4b: ArcGIS geocode retry for {len(candidates)} unit-bearing ungeocoded projects...")
-    recovered = 0
-    for p in candidates:
-        lat, lng = _geocode_arcgis(p["address"])
-        if lat:
-            p["lat"], p["lng"] = lat, lng
-            zoning = get_zoning(lat, lng, cache)
-            if zoning:
-                p["zoning"] = zoning
-                recovered += 1
-    save_cache(cache)
-    print(f"  Recovered zoning for {recovered}/{len(candidates)} projects\n")
 
 
 def _step_legistar_classify(projects, cache):
@@ -935,6 +876,20 @@ def _step_transit():
         print("  No transit data generated\n")
 
 
+def _step_filter_low_quality(projects):
+    """Step 7: separate 0-unit records into low-quality store; return only unit-bearing projects."""
+    low_quality = [p for p in projects if not p["units"]]
+    main = [p for p in projects if p["units"]]
+    if low_quality:
+        with open(LOW_QUALITY_CSV, "w", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=CSV_FIELDS, extrasaction="ignore")
+            writer.writeheader()
+            writer.writerows(low_quality)
+        print(f"Step 7: Segregated {len(low_quality)} 0-unit records → {LOW_QUALITY_CSV}")
+        print(f"  Main dataset: {len(main)} records with unit counts\n")
+    return main
+
+
 def _write_outputs(projects):
     """Write projects.json and projects.csv, print summary."""
     output = {
@@ -974,11 +929,11 @@ def main():
     _step_classify_types(projects)
     _step_geocode(projects, cache)
     _step_fetch_zoning(projects, cache)
-    _step_geocode_retry(projects, cache)
     _step_classify_use(projects)
     _step_legistar_classify(projects, cache)
     _step_classify_outcome(projects)
     _step_transit()
+    projects = _step_filter_low_quality(projects)
     _write_outputs(projects)
 
 
