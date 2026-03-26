@@ -265,3 +265,49 @@ body { font-family: system-ui, -apple-system, sans-serif }
 @media (max-width: 600px) {
   #site-footer { padding: 12px 12px; font-size: 10px; }
 }
+
+/* Trends overlay */
+#trends-btn {
+  background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.25);
+  color: #f8fafc; padding: 5px 12px; border-radius: 4px; cursor: pointer;
+  font-size: 13px; white-space: nowrap; align-self: center;
+}
+#trends-btn:hover { background: rgba(255,255,255,0.2); }
+#trends-overlay {
+  display: none; position: fixed; inset: 0;
+  background: #1a1a1a; z-index: 2000; flex-direction: column;
+}
+#trends-overlay.open { display: flex; }
+#trends-hdr {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 10px 16px; background: #111; border-bottom: 1px solid #333;
+}
+.trends-title { font-size: 14px; font-weight: 600; color: #f8fafc; margin-right: 4px; }
+.trends-ctrl-group { display: flex; gap: 4px; }
+.tr-cat {
+  padding: 4px 10px; border: 1px solid #555; background: transparent;
+  color: #bbb; border-radius: 3px; cursor: pointer; font-size: 12px;
+}
+.tr-cat:hover { border-color: #888; color: #fff; }
+.tr-cat.tr-active { background: #3a3a3a !important; color: #fff !important; border-color: #888 !important; }
+.trends-metric-wrap {
+  background: #111; border-radius: 999px; padding: 2px;
+  display: flex; border: 1px solid #333; margin-left: 4px;
+}
+.tr-metric {
+  padding: 4px 14px; border: none; background: transparent;
+  color: #666; border-radius: 999px; cursor: pointer;
+  font-size: 12px; font-weight: 500; transition: background 0.15s;
+}
+.tr-metric.tr-active { background: #4f46e5; color: #fff; }
+.tr-metric:hover:not(.tr-active) { color: #ccc; }
+#trends-close {
+  margin-left: auto; padding: 4px 10px; background: transparent;
+  border: 1px solid #555; color: #bbb; border-radius: 3px; cursor: pointer; font-size: 12px;
+}
+#trends-close:hover { border-color: #888; color: #fff; }
+#trends-body {
+  flex: 1; padding: 24px 40px; display: flex;
+  align-items: center; justify-content: center; overflow: hidden;
+}
+#trends-canvas { max-height: 75vh; max-width: 100%; }

@@ -55,29 +55,38 @@ POLICY_AREA_PLANS = [
 
 # Zoning district -> color, based on City of Madison West Area Plan map
 ZONING_COLORS = {
-    # Single-family Residential (yellows)
-    "SR-C1": "#fff9c4", "SR-C2": "#fff176", "SR-C3": "#ffee58",
-    "SR-G1": "#fff59d", "SR-V1": "#fff9c4", "SR-V2": "#fff176",
-    # Two-family / Multi-family Residential (oranges -> pinks)
-    "TR-R": "#ffcdd2", "TR-C1": "#ffcc80", "TR-C2": "#ffa726",
-    "TR-C3": "#f57c00", "TR-C4": "#e65100", "TR-P": "#f48fb1",
-    "TR-V1": "#ffab91", "TR-V2": "#ff7043", "TR-U1": "#ff8a65",
-    "TR-U2": "#f4511e",
-    # Mixed-Use and Commercial (reds)
-    "LMX": "#ef9a9a", "NMX": "#ff5722", "TSS": "#e91e63",
-    "CC-T": "#d32f2f", "CC": "#c62828", "RMX": "#ff1744",
-    "MXC": "#ad1457", "THV": "#e57373",
-    # Downtown and Urban (deep reds / magentas)
-    "DR1": "#ffb74d", "DR2": "#ff9800",
-    "UOR": "#e040fb", "UMX": "#d500f9", "DC": "#aa00ff",
-    # Employment (purples / blues)
-    "SE": "#5c6bc0", "TE": "#7e57c2", "EC": "#ce93d8",
-    "SEC": "#3949ab", "IL": "#9c27b0", "IG": "#6a1b9a",
-    # Special (greens / grays)
-    "A": "#81c784", "UA": "#a5d6a7", "CN": "#c8e6c9",
-    "PR": "#2e7d32", "AP": "#90a4ae", "ME": "#78909c",
-    "MC": "#bcaaa4", "CI": "#66bb6a",
-    "PD": "#9e9e9e", "PMHP": "#bdbdbd",
+    # Single-family Residential → yellow spectrum (LR/LMR, per GFLU map)
+    "SR-C1": "#fef9c3", "SR-C2": "#fef08a", "SR-C3": "#fde047",
+    "SR-G1": "#fef9c3", "SR-V1": "#fef9c3", "SR-V2": "#fef08a",
+    # Multi-family Residential → orange → brown spectrum (MR/HR)
+    "TR-R":  "#fed7aa",  # peach, low-density rustic
+    "TR-C1": "#fdba74", "TR-C2": "#fb923c",
+    "TR-C3": "#ea580c", "TR-C4": "#c2410c",
+    "TR-P":  "#d97706",  # amber, distinctive townhome-park type
+    "TR-V1": "#fb923c", "TR-V2": "#ea580c",
+    "TR-U1": "#92400e", "TR-U2": "#78350f",
+    # Mixed Use → purple spectrum (NMU light → CMU medium → RMU dark)
+    "LMX":  "#f3e8ff",
+    "THV":  "#e9d5ff",
+    "TSS":  "#d8b4fe",
+    "NMX":  "#c084fc",
+    "CC-T": "#a855f7",
+    "CC":   "#9333ea",
+    "RMX":  "#7c3aed",
+    "MXC":  "#6d28d9",
+    # Downtown → deep purple / indigo
+    "DR1":  "#818cf8", "DR2": "#6366f1",
+    "UOR":  "#4f46e5", "UMX": "#4338ca", "DC": "#3730a3",
+    # Employment → salmon / light red-pink (per GFLU Employment color)
+    "SE":   "#fecaca", "TE": "#fca5a5",
+    "EC":   "#f87171", "SEC": "#ef4444",
+    "IL":   "#dc2626", "IG": "#991b1b",
+    # Special
+    "PR":   "#16a34a",   # parks: green
+    "A":    "#dcfce7", "UA": "#bbf7d0", "CN": "#d1fae5",
+    "CI":   "#bfdbfe",   # institutional: light blue
+    "AP":   "#e2e8f0", "ME": "#94a3b8", "MC": "#d6d3d1",
+    "PD":   "#d1d5db", "PMHP": "#e5e7eb",
 }
 
 DEFAULT_ZONING_COLOR = "#757575"
@@ -91,16 +100,37 @@ USE_TYPE_COLORS = {
     "PERMITTED": "#16a34a",
     "CONDITIONAL": "#d97706",
     "REZONED": "#ef4444",
-    "VARIES": "#ef4444",
+    "VARIES":  "#ef4444",   # same red as REZONED — shared on map/stats
     "UNKNOWN": "#6b7280",
+}
+
+TREND_USE_COLORS = {
+    "PERMITTED":   "#16a34a",
+    "CONDITIONAL": "#d97706",
+    "REZONED":     "#ef4444",
+    "VARIES":      "#a855f7",   # purple — distinct from REZONED in trend chart only
+    "UNKNOWN":     "#6b7280",
 }
 
 USE_TYPE_LABELS = {
     "PERMITTED": "Permitted Use",
     "CONDITIONAL": "Conditional Use",
     "REZONED": "Rezoned",
-    "VARIES": "Varies (PD)",
+    "VARIES": "PD",
     "UNKNOWN": "Unknown",
+}
+
+HOUSING_COLORS = {
+    # Small-scale residential → teal family
+    "Duplex/Triplex":      "#99f6e4",  # teal-200
+    "Townhouse":           "#2dd4bf",  # teal-400
+    "Multiplex":           "#0d9488",  # teal-600
+    # Non-mixed mid/high-rise → blue (density = darker)
+    "Mid-Rise":            "#93c5fd",  # blue-300
+    "High-Rise":           "#2563eb",  # blue-600
+    # Mixed-use mid/high-rise → purple (density = darker)
+    "Mid-Rise Mixed-Use":  "#d8b4fe",  # purple-300
+    "High-Rise Mixed-Use": "#7c3aed",  # purple-700
 }
 
 OUTCOME_COLORS = {"BUILT": "#10b981", "ACTIVE": "#d97706", "DID_NOT_PROCEED": "#ef4444"}
@@ -199,8 +229,24 @@ def build_popup_html(row):
 # ---------------------------------------------------------------------------
 
 HOUSING_TYPE_ORDER = [
-    "Mid-Rise", "Mid-Rise Mixed-Use", "High-Rise", "High-Rise Mixed-Use",
-    "Townhouse", "Multiplex", "Duplex/Triplex",
+    "Duplex/Triplex", "Townhouse", "Multiplex",
+    "Mid-Rise", "High-Rise",
+    "Mid-Rise Mixed-Use", "High-Rise Mixed-Use",
+]
+
+ZONING_DENSITY_ORDER = [
+    # Residential sparse→dense
+    "SR-C1", "SR-G1", "SR-V1", "SR-C2", "SR-V2", "SR-C3",
+    "TR-R", "TR-C1", "TR-V1", "TR-C2", "TR-V2", "TR-P",
+    "TR-C3", "TR-C4", "TR-U1", "TR-U2",
+    # Mixed-use sparse→dense
+    "LMX", "THV", "TSS", "NMX", "CC-T", "CC", "RMX", "MXC",
+    # Downtown sparse→dense
+    "DR1", "DR2", "UOR", "UMX", "DC",
+    # Employment sparse→dense
+    "SE", "TE", "EC", "SEC", "IL", "IG",
+    # Special
+    "A", "UA", "CN", "PR", "CI", "MC", "AP", "PMHP", "ME", "PD",
 ]
 
 USE_COLUMNS = ("permitted", "conditional", "rezoned_pd", "unknown")
@@ -291,7 +337,7 @@ def build_stats_html(rows):
         f'<tr class="zp-hdr"><th>Housing Type</th>'
         f'<th style="text-align:right;color:#16a34a">Permitted</th>'
         f'<th style="text-align:right;color:#d97706">Conditional</th>'
-        f'<th style="text-align:right;color:#ef4444">Rezoned / PD</th>'
+        f'<th style="text-align:right;color:#ef4444">Rezoned/PD</th>'
         f'<th style="text-align:right;color:#6b7280">Unknown</th>'
         f'<th style="text-align:right">Total</th></tr>'
         f'{"".join(table_rows)}</table></div>'
@@ -494,9 +540,19 @@ def _build_map_js(markers_json, all_projects_json, all_rows_json, transit_json):
         month_map.setdefault(date, []).append(label)
     milestones_month_js = json.dumps({k: ", ".join(v) for k, v in month_map.items()})
 
+    chart_colors_use_js = json.dumps(TREND_USE_COLORS)
+    chart_colors_housing_js = json.dumps(HOUSING_COLORS)
+    chart_colors_zone_js = json.dumps(ZONING_COLORS)
+    zoning_order_js = json.dumps(ZONING_DENSITY_ORDER)
+
     # Double braces {{ }} are literal JS braces inside the f-string
     return f"""\
 var ML_Y={milestones_year_js},ML_M={milestones_month_js};
+var CHART_COLORS_USE={chart_colors_use_js};
+var CHART_COLORS_HOUSING={chart_colors_housing_js};
+var CHART_COLORS_ZONE={chart_colors_zone_js};
+var ZONING_ORDER={zoning_order_js};
+var USE_ORDER=["PERMITTED","CONDITIONAL","REZONED","VARIES","UNKNOWN"];
 var m=L.map("map").setView([43.073,-89.401],12);
 L.tileLayer("https://{{s}}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{{z}}/{{x}}/{{y}}@2x.png",{{
   attribution:'&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
@@ -591,10 +647,11 @@ function fillSel(sel,opts,idx){{
   }});
   sel.selectedIndex=Math.min(idx,opts.length-1);
 }}
-var HT_ORDER=["Mid-Rise","Mid-Rise Mixed-Use","High-Rise","High-Rise Mixed-Use",
-  "Townhouse","Multiplex","Duplex/Triplex"];
+var HT_ORDER=["Duplex/Triplex","Townhouse","Multiplex",
+  "Mid-Rise","High-Rise","Mid-Rise Mixed-Use","High-Rise Mixed-Use"];
 var COL_KEYS=["permitted","conditional","rezoned_pd","unknown"];
-var COL_LABELS=[["Permitted","#16a34a"],["Conditional","#d97706"],["Rezoned / PD","#ef4444"],["Unknown","#6b7280"]];
+var COL_LABELS=[["Permitted","#16a34a"],["Conditional","#d97706"],
+  ["Rezoned/PD","#ef4444"],["Unknown","#6b7280"]];
 function buildStats(from,to,useTypes,outcomes){{
   var cross={{}};
   var fProj=allProj.filter(function(p){{
@@ -687,7 +744,7 @@ function applyFilters(){{
   buildList();
   pushHash();
 }}
-var USE_LABELS={{"PERMITTED":"Permitted","CONDITIONAL":"Conditional","REZONED":"Rezoned","VARIES":"Varies (PD)","UNKNOWN":"Unknown"}};
+var USE_LABELS={{"PERMITTED":"Permitted","CONDITIONAL":"Conditional","REZONED":"Rezoned","VARIES":"PD","UNKNOWN":"Unknown"}};
 function buildList(){{
   var body=document.getElementById("list-body");
   if(!body)return;
@@ -792,6 +849,77 @@ function loadHash(){{
   return true;
 }}
 if(!loadHash())initDateFilter();
+var _tCat="use",_tMetric="buildings",_tChart=null;
+function openTrends(){{
+  document.getElementById("trends-overlay").classList.add("open");
+  if(!_tChart)buildTrendsChart();
+}}
+function closeTrends(){{
+  document.getElementById("trends-overlay").classList.remove("open");
+}}
+function setTrendCat(cat,btn){{
+  _tCat=cat;
+  document.querySelectorAll(".tr-cat").forEach(function(b){{b.classList.remove("tr-active");}});
+  btn.classList.add("tr-active");
+  buildTrendsChart();
+}}
+function setTrendMetric(m,btn){{
+  _tMetric=m;
+  document.querySelectorAll(".tr-metric").forEach(function(b){{b.classList.remove("tr-active");}});
+  btn.classList.add("tr-active");
+  buildTrendsChart();
+}}
+function buildTrendsChart(){{
+  var src=_tCat==="zoning"?allRows:allProj;
+  var catKey={{use:"t",housing:"h",zoning:"z"}}[_tCat];
+  var colorMap={{use:CHART_COLORS_USE,housing:CHART_COLORS_HOUSING,zoning:CHART_COLORS_ZONE}}[_tCat];
+  var yearSet=new Set(allProj.map(function(p){{return p.d.slice(0,4);}}));
+  var years=Array.from(yearSet).sort();
+  var valSet=new Set(src.map(function(p){{return p[catKey];}}).filter(Boolean));
+  var orderRef=_tCat==="zoning"?ZONING_ORDER:_tCat==="housing"?HT_ORDER:_tCat==="use"?USE_ORDER:null;
+  var catVals=Array.from(valSet);
+  if(orderRef)catVals.sort(function(a,b){{
+    var ai=orderRef.indexOf(a),bi=orderRef.indexOf(b);
+    return (ai<0?999:ai)-(bi<0?999:bi);
+  }});else catVals.sort();
+  var agg={{}};
+  catVals.forEach(function(cv){{
+    agg[cv]={{}};
+    years.forEach(function(y){{agg[cv][y]={{b:0,u:0}};}});
+  }});
+  src.forEach(function(p){{
+    var yr=p.d.slice(0,4),cv=p[catKey];
+    if(!cv||!agg[cv]||!agg[cv][yr])return;
+    agg[cv][yr].b++;
+    agg[cv][yr].u+=(p.u||0);
+  }});
+  var mk=_tMetric==="units"?"u":"b";
+  var datasets=catVals.map(function(cv){{
+    var lbl=_tCat==="use"?(USE_LABELS[cv]||cv):cv;
+    return {{
+      label:lbl,
+      data:years.map(function(y){{return agg[cv][y][mk];}}),
+      backgroundColor:colorMap[cv]||"#888",
+    }};
+  }});
+  if(_tChart)_tChart.destroy();
+  _tChart=new Chart(document.getElementById("trends-canvas"),{{
+    type:"bar",
+    data:{{labels:years,datasets:datasets}},
+    options:{{
+      responsive:true,maintainAspectRatio:true,
+      plugins:{{
+        legend:{{position:"bottom",labels:{{color:"#ccc",padding:16}}}},
+        tooltip:{{callbacks:{{label:function(ctx){{return " "+ctx.dataset.label+": "+ctx.raw;}}}}}},
+      }},
+      scales:{{
+        x:{{stacked:true,ticks:{{color:"#aaa"}},grid:{{color:"#2a2a2a"}}}},
+        y:{{stacked:true,ticks:{{color:"#aaa"}},grid:{{color:"#2a2a2a"}},
+           title:{{display:true,color:"#aaa",text:_tMetric==="units"?"Total Units":"Building Count"}}}},
+      }},
+    }},
+  }});
+}}
 if(window.innerWidth<=768){{
   ['legend','stats-panel','filter-panel'].forEach(function(id){{
     var el=document.getElementById(id);
@@ -822,6 +950,7 @@ def _build_header_html(total, total_units, mapped):
       <span>Size = unit count (log scale)</span>
     </div>
   </div>
+  <button id="trends-btn" onclick="openTrends()">Trends \u2197</button>
 </div>"""
 
 
@@ -892,6 +1021,28 @@ def _build_zoning_button_and_panel(zoning_panel_html):
   </div>"""
 
 
+def _build_trends_html():
+    return """\
+<div id="trends-overlay">
+  <div id="trends-hdr">
+    <span class="trends-title">Annual Trends</span>
+    <div class="trends-ctrl-group">
+      <button class="tr-cat tr-active" onclick="setTrendCat('use',this)">Use Type</button>
+      <button class="tr-cat" onclick="setTrendCat('housing',this)">Housing</button>
+      <button class="tr-cat" onclick="setTrendCat('zoning',this)">Zoning</button>
+    </div>
+    <div class="trends-metric-wrap">
+      <button class="tr-metric tr-active" onclick="setTrendMetric('buildings',this)">Buildings</button>
+      <button class="tr-metric" onclick="setTrendMetric('units',this)">Units</button>
+    </div>
+    <button id="trends-close" onclick="closeTrends()">&times; Close</button>
+  </div>
+  <div id="trends-body">
+    <canvas id="trends-canvas"></canvas>
+  </div>
+</div>"""
+
+
 def build_page_html(total, total_units, mapped, legend_html,
                     zoning_panel_html, map_js):
     """Assemble the full HTML page from pre-built components."""
@@ -899,6 +1050,7 @@ def build_page_html(total, total_units, mapped, legend_html,
     filter_panel = _build_filter_panel_html()
     list_section = _build_list_button_and_panel()
     zoning_section = _build_zoning_button_and_panel(zoning_panel_html)
+    trends_overlay = _build_trends_html()
 
     return f"""\
 <!DOCTYPE html>
@@ -910,10 +1062,12 @@ def build_page_html(total, total_units, mapped, legend_html,
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='8' y='20' width='48' height='40' rx='2' fill='%234a90d9'/%3E%3Crect x='4' y='16' width='56' height='8' rx='2' fill='%23356bad'/%3E%3Crect x='14' y='28' width='8' height='8' rx='1' fill='%23ffe066'/%3E%3Crect x='28' y='28' width='8' height='8' rx='1' fill='%23ffe066'/%3E%3Crect x='42' y='28' width='8' height='8' rx='1' fill='%23ffe066'/%3E%3Crect x='14' y='42' width='8' height='8' rx='1' fill='%23ffe066'/%3E%3Crect x='28' y='42' width='8' height='8' rx='1' fill='%23ffe066'/%3E%3Crect x='42' y='42' width='8' height='8' rx='1' fill='%23ffe066'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
 <link rel="stylesheet" href="style.css"/>
 </head>
 <body style="display:flex;flex-direction:column;min-height:100vh">
 {header}
+{trends_overlay}
 <div id="map-wrap">
   <button id="legend-toggle" class="map-overlay-btn" onclick="document.getElementById('legend').classList.remove('collapsed');this.style.display='none'">Legend</button>
   <div id="legend" class="map-overlay">
