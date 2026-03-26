@@ -33,6 +33,19 @@ NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
 ZONING_URL = "https://maps.cityofmadison.com/arcgis/rest/services/Planning/Zoning/MapServer/2/query"
 USER_AGENT = "MadisonWI-HousingPermits/1.0"
 
+LEGISTAR_BASE = "https://webapi.legistar.com/v1/madison"
+LEGISTAR_STREET_SUFFIXES = (
+    "Drive", "Street", "Avenue", "Road", "Lane", "Court", "Place", "Boulevard",
+    "Parkway", "Way", "Circle", "Trail", "Run", "Terrace", "Walk", "Alley", "Pass",
+)
+LEGISTAR_ADDR_RE = re.compile(
+    r'\bat\s+(\d+\s+\S.+?(?:' + '|'.join(LEGISTAR_STREET_SUFFIXES) + r')\w*)',
+    re.I
+)
+LEGISTAR_REZONE_KEYWORDS = ("rezone", "rezoning", "zoning map amendment")
+
+ARCGIS_GEOCODE_URL = "https://maps.cityofmadison.com/arcgis/rest/services/Composite_Locator/GeocodeServer/findAddressCandidates"
+
 # ---------------------------------------------------------------------------
 # Records to exclude (false positives identified during manual review)
 # ---------------------------------------------------------------------------
@@ -700,6 +713,145 @@ def _step_classify_use(projects):
     print()
 
 
+def _geocode_arcgis(address):
+    """Fallback geocoder using Madison's ArcGIS composite locator."""
+    params = urllib.parse.urlencode({
+        "SingleLine": address,
+        "maxLocations": 1,
+        "outFields": "",
+        "f": "json",
+    })
+    url = f"{ARCGIS_GEOCODE_URL}?{params}"
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            data = json.loads(resp.read().decode())
+        candidates = data.get("candidates", [])
+        if candidates and candidates[0].get("score", 0) >= 80:
+            loc = candidates[0]["location"]
+            return loc["y"], loc["x"]  # lat, lng
+    except Exception:
+        pass
+    return None, None
+
+
+def _normalize_addr(addr):
+    """Normalize an address string for fuzzy matching against Legistar titles."""
+    addr = addr.lower()
+    addr = re.sub(r'\b\d{5}\b.*', '', addr)          # strip zip code and everything after
+    addr = re.sub(r'\bunited states\b', '', addr)
+    addr = re.sub(r'\b(madison|wi|wisconsin)\b', '', addr)
+    addr = re.sub(r'\s+', ' ', addr).strip().rstrip(',.')
+    for abbr, full in [
+        (r'\bdr\b', 'drive'), (r'\bst\b', 'street'), (r'\bave\b', 'avenue'),
+        (r'\bblvd\b', 'boulevard'), (r'\brd\b', 'road'), (r'\bln\b', 'lane'),
+        (r'\bct\b', 'court'), (r'\bpl\b', 'place'), (r'\bpkwy\b', 'parkway'),
+    ]:
+        addr = re.sub(abbr, full, addr)
+    return addr
+
+
+def _fetch_legistar_matters(type_name, cache):
+    """Fetch all Legistar matters of a given type, using cache to avoid re-fetching."""
+    cache_key = f"legistar:{type_name}"
+    if cache_key in cache:
+        return cache[cache_key]
+
+    matters = []
+    skip = 0
+    while True:
+        params = urllib.parse.urlencode({
+            "$filter": f"MatterTypeName eq '{type_name}'",
+            "$top": 1000,
+            "$skip": skip,
+            "$select": "MatterTitle,MatterStatusName,MatterIntroDate,MatterPassedDate",
+        })
+        url = f"{LEGISTAR_BASE}/matters?{params}"
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                page = json.loads(resp.read().decode())
+        except Exception as e:
+            print(f"  Legistar fetch error ({type_name}, skip={skip}): {e}")
+            break
+        if not page:
+            break
+        for m in page:
+            matters.append({
+                "title": m.get("MatterTitle") or "",
+                "status": m.get("MatterStatusName") or "",
+                "intro": m.get("MatterIntroDate") or "",
+                "passed": m.get("MatterPassedDate") or "",
+            })
+        skip += len(page)
+        if len(page) < 1000:
+            break
+
+    cache[cache_key] = matters
+    return matters
+
+
+def _build_legistar_index(matters):
+    """Build a normalized-address -> matter dict from Legistar matter list."""
+    index = {}
+    matched = 0
+    for m in matters:
+        hit = LEGISTAR_ADDR_RE.search(m["title"])
+        if hit:
+            norm = _normalize_addr(hit.group(1))
+            index[norm] = m
+            matched += 1
+    print(f"  Address index: {matched}/{len(matters)} titles had extractable addresses")
+    return index
+
+
+def _step_geocode_retry(projects, cache):
+    """Step 4b: retry geocoding for unit-bearing projects with no coordinates via ArcGIS fallback."""
+    candidates = [p for p in projects if p["units"] and not p["lat"]]
+    print(f"Step 4b: ArcGIS geocode retry for {len(candidates)} unit-bearing ungeocoded projects...")
+    recovered = 0
+    for p in candidates:
+        lat, lng = _geocode_arcgis(p["address"])
+        if lat:
+            p["lat"], p["lng"] = lat, lng
+            zoning = get_zoning(lat, lng, cache)
+            if zoning:
+                p["zoning"] = zoning
+                recovered += 1
+    save_cache(cache)
+    print(f"  Recovered zoning for {recovered}/{len(candidates)} projects\n")
+
+
+def _step_legistar_classify(projects, cache):
+    """Step 5c: override use_type using authoritative Legistar CU / rezoning records."""
+    print("Step 5c: Fetching Legistar conditional use and rezoning records...")
+
+    cu_matters = _fetch_legistar_matters("Conditional Use", cache)
+    print(f"  Conditional Use matters: {len(cu_matters)}")
+    cu_index = _build_legistar_index(cu_matters)
+
+    ord_matters = _fetch_legistar_matters("Ordinance", cache)
+    rezone_matters = [m for m in ord_matters
+                      if any(kw in m["title"].lower() for kw in LEGISTAR_REZONE_KEYWORDS)]
+    print(f"  Rezoning ordinances: {len(rezone_matters)} of {len(ord_matters)} ordinances")
+    rezone_index = _build_legistar_index(rezone_matters)
+
+    save_cache(cache)
+
+    overrides = 0
+    for p in projects:
+        if p.get("use_type") == "VARIES":
+            continue
+        norm = _normalize_addr(p.get("address", ""))
+        if norm in cu_index:
+            p["use_type"] = "CONDITIONAL"
+            overrides += 1
+        elif norm in rezone_index:
+            p["use_type"] = "REZONED"
+            overrides += 1
+    print(f"  Legistar overrides applied: {overrides}\n")
+
+
 def classify_outcome(status, date_str):
     """Classify project outcome based on permit status and date.
 
@@ -804,6 +956,7 @@ def main():
     _step_geocode(projects, cache)
     _step_fetch_zoning(projects, cache)
     _step_classify_use(projects)
+    _step_legistar_classify(projects, cache)
     _step_classify_outcome(projects)
     _step_transit()
     _write_outputs(projects)
