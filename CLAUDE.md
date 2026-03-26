@@ -41,3 +41,7 @@ zoning_districts.csv + style.css → generate_site.py → index.html
 ## .gitignore
 
 JSON, CSV, PDF, HTML, TXT, and ZIP files are all gitignored. Only `.py`, `.css`, and `.md` files are tracked.
+
+## SESSION DISCIPLINE
+
+Commit early and often

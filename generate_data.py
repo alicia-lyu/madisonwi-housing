@@ -710,6 +710,25 @@ def _step_classify_use(projects):
               f"{p['units'] or '?'} units -> {p['use_type']}")
     for use_type, count in sorted(use_counts.items()):
         print(f"  {use_type}: {count}")
+
+    # Low-confidence fallback for records still UNKNOWN with known unit count
+    heuristic_count = 0
+    for p in projects:
+        if p["use_type"] != "UNKNOWN" or not p["units"]:
+            continue
+        u = p["units"]
+        ht = p.get("housing_type", "")
+        if u <= 3:
+            p["use_type"] = "PERMITTED"
+        elif "Townhouse" in ht and u <= 9:
+            p["use_type"] = "CONDITIONAL"
+        elif any(x in ht for x in ("Mid-Rise", "High-Rise")):
+            p["use_type"] = "CONDITIONAL"
+        else:
+            p["use_type"] = "PERMITTED"
+        heuristic_count += 1
+    if heuristic_count:
+        print(f"  ({heuristic_count} low-confidence heuristic classifications)")
     print()
 
 
@@ -955,6 +974,7 @@ def main():
     _step_classify_types(projects)
     _step_geocode(projects, cache)
     _step_fetch_zoning(projects, cache)
+    _step_geocode_retry(projects, cache)
     _step_classify_use(projects)
     _step_legistar_classify(projects, cache)
     _step_classify_outcome(projects)
