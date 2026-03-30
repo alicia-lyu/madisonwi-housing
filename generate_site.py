@@ -15,6 +15,7 @@ import os
 INPUT_CSV = "projects.csv"
 ZONING_CSV = "zoning_districts.csv"
 TRANSIT_JSON = "transit_routes.json"
+BIKE_JSON = "bike_routes.json"
 OUTPUT_HTML = "index.html"
 
 # ---------------------------------------------------------------------------
@@ -168,6 +169,14 @@ def load_transit_json():
     """Load transit route data, or return empty list if not available."""
     if os.path.exists(TRANSIT_JSON):
         with open(TRANSIT_JSON) as f:
+            return f.read()
+    return "[]"
+
+
+def load_bike_json():
+    """Load bike route data, or return empty list if not available."""
+    if os.path.exists(BIKE_JSON):
+        with open(BIKE_JSON) as f:
             return f.read()
     return "[]"
 
@@ -523,7 +532,7 @@ def build_all_rows_data(rows):
 # JavaScript template
 # ---------------------------------------------------------------------------
 
-def _build_map_js(markers_json, all_projects_json, all_rows_json, transit_json):
+def _build_map_js(markers_json, all_projects_json, all_rows_json, transit_json, bike_json):
     """Return the <script> block contents for the Leaflet map.
 
     This JS is intentionally compact — it only handles map init, marker placement,
@@ -563,6 +572,12 @@ tr.forEach(function(rt){{
   L.polyline(rt.coords,opts).addTo(m).bindPopup(
     '<b>Route '+rt.name+'</b>'
   );
+}});
+var bikeRoutes={bike_json};
+bikeRoutes.forEach(function(rt){{
+  var opts={{color:rt.color,weight:rt.weight,opacity:0.8}};
+  if(rt.dash)opts.dashArray=rt.dash;
+  L.polyline(rt.coords,opts).addTo(m);
 }});
 var allProj={all_projects_json};
 var allRows={all_rows_json};
@@ -1133,6 +1148,7 @@ def main():
     all_projects = build_all_projects_data(rows)
     all_rows = build_all_rows_data(rows)
     transit_json = load_transit_json()
+    bike_json = load_bike_json()
 
     # Build HTML fragments
     legend_html = build_legend_html(zoning_codes_used)
@@ -1143,7 +1159,7 @@ def main():
     markers_json = json.dumps(markers)
     all_projects_json = json.dumps(all_projects)
     all_rows_json = json.dumps(all_rows)
-    map_js = _build_map_js(markers_json, all_projects_json, all_rows_json, transit_json)
+    map_js = _build_map_js(markers_json, all_projects_json, all_rows_json, transit_json, bike_json)
     page_html = build_page_html(
         total, total_units, mapped, legend_html, zoning_panel_html, map_js
     )
