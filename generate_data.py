@@ -43,7 +43,7 @@ LEGISTAR_ADDR_RE = re.compile(
     r'\bat\s+(\d+\s+\S.+?(?:' + '|'.join(LEGISTAR_STREET_SUFFIXES) + r')\w*)',
     re.I
 )
-LEGISTAR_REZONE_KEYWORDS = ("change the zoning",)
+LEGISTAR_REZONE_KEYWORDS = ("change the zoning", "rezone")
 
 # ---------------------------------------------------------------------------
 # Records to exclude (false positives identified during manual review)
@@ -468,9 +468,13 @@ def load_zoning_rules():
                 "permitted_mf": parse_unit_ranges(permitted, "multifamily"),
                 "permitted_th": parse_unit_ranges(permitted, "townhom"),
                 "permitted_bldg": parse_small_building_ranges(permitted),
+                "permitted_mxu": (parse_unit_ranges(permitted, "mixed-use building") +
+                                  parse_unit_ranges(permitted, "mixed use building")),
                 "conditional_mf": parse_unit_ranges(conditional, "multifamily"),
                 "conditional_th": parse_unit_ranges(conditional, "townhom"),
                 "conditional_bldg": parse_small_building_ranges(conditional),
+                "conditional_mxu": (parse_unit_ranges(conditional, "mixed-use building") +
+                                    parse_unit_ranges(conditional, "mixed use building")),
             }
     return rules
 
@@ -484,7 +488,7 @@ def classify_use(zoning, units, description, rules):
     """Classify a project as PERMITTED, CONDITIONAL, VARIES, REZONED, or UNKNOWN."""
     if not zoning or not units:
         return "UNKNOWN"
-    if zoning.startswith("PD"):
+    if zoning.startswith("PD") or zoning == "TR-P":
         return "VARIES"
 
     rule = rules.get(zoning)
@@ -510,6 +514,15 @@ def classify_use(zoning, units, description, rules):
         return "PERMITTED"
     if _in_any_range(rule["conditional_bldg"], units):
         return "CONDITIONAL"
+
+    # Check mixed-use building ranges for projects with shell commercial/retail space
+    is_mixed_use = bool(re.search(r'\bshell\b|\bcommercial\s+space\b|\bretail\s+space\b',
+                                  description, re.IGNORECASE))
+    if is_mixed_use:
+        if _in_any_range(rule["permitted_mxu"], units):
+            return "PERMITTED"
+        if _in_any_range(rule["conditional_mxu"], units):
+            return "CONDITIONAL"
 
     return "UNKNOWN"
 
@@ -723,6 +736,7 @@ def _normalize_addr(addr):
         (r'\bdr\b', 'drive'), (r'\bst\b', 'street'), (r'\bave\b', 'avenue'),
         (r'\bblvd\b', 'boulevard'), (r'\brd\b', 'road'), (r'\bln\b', 'lane'),
         (r'\bct\b', 'court'), (r'\bpl\b', 'place'), (r'\bpkwy\b', 'parkway'),
+        (r'\bn\b', 'north'), (r'\bs\b', 'south'), (r'\be\b', 'east'), (r'\bw\b', 'west'),
     ]:
         addr = re.sub(abbr, full, addr)
     return addr
