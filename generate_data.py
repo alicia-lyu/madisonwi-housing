@@ -23,6 +23,7 @@ CACHE_FILE = "geocode_cache.json"
 ZONING_CSV = "zoning_districts.csv"
 GTFS_DIR = "gtfs_tmp"
 TRANSIT_JSON = "transit_routes.json"
+BIKE_JSON = "bike_routes.json"
 OUTCOME_OVERRIDES_CSV = "outcome_overrides.csv"
 USE_TYPE_OVERRIDES_CSV = "use_type_overrides.csv"
 LOW_QUALITY_CSV = "projects_low_quality.csv"
@@ -33,6 +34,9 @@ LOW_QUALITY_CSV = "projects_low_quality.csv"
 
 NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
 ZONING_URL = "https://maps.cityofmadison.com/arcgis/rest/services/Planning/Zoning/MapServer/2/query"
+# MPO BicycleMap_Pro: layer 7 = off-street paths, layer 14 = on-street facilities
+BIKE_OFFSTREET_URL = "https://maps.cityofmadison.com/arcgis/rest/services/MPO/BicycleMap_Pro/MapServer/7/query"
+BIKE_ONSTREET_URL  = "https://maps.cityofmadison.com/arcgis/rest/services/MPO/BicycleMap_Pro/MapServer/14/query"
 USER_AGENT = "MadisonWI-HousingPermits/1.0"
 
 LEGISTAR_BASE = "https://webapi.legistar.com/v1/madison"
@@ -909,6 +913,135 @@ def _step_transit():
         print("  No transit data generated\n")
 
 
+def _fetch_bike_layer(url, type_field, cache, cache_prefix):
+    """Fetch all features from one BicycleMap_Pro layer, returning list of
+    (type_value, [[lat,lng], ...]) tuples. Uses geocode_cache.json."""
+    cache_key = f"{cache_prefix}:features"
+    if cache_key in cache:
+        return cache[cache_key]
+
+    features = []
+    offset = 0
+    page_size = 1000
+    while True:
+        params = urllib.parse.urlencode({
+            "where": "1=1",
+            "outFields": type_field,
+            "outSR": "4326",
+            "resultOffset": offset,
+            "resultRecordCount": page_size,
+            "f": "json",
+        })
+        req = urllib.request.Request(
+            f"{url}?{params}", headers={"User-Agent": USER_AGENT}
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                data = json.loads(resp.read().decode())
+        except Exception as e:
+            print(f"    Warning: bike fetch error at offset {offset}: {e}")
+            break
+
+        batch = data.get("features", [])
+        if not batch:
+            break
+        for feat in batch:
+            geom = feat.get("geometry", {})
+            paths = geom.get("paths", [])
+            type_val = (feat.get("attributes") or {}).get(type_field, "") or ""
+            for path in paths:
+                if len(path) < 2:
+                    continue
+                # ArcGIS returns [lng, lat]; convert to [lat, lng] for Leaflet
+                # Downsample to ~200 pts, round to 5 dp
+                step = max(1, len(path) // 200)
+                coords = [[round(p[1], 5), round(p[0], 5)] for p in path[::step]]
+                last = [round(path[-1][1], 5), round(path[-1][0], 5)]
+                if coords[-1] != last:
+                    coords.append(last)
+                features.append((type_val, coords))
+        offset += len(batch)
+        if len(batch) < page_size:
+            break
+
+    cache[cache_key] = features
+    return features
+
+
+# Style mappings for bike infrastructure types
+# Off-street: Off_Type codes
+_OFFSTREET_STYLE = {
+    # Cycletrack / two-way separated path → protected (darkest green, solid)
+    "CTT": ("#16a34a", 2,   None),
+    # Shared-use path → shared path (medium green, solid)
+    "SP":  ("#16a34a", 2,   None),
+    # Pedestrian path on bike network → lighter, thinner
+    "PP":  ("#4ade80", 1.5, None),
+    # Wide sidewalk
+    "WS":  ("#4ade80", 1.5, "6 4"),
+    # Multi-use lane / other
+    "ML":  ("#86efac", 1.5, "6 4"),
+}
+# On-street: On_Type codes
+_ONSTREET_STYLE = {
+    # Protected bike lane
+    "PT":  ("#16a34a", 2,   None),
+    # Bike lane (standard or buffered)
+    "BL":  ("#86efac", 1.5, "6 4"),
+    "BLB": ("#86efac", 1.5, "6 4"),
+    # Local Street – Bike Boulevard
+    "LSB": ("#4ade80", 1.5, "4 4"),
+    # Other / multiple
+    "OT":  ("#22c55e", 1.5, "6 4"),
+}
+_DEFAULT_BIKE_STYLE = ("#22c55e", 2, None)
+
+
+def _step_bike_routes(cache):
+    """Step 8: fetch bike lane/path data from Madison MPO ArcGIS and write bike_routes.json."""
+    print("Step 8: Fetching bike route data from Madison MPO BicycleMap_Pro...")
+
+    # Off-street paths (layer 7)
+    print("  Fetching off-street paths (layer 7)...")
+    offstreet = _fetch_bike_layer(
+        BIKE_OFFSTREET_URL, "Off_Type", cache, "bike:offstreet"
+    )
+    print(f"    {len(offstreet)} path segments fetched")
+
+    # On-street facilities (layer 14) — only useful types
+    print("  Fetching on-street facilities (layer 14)...")
+    onstreet_all = _fetch_bike_layer(
+        BIKE_ONSTREET_URL, "On_Type", cache, "bike:onstreet"
+    )
+    onstreet = [(t, c) for t, c in onstreet_all if t in _ONSTREET_STYLE]
+    print(f"    {len(onstreet)} on-street bike segments (filtered from {len(onstreet_all)})")
+
+    # Build route objects
+    bike_routes = []
+    type_counts = {}
+
+    for type_val, coords in offstreet:
+        color, weight, dash = _OFFSTREET_STYLE.get(type_val, _DEFAULT_BIKE_STYLE)
+        label = f"off:{type_val or 'other'}"
+        type_counts[label] = type_counts.get(label, 0) + 1
+        bike_routes.append({"color": color, "weight": weight, "dash": dash, "coords": coords})
+
+    for type_val, coords in onstreet:
+        color, weight, dash = _ONSTREET_STYLE.get(type_val, _DEFAULT_BIKE_STYLE)
+        label = f"on:{type_val}"
+        type_counts[label] = type_counts.get(label, 0) + 1
+        bike_routes.append({"color": color, "weight": weight, "dash": dash, "coords": coords})
+
+    with open(BIKE_JSON, "w") as f:
+        json.dump(bike_routes, f)
+
+    total_pts = sum(len(r["coords"]) for r in bike_routes)
+    print(f"  Wrote {len(bike_routes)} bike route segments ({total_pts} points) to {BIKE_JSON}")
+    print(f"  Category breakdown: {type_counts}\n")
+
+    save_cache(cache)
+
+
 def _step_filter_low_quality(projects):
     """Step 7: separate 0-unit records into low-quality store; return only unit-bearing projects."""
     low_quality = [p for p in projects if not p["units"]]
@@ -967,6 +1100,7 @@ def main():
     _step_apply_use_type_overrides(projects)
     _step_classify_outcome(projects)
     _step_transit()
+    _step_bike_routes(cache)
     projects = _step_filter_low_quality(projects)
     _write_outputs(projects)
 

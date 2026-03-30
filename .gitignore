@@ -10,3 +10,4 @@
 !transit_routes.json
 !outcome_overrides.csv
 .DS_Store
+__pycache__/
