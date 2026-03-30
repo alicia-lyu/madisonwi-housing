@@ -65,18 +65,19 @@ ZONING_COLORS = {
     "TR-P":  "#d97706",  # amber, distinctive townhome-park type
     "TR-V1": "#fb923c", "TR-V2": "#ea580c",
     "TR-U1": "#92400e", "TR-U2": "#78350f",
-    # Mixed Use → purple spectrum (NMU light → CMU medium → RMU dark)
-    "LMX":  "#f3e8ff",
-    "THV":  "#e9d5ff",
-    "TSS":  "#d8b4fe",
-    "NMX":  "#c084fc",
-    "CC-T": "#a855f7",
-    "CC":   "#9333ea",
-    "RMX":  "#7c3aed",
-    "MXC":  "#6d28d9",
+    # Mixed Use → violet spectrum (between purple and downtown indigo)
+    "LMX":  "#ede9fe",
+    "THV":  "#ddd6fe",
+    "NMX":  "#a78bfa",
+    "RMX":  "#8b5cf6",
+    "MXC":  "#7c3aed",
+    # Commercial/Corridor (no housing by right) → fuchsia (between mixed-use and employment)
+    "TSS":  "#f0abfc",
+    "CC-T": "#e879f9",
+    "CC":   "#d946ef",
     # Downtown → deep purple / indigo
-    "DR1":  "#818cf8", "DR2": "#6366f1",
-    "UOR":  "#4f46e5", "UMX": "#4338ca", "DC": "#3730a3",
+    "DR1":  "#93c5fd", "DR2": "#60a5fa",
+    "UOR":  "#7e22ce", "UMX": "#6b21a8", "DC": "#581c87",
     # Employment → salmon / light red-pink (per GFLU Employment color)
     "SE":   "#fecaca", "TE": "#fca5a5",
     "EC":   "#f87171", "SEC": "#ef4444",
@@ -86,7 +87,7 @@ ZONING_COLORS = {
     "A":    "#dcfce7", "UA": "#bbf7d0", "CN": "#d1fae5",
     "CI":   "#bfdbfe",   # institutional: light blue
     "AP":   "#e2e8f0", "ME": "#94a3b8", "MC": "#d6d3d1",
-    "PD":   "#d1d5db", "PMHP": "#e5e7eb",
+    "PD":   "#ef4444", "PMHP": "#e5e7eb",
 }
 
 DEFAULT_ZONING_COLOR = "#757575"
@@ -99,16 +100,16 @@ STATUS_STYLES = {
 USE_TYPE_COLORS = {
     "PERMITTED": "#16a34a",
     "CONDITIONAL": "#d97706",
-    "REZONED": "#ef4444",
-    "VARIES":  "#ef4444",   # same red as REZONED — shared on map/stats
+    "REZONED": "#fda4af",
+    "VARIES":  "#dc2626",   # PD: solid red, distinct from salmon REZONED
     "UNKNOWN": "#6b7280",
 }
 
 TREND_USE_COLORS = {
     "PERMITTED":   "#16a34a",
     "CONDITIONAL": "#d97706",
-    "REZONED":     "#ef4444",
-    "VARIES":      "#a855f7",   # purple — distinct from REZONED in trend chart only
+    "REZONED":     "#fda4af",
+    "VARIES":      "#dc2626",   # PD: red, consistent with map
     "UNKNOWN":     "#6b7280",
 }
 
@@ -121,10 +122,10 @@ USE_TYPE_LABELS = {
 }
 
 HOUSING_COLORS = {
-    # Small-scale residential → teal family
-    "Duplex/Triplex":      "#99f6e4",  # teal-200
-    "Townhouse":           "#2dd4bf",  # teal-400
-    "Multiplex":           "#0d9488",  # teal-600
+    # Small-scale residential → orange-brown (matching TR zoning family)
+    "Duplex/Triplex":      "#fed7aa",  # orange-200
+    "Townhouse":           "#fb923c",  # orange-400
+    "Multiplex":           "#ea580c",  # orange-600
     # Non-mixed mid/high-rise → blue (density = darker)
     "Mid-Rise":            "#93c5fd",  # blue-300
     "High-Rise":           "#2563eb",  # blue-600
@@ -239,10 +240,11 @@ ZONING_DENSITY_ORDER = [
     "SR-C1", "SR-G1", "SR-V1", "SR-C2", "SR-V2", "SR-C3",
     "TR-R", "TR-C1", "TR-V1", "TR-C2", "TR-V2", "TR-P",
     "TR-C3", "TR-C4", "TR-U1", "TR-U2",
-    # Mixed-use sparse→dense
-    "LMX", "THV", "TSS", "NMX", "CC-T", "CC", "RMX", "MXC",
-    # Downtown sparse→dense
-    "DR1", "DR2", "UOR", "UMX", "DC",
+    # Downtown Residential (residential in character, stacks above TR)
+    "DR1", "DR2",
+    # Mixed-use: lightest first, then dense urban core reversed above
+    "LMX", "THV",
+    "DC", "UMX", "UOR", "MXC", "RMX", "CC", "CC-T", "NMX", "TSS",
     # Employment sparse→dense
     "SE", "TE", "EC", "SEC", "IL", "IG",
     # Special
@@ -849,7 +851,7 @@ function loadHash(){{
   return true;
 }}
 if(!loadHash())initDateFilter();
-var _tCat="use",_tMetric="buildings",_tChart=null;
+var _tCat="use",_tMetric="units",_tChart=null;
 function openTrends(){{
   document.getElementById("trends-overlay").classList.add("open");
   if(!_tChart)buildTrendsChart();
@@ -1032,8 +1034,8 @@ def _build_trends_html():
       <button class="tr-cat" onclick="setTrendCat('zoning',this)">Zoning</button>
     </div>
     <div class="trends-metric-wrap">
-      <button class="tr-metric tr-active" onclick="setTrendMetric('buildings',this)">Buildings</button>
-      <button class="tr-metric" onclick="setTrendMetric('units',this)">Units</button>
+      <button class="tr-metric" onclick="setTrendMetric('buildings',this)">Buildings</button>
+      <button class="tr-metric tr-active" onclick="setTrendMetric('units',this)">Units</button>
     </div>
     <button id="trends-close" onclick="closeTrends()">&times; Close</button>
   </div>

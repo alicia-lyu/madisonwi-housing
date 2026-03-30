@@ -9,3 +9,4 @@
 !zoning_districts.csv
 !transit_routes.json
 !outcome_overrides.csv
+.DS_Store
