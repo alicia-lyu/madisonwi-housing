@@ -24,6 +24,7 @@ ZONING_CSV = "zoning_districts.csv"
 GTFS_DIR = "gtfs_tmp"
 TRANSIT_JSON = "transit_routes.json"
 OUTCOME_OVERRIDES_CSV = "outcome_overrides.csv"
+USE_TYPE_OVERRIDES_CSV = "use_type_overrides.csv"
 LOW_QUALITY_CSV = "projects_low_quality.csv"
 
 # ---------------------------------------------------------------------------
@@ -516,8 +517,10 @@ def classify_use(zoning, units, description, rules):
         return "CONDITIONAL"
 
     # Check mixed-use building ranges for projects with shell commercial/retail space
-    is_mixed_use = bool(re.search(r'\bshell\b|\bcommercial\s+space\b|\bretail\s+space\b',
-                                  description, re.IGNORECASE))
+    is_mixed_use = bool(re.search(
+        r'\bshell\b|\bcommercial\s+space\b|\bretail\s+space\b'
+        r'|\bfirst\s+floor\s+commercial\b|\bcommercial\s+and\b|\btavern\b',
+        description, re.IGNORECASE))
     if is_mixed_use:
         if _in_any_range(rule["permitted_mxu"], units):
             return "PERMITTED"
@@ -853,6 +856,22 @@ def load_outcome_overrides():
     return overrides
 
 
+def _step_apply_use_type_overrides(projects):
+    """Step 5d: Apply manual use_type overrides from use_type_overrides.csv."""
+    if not os.path.exists(USE_TYPE_OVERRIDES_CSV):
+        return
+    overrides = {}
+    with open(USE_TYPE_OVERRIDES_CSV, newline="") as f:
+        for row in csv.DictReader(f):
+            overrides[row["record_number"].strip()] = row["use_type"].strip()
+    applied = 0
+    for p in projects:
+        if p["record_number"] in overrides:
+            p["use_type"] = overrides[p["record_number"]]
+            applied += 1
+    print(f"Step 5d: Manual use_type overrides applied: {applied}\n")
+
+
 def _step_classify_outcome(projects):
     """Step 5b: classify project outcome (built / active / did not proceed)."""
     print("Step 5b: Classifying project outcomes...")
@@ -945,6 +964,7 @@ def main():
     _step_fetch_zoning(projects, cache)
     _step_classify_use(projects)
     _step_legistar_classify(projects, cache)
+    _step_apply_use_type_overrides(projects)
     _step_classify_outcome(projects)
     _step_transit()
     projects = _step_filter_low_quality(projects)

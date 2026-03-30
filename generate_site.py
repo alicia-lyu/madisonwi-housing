@@ -72,9 +72,9 @@ ZONING_COLORS = {
     "RMX":  "#8b5cf6",
     "MXC":  "#7c3aed",
     # Commercial/Corridor (no housing by right) → fuchsia (between mixed-use and employment)
-    "TSS":  "#f0abfc",
+    "TSS":  "#d946ef",
     "CC-T": "#e879f9",
-    "CC":   "#d946ef",
+    "CC":   "#f0abfc",
     # Downtown → deep purple / indigo
     "DR1":  "#93c5fd", "DR2": "#60a5fa",
     "UOR":  "#7e22ce", "UMX": "#6b21a8", "DC": "#581c87",
@@ -244,7 +244,7 @@ ZONING_DENSITY_ORDER = [
     "DR1", "DR2",
     # Mixed-use: lightest first, then dense urban core reversed above
     "LMX", "THV",
-    "DC", "UMX", "UOR", "MXC", "RMX", "CC", "CC-T", "NMX", "TSS",
+    "DC", "UMX", "UOR", "MXC", "RMX", "NMX", "TSS", "CC-T", "CC",
     # Employment sparse→dense
     "SE", "TE", "EC", "SEC", "IL", "IG",
     # Special
