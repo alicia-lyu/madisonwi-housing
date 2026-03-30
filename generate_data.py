@@ -43,7 +43,7 @@ LEGISTAR_ADDR_RE = re.compile(
     r'\bat\s+(\d+\s+\S.+?(?:' + '|'.join(LEGISTAR_STREET_SUFFIXES) + r')\w*)',
     re.I
 )
-LEGISTAR_REZONE_KEYWORDS = ("rezone", "rezoning", "zoning map amendment")
+LEGISTAR_REZONE_KEYWORDS = ("change the zoning",)
 
 # ---------------------------------------------------------------------------
 # Records to exclude (false positives identified during manual review)
@@ -511,7 +511,7 @@ def classify_use(zoning, units, description, rules):
     if _in_any_range(rule["conditional_bldg"], units):
         return "CONDITIONAL"
 
-    return "REZONED"
+    return "UNKNOWN"
 
 
 # ---------------------------------------------------------------------------

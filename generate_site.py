@@ -87,7 +87,7 @@ ZONING_COLORS = {
     "A":    "#dcfce7", "UA": "#bbf7d0", "CN": "#d1fae5",
     "CI":   "#bfdbfe",   # institutional: light blue
     "AP":   "#e2e8f0", "ME": "#94a3b8", "MC": "#d6d3d1",
-    "PD":   "#ef4444", "PMHP": "#e5e7eb",
+    "PD":   "#dc2626", "PMHP": "#e5e7eb",
 }
 
 DEFAULT_ZONING_COLOR = "#757575"
@@ -542,7 +542,6 @@ def _build_map_js(markers_json, all_projects_json, all_rows_json, transit_json):
         month_map.setdefault(date, []).append(label)
     milestones_month_js = json.dumps({k: ", ".join(v) for k, v in month_map.items()})
 
-    chart_colors_use_js = json.dumps(TREND_USE_COLORS)
     chart_colors_housing_js = json.dumps(HOUSING_COLORS)
     chart_colors_zone_js = json.dumps(ZONING_COLORS)
     zoning_order_js = json.dumps(ZONING_DENSITY_ORDER)
@@ -550,11 +549,9 @@ def _build_map_js(markers_json, all_projects_json, all_rows_json, transit_json):
     # Double braces {{ }} are literal JS braces inside the f-string
     return f"""\
 var ML_Y={milestones_year_js},ML_M={milestones_month_js};
-var CHART_COLORS_USE={chart_colors_use_js};
 var CHART_COLORS_HOUSING={chart_colors_housing_js};
 var CHART_COLORS_ZONE={chart_colors_zone_js};
 var ZONING_ORDER={zoning_order_js};
-var USE_ORDER=["PERMITTED","CONDITIONAL","REZONED","VARIES","UNKNOWN"];
 var m=L.map("map").setView([43.073,-89.401],12);
 L.tileLayer("https://{{s}}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{{z}}/{{x}}/{{y}}@2x.png",{{
   attribution:'&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
@@ -851,7 +848,14 @@ function loadHash(){{
   return true;
 }}
 if(!loadHash())initDateFilter();
-var _tCat="use",_tMetric="units",_tChart=null;
+var _tCat="housing",_tMetric="units",_tChart=null;
+var _tUseFilt=["PERMITTED","CONDITIONAL","REZONED","VARIES","UNKNOWN"];
+function setUseFilter(val,btn){{
+  var idx=_tUseFilt.indexOf(val);
+  if(idx>=0){{if(_tUseFilt.length>1){{_tUseFilt.splice(idx,1);btn.classList.remove("tr-use-act");}}}}
+  else{{_tUseFilt.push(val);btn.classList.add("tr-use-act");}}
+  buildTrendsChart();
+}}
 function openTrends(){{
   document.getElementById("trends-overlay").classList.add("open");
   if(!_tChart)buildTrendsChart();
@@ -872,13 +876,14 @@ function setTrendMetric(m,btn){{
   buildTrendsChart();
 }}
 function buildTrendsChart(){{
-  var src=_tCat==="zoning"?allRows:allProj;
-  var catKey={{use:"t",housing:"h",zoning:"z"}}[_tCat];
-  var colorMap={{use:CHART_COLORS_USE,housing:CHART_COLORS_HOUSING,zoning:CHART_COLORS_ZONE}}[_tCat];
+  var base=_tCat==="zoning"?allRows:allProj;
+  var src=base.filter(function(p){{return _tUseFilt.indexOf(p.t)>=0;}});
+  var catKey={{housing:"h",zoning:"z"}}[_tCat];
+  var colorMap={{housing:CHART_COLORS_HOUSING,zoning:CHART_COLORS_ZONE}}[_tCat];
   var yearSet=new Set(allProj.map(function(p){{return p.d.slice(0,4);}}));
   var years=Array.from(yearSet).sort();
   var valSet=new Set(src.map(function(p){{return p[catKey];}}).filter(Boolean));
-  var orderRef=_tCat==="zoning"?ZONING_ORDER:_tCat==="housing"?HT_ORDER:_tCat==="use"?USE_ORDER:null;
+  var orderRef=_tCat==="zoning"?ZONING_ORDER:_tCat==="housing"?HT_ORDER:null;
   var catVals=Array.from(valSet);
   if(orderRef)catVals.sort(function(a,b){{
     var ai=orderRef.indexOf(a),bi=orderRef.indexOf(b);
@@ -897,7 +902,7 @@ function buildTrendsChart(){{
   }});
   var mk=_tMetric==="units"?"u":"b";
   var datasets=catVals.map(function(cv){{
-    var lbl=_tCat==="use"?(USE_LABELS[cv]||cv):cv;
+    var lbl=cv;
     return {{
       label:lbl,
       data:years.map(function(y){{return agg[cv][y][mk];}}),
@@ -1024,14 +1029,22 @@ def _build_zoning_button_and_panel(zoning_panel_html):
 
 
 def _build_trends_html():
-    return """\
+    pills = "\n".join(
+        f'      <button class="tr-use tr-use-act" style="--uc:{color}"'
+        f' onclick="setUseFilter(\'{key}\',this)">{USE_TYPE_LABELS.get(key, key)}</button>'
+        for key, color in TREND_USE_COLORS.items()
+    )
+    return f"""\
 <div id="trends-overlay">
   <div id="trends-hdr">
     <span class="trends-title">Annual Trends</span>
     <div class="trends-ctrl-group">
-      <button class="tr-cat tr-active" onclick="setTrendCat('use',this)">Use Type</button>
-      <button class="tr-cat" onclick="setTrendCat('housing',this)">Housing</button>
+      <button class="tr-cat tr-active" onclick="setTrendCat('housing',this)">Housing</button>
       <button class="tr-cat" onclick="setTrendCat('zoning',this)">Zoning</button>
+    </div>
+    <div class="trends-use-filter">
+      <span class="tr-filter-label">Filter:</span>
+{pills}
     </div>
     <div class="trends-metric-wrap">
       <button class="tr-metric" onclick="setTrendMetric('buildings',this)">Buildings</button>

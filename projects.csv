@@ -2,13 +2,13 @@ record_number,date,address,status,description,project_name,units,zoning,lat,lng,
 BLDNCC-2026-03423,2026-03-09,"5836 Blissful AVE, Madison WI 53718 United States",In Process,new 42 unit apartment,,42,TR-U1,43.1090882,-89.2788815,CONDITIONAL,Mid-Rise,ACTIVE
 BLDNCC-2026-02980,2026-03-02,"3303 Burke AVE, Madison WI 53714 United States",In Process,Blue Wren - new 70-unit apartment with indoor parking and shell commercial space,,70,TE,43.1078114,-89.3328135,CONDITIONAL,Mid-Rise Mixed-Use,ACTIVE
 BLDNCC-2026-01988,2026-02-10,"5612 Blissful AVE, Madison WI 53718 United States",In Process,new 4 unit townhouse,,4,TR-U1,43.1090882,-89.2788815,PERMITTED,Townhouse,ACTIVE
-BLDNCC-2026-01980,2026-02-10,"904 Wisdom RD, Madison WI 53718 United States",In Process,Jannah Village - new 8 unit apartment,,8,SR-C3,43.1107359,-89.2802929,REZONED,Multiplex,ACTIVE
-BLDNCC-2026-01971,2026-02-10,"962 Wisdom RD, Madison WI 53718 United States",In Process,Jannah Village - new 8 unit apartment,,8,SR-C3,43.1107359,-89.2802929,REZONED,Multiplex,ACTIVE
+BLDNCC-2026-01980,2026-02-10,"904 Wisdom RD, Madison WI 53718 United States",In Process,Jannah Village - new 8 unit apartment,,8,SR-C3,43.1107359,-89.2802929,UNKNOWN,Multiplex,ACTIVE
+BLDNCC-2026-01971,2026-02-10,"962 Wisdom RD, Madison WI 53718 United States",In Process,Jannah Village - new 8 unit apartment,,8,SR-C3,43.1107359,-89.2802929,UNKNOWN,Multiplex,ACTIVE
 BLDNCC-2026-01620,2026-02-03,"5622 Blissful AVE, Madison WI 53718 United States",In Process,Jannah Village - new 6 unit townhouse,,6,TR-U1,43.1090882,-89.2788815,PERMITTED,Townhouse,ACTIVE
-BLDNCC-2026-01609,2026-02-03,"922 Wisdom RD, Madison WI 53718 United States",In Process,new 7 unit townhouse,,7,SR-C3,43.1107359,-89.2802929,REZONED,Townhouse,ACTIVE
-BLDNCC-2026-01589,2026-02-03,"5619 Eternity DR, Madison WI 53718 United States",In Process,Jannah Village - New 6 unit townhouse - building 4F,,6,SR-C3,43.1105801,-89.2801679,REZONED,Townhouse,ACTIVE
+BLDNCC-2026-01609,2026-02-03,"922 Wisdom RD, Madison WI 53718 United States",In Process,new 7 unit townhouse,,7,SR-C3,43.1107359,-89.2802929,UNKNOWN,Townhouse,ACTIVE
+BLDNCC-2026-01589,2026-02-03,"5619 Eternity DR, Madison WI 53718 United States",In Process,Jannah Village - New 6 unit townhouse - building 4F,,6,SR-C3,43.1105801,-89.2801679,UNKNOWN,Townhouse,ACTIVE
 BLDNCC-2026-00455,2026-01-12,"656 Williamson ST, Madison WI 53703 United States",In Process,"New 5 story, 53-unit apartment with indoor parking and shell commercial space",,53,TE,43.0765541,-89.3741915,CONDITIONAL,Mid-Rise Mixed-Use,ACTIVE
-BLDNCC-2025-19414,2025-11-06,"3572 Hargrove ST, Madison WI 53714 United States",Issued,Eastmorland Community Housing - 26-unit apartment,,26,TR-C2,43.0912605,-89.3263924,REZONED,Mid-Rise,ACTIVE
+BLDNCC-2025-19414,2025-11-06,"3572 Hargrove ST, Madison WI 53714 United States",Issued,Eastmorland Community Housing - 26-unit apartment,,26,TR-C2,43.0912605,-89.3263924,UNKNOWN,Mid-Rise,ACTIVE
 BLDNCC-2025-19069,2025-10-31,"9451 Spirit ST, Middleton WI 53562 United States",In Process,Paragon Place Lot 4 - building #2: 12-unit apartment with private garages,,12,,,,UNKNOWN,Mid-Rise,ACTIVE
 BLDNCC-2025-19054,2025-10-31,"3575 University AVE, Madison WI 53705 United States",In Process,New 147 unit 6 story multiuse building,,147,CC-T,43.075298,-89.4494055,CONDITIONAL,Mid-Rise Mixed-Use,ACTIVE
 BLDNCC-2025-18951,2025-10-30,"519 E Johnson ST, Madison WI 53703 United States",In Process,Porchlight - alteration - convert first floor sleeping rooms to 2 dwelling units. Add kitchens and powder room on second floor,,2,DR1,43.0804704,-89.3815282,PERMITTED,Duplex/Triplex,ACTIVE
@@ -16,7 +16,7 @@ BLDNCC-2025-18945,2025-10-30,"305 Bear Claw WAY, Middleton WI 53562 United State
 BLDNCC-2025-18938,2025-10-30,"5818 Gemini DR, Madison WI 53718 United States",Rejected,Capitol View Townhouses - new 12 unit townhouse,,12,PD,43.0860848,-89.2782546,VARIES,Townhouse,DID_NOT_PROCEED
 BLDNCC-2025-18094,2025-10-16,"6517 Town Center DR, Madison WI 53718 United States",In Process,Metrotech Apartments building 2 - 100 unit apartment with indoor parking and shell commercial space,,100,PD,43.1016289,-89.2672801,VARIES,Mid-Rise Mixed-Use,ACTIVE
 BLDNCC-2025-16604,2025-09-24,4205 Gallatin Range RD,In Process,Bozeman Residences -  108 unit apartment with indoor parking,,108,,,,UNKNOWN,Mid-Rise,ACTIVE
-BLDNCC-2025-16601,2025-09-24,"50 N Leon ST, Madison WI 53714 United States",In Process,Tapestry - 157 unit apartment with indoor parking and shell commercial spaces,,157,TR-C4,43.0964306,-89.3301001,REZONED,Mid-Rise Mixed-Use,ACTIVE
+BLDNCC-2025-16601,2025-09-24,"50 N Leon ST, Madison WI 53714 United States",In Process,Tapestry - 157 unit apartment with indoor parking and shell commercial spaces,,157,TR-C4,43.0964306,-89.3301001,UNKNOWN,Mid-Rise Mixed-Use,ACTIVE
 BLDNCC-2025-16177,2025-09-18,"8113 Grotto LN, Madison WI 53711 United States",Rejected,Midtown Center building C - new 115-unit apartment with parking garage,,115,,,,UNKNOWN,Mid-Rise,DID_NOT_PROCEED
 BLDNCC-2025-16168,2025-09-18,"8125 Grotto LN, Madison WI 53711 United States",Rejected,Midtown Center building B - new 84 unit apartment with shell commercial space and parking garage,,84,,,,UNKNOWN,Mid-Rise Mixed-Use,DID_NOT_PROCEED
 BLDNCC-2025-15934,2025-09-16,417 S Yellowstone DR,In Process,Four story 63 unit apartment building with below grade parking,,63,SE,43.0595764,-89.491882,CONDITIONAL,Mid-Rise,ACTIVE
@@ -33,7 +33,7 @@ BLDNCC-2025-12140,2025-07-22,"2 Stones Throw LOOP, Madison WI 53719 United State
 BLDNCC-2025-11852,2025-07-17,"6624 Old Sauk RD, Madison WI 53705 United States",Issued,Stonehouse apartment complex - 3 story 144 unit apartment,,144,PD,43.0752977,-89.4946234,VARIES,Mid-Rise,ACTIVE
 BLDNCC-2025-11076,2025-07-08,"720 E Washington AVE, Madison WI 53703 United States",Issued,Seven20 E Wash - 244 unit 14 story mixed use with shell commercial space,,244,TE,43.0799804,-89.3763704,CONDITIONAL,High-Rise Mixed-Use,ACTIVE
 BLDNCC-2025-10067,2025-06-24,"902 Canter DR, Madison WI 53718 United States",Issued,new 7 unit townhouse apartment,,7,SR-V2,43.1104728,-89.278973,PERMITTED,Townhouse,ACTIVE
-BLDNCC-2025-10061,2025-06-24,"961 Wisdom RD, Madison WI 53718 United States",Issued,new 5 unit townhouse,,5,SR-C3,43.1107359,-89.2802929,REZONED,Townhouse,ACTIVE
+BLDNCC-2025-10061,2025-06-24,"961 Wisdom RD, Madison WI 53718 United States",Issued,new 5 unit townhouse,,5,SR-C3,43.1107359,-89.2802929,UNKNOWN,Townhouse,ACTIVE
 BLDNCC-2025-10011,2025-06-23,"5710 Blissful AVE, Madison WI 53718 United States",Issued,new 4 unit townhouse apartment,,4,TR-U1,43.1090882,-89.2788815,PERMITTED,Townhouse,ACTIVE
 BLDNCC-2025-09999,2025-06-23,"429 W Mifflin ST, Madison WI 53703 United States",Issued,New 4 story 40 unit apartment,,40,DR2,43.0717524,-89.3904956,CONDITIONAL,Mid-Rise,ACTIVE
 BLDNCC-2025-08038,2025-05-22,"960 John Nolen DR, Madison WI 53713 United States",Closed,Convert first floor business area to 12 apartments,,12,SE,43.0457697,-89.3729816,CONDITIONAL,Mid-Rise,BUILT
@@ -65,12 +65,12 @@ BLDNCC-2024-16729,2024-09-27,"1611 Lock LN, Madison WI 53704 United States",Issu
 BLDNCC-2024-15222,2024-09-05,"314 Lakota WAY, Middleton WI 53562 United States",Closed,Paragon Place at Bear Claw Way #26 - New 4 unit townhouse building with private garages,,4,TR-V2,43.0656714,-89.5561588,PERMITTED,Townhouse,BUILT
 BLDNCC-2024-15209,2024-09-05,"346 Lakota WAY, Middleton WI 53562 United States",Issued,Paragon Place at Bear Claw Way #28 - New 4 unit townhouse building with private garages,,4,TR-V2,43.0656714,-89.5561588,PERMITTED,Townhouse,ACTIVE
 BLDNCC-2024-15205,2024-09-05,"9752 Paragon ST, Middleton WI 53562 United States",Closed,Paragon Place at Bear Claw Way #25 - New 4 unit townhouse building with private garages,,4,,,,UNKNOWN,Townhouse,BUILT
-BLDNCC-2024-15197,2024-09-05,"9753 Elderberry RD, Middleton WI 53562 United States",Issued,Paragon Place at Bear Claw Way #29 - New 4 unit townhouse building with private garages,,4,TR-C1,43.0675087,-89.5570488,REZONED,Townhouse,ACTIVE
+BLDNCC-2024-15197,2024-09-05,"9753 Elderberry RD, Middleton WI 53562 United States",Issued,Paragon Place at Bear Claw Way #29 - New 4 unit townhouse building with private garages,,4,TR-C1,43.0675087,-89.5570488,UNKNOWN,Townhouse,ACTIVE
 BLDNCC-2024-15193,2024-09-05,"330 Lakota WAY, Middleton WI 53562 United States",Issued,Paragon Place at Bear Claw Way #27 - New 4 unit townhouse building with private garages,,4,TR-V2,43.0656714,-89.5561588,PERMITTED,Townhouse,ACTIVE
 BLDNCC-2024-14984,2024-09-03,"655 S Whitney WAY, Madison WI 53711 United States",Closed,New 81-unit apartment with underground parking,,81,CC,43.0515537,-89.4726825,CONDITIONAL,Mid-Rise,BUILT
-BLDNCC-2024-14235,2024-08-21,"102 S Sprecher RD, Madison WI 53718 United States",In Process,The Alsos - New 162-unit apartment with underground parking,,162,SR-C1,43.0812113,-89.266783,REZONED,Mid-Rise,ACTIVE
-BLDNCC-2024-13438,2024-08-09,"1401 Theresa TER, Madison WI 53711 United States",Inspections Complete,New 3-unit townhouse with detached carport,,3,SR-C3,43.0374793,-89.489695,REZONED,Townhouse,BUILT
-BLDNCC-2024-13437,2024-08-09,"1309 Theresa TER, Madison WI 53711 United States",Inspections Complete,New 3-unit townhouse and detached carport,,3,SR-C3,43.0385076,-89.4896575,REZONED,Townhouse,BUILT
+BLDNCC-2024-14235,2024-08-21,"102 S Sprecher RD, Madison WI 53718 United States",In Process,The Alsos - New 162-unit apartment with underground parking,,162,SR-C1,43.0812113,-89.266783,UNKNOWN,Mid-Rise,ACTIVE
+BLDNCC-2024-13438,2024-08-09,"1401 Theresa TER, Madison WI 53711 United States",Inspections Complete,New 3-unit townhouse with detached carport,,3,SR-C3,43.0374793,-89.489695,UNKNOWN,Townhouse,BUILT
+BLDNCC-2024-13437,2024-08-09,"1309 Theresa TER, Madison WI 53711 United States",Inspections Complete,New 3-unit townhouse and detached carport,,3,SR-C3,43.0385076,-89.4896575,UNKNOWN,Townhouse,BUILT
 BLDNCC-2024-13105,2024-08-05,"5534 Element WAY, Madison WI 53719 United States",Issued,Element Collective - 2 tower 197-unit apartment with shell commercial space and indoor parking,,197,TSS,43.0594096,-89.4752991,CONDITIONAL,Mid-Rise Mixed-Use,ACTIVE
 BLDNCC-2024-11687,2024-07-15,"1626 Lock LN, Madison WI 53704 United States",Inspections Complete,New 5-unit townhouse apartment,,5,,,,UNKNOWN,Townhouse,BUILT
 BLDNCC-2024-11680,2024-07-15,"1638 Lock LN, Madison WI 53704 United States",Closed,New 9-unit townhouse apartment,,9,,,,UNKNOWN,Townhouse,BUILT
@@ -88,7 +88,7 @@ BLDNCC-2024-01127,2024-01-25,"252 Dunning ST, Madison WI 53704 United States",Cl
 BLDNCC-2024-00901,2024-01-19,"531 W Washington AVE, Madison WI 53703 United States",Inspections Complete,"New Building, 6 story 140 unit apartment with 2 level underground parking",,140,DR2,43.0690844,-89.3911762,CONDITIONAL,Mid-Rise,BUILT
 BLDNCC-2024-00398,2024-01-10,"133 W Wilson ST, Madison WI 53703 United States",In Process,The Moment - 264-unit apartment with shell commercial space and parking. Includes rooftop solar.,,264,PD,43.0711657,-89.3833328,VARIES,Mid-Rise Mixed-Use,ACTIVE
 BLDNCC-2023-20373,2023-12-22,"1003 Huxley ST, Madison WI 53704 United States",Closed,"New Apartment 250 units, 6 stories, 3 levels of car parking",,250,RMX,43.1075632,-89.3611919,PERMITTED,Mid-Rise,BUILT
-BLDNCC-2023-20368,2023-12-22,"905 Huxley ST, Madison WI 53704 United States",Ready for CoO,The View at Huxley Yards Apartments- 303-unit apartment with amenity spaces and interior parking,,303,RMX,43.1075632,-89.3611919,PERMITTED,Mid-Rise,BUILT
+BLDNCC-2023-20368,2023-12-22,"905 Huxley ST, Madison WI 53704 United States",Ready for CoO,The View at Huxley Yards Apartments- 303-unit apartment with amenity spaces and interior parking,,303,RMX,43.1075632,-89.3611919,REZONED,Mid-Rise,BUILT
 BLDNCC-2023-19837,2023-12-13,"2027 University AVE, Madison WI 53726 United States",Issued,repair front porch stoop (3 unit rental housing),,3,TR-U1,43.0728,-89.4205989,PERMITTED,Duplex/Triplex,DID_NOT_PROCEED
 BLDNCC-2023-19705,2023-12-11,"838 Williamson ST, Madison WI 53703 United States",Closed,New 55-unit apartment with underground parking and shell commercial space,,55,TSS,43.0791091,-89.3704952,CONDITIONAL,Mid-Rise Mixed-Use,BUILT
 BLDNCC-2023-19397,2023-12-05,"306 S Paterson ST, Madison WI 53703 United States",Inspections Complete,New 133-unit apartment with underground parking and shell commercial space,,133,TSS,43.0794096,-89.3711633,CONDITIONAL,Mid-Rise Mixed-Use,BUILT
@@ -97,10 +97,10 @@ BLDNCC-2023-19091,2023-11-30,"942 Rise LN, Madison WI 53704 United States",Close
 BLDNCC-2023-19089,2023-11-30,"957 Rise LN, Madison WI 53704 United States",Closed,Gardner Bakery Apartments building 4 - 46 unit apartment with underground parking,,46,,,,UNKNOWN,Mid-Rise,BUILT
 BLDNCC-2023-17731,2023-11-06,"918 Canter DR, Madison WI 53718 United States",Closed,"New Four Unit Apartment, 918-924 Canter",,4,SR-V2,43.1104728,-89.278973,PERMITTED,Multiplex,BUILT
 BLDNCC-2023-17726,2023-11-06,"928 Canter DR, Madison WI 53718 United States",Inspections Complete,"New Seven Unit Apartment, 928-940 Canter",,7,SR-V2,43.1104728,-89.278973,PERMITTED,Multiplex,BUILT
-BLDNCC-2023-17713,2023-11-06,"5713 Eternity DR, Madison WI 53718 United States",Closed,"New six Unit Apartment, 5713-5723 Eternity Dr.  Basement bathrooms to be roughed in only.",,6,SR-C3,43.1105801,-89.2801679,REZONED,Multiplex,BUILT
-BLDNCC-2023-17678,2023-11-06,"5703 Eternity DR, Madison WI 53718 United States",Closed,"New Four Unit Apartment, 5703-5709 Eternity Dr",,4,SR-C3,43.1105801,-89.2801679,REZONED,Multiplex,BUILT
-BLDNCC-2023-17671,2023-11-06,"973 Wisdom RD, Madison WI 53718 United States",Closed,New Four Unit Apartment 973-979 Wisdom Rd,,4,SR-C3,43.1107359,-89.2802929,REZONED,Multiplex,BUILT
-BLDNCC-2023-17664,2023-11-06,"983 Wisdom RD, Madison WI 53718 United States",Inspections Complete,"New Three Unit Apartment 983,985,987 Wisdom Rd",,3,SR-C3,43.1107359,-89.2802929,REZONED,Duplex/Triplex,BUILT
+BLDNCC-2023-17713,2023-11-06,"5713 Eternity DR, Madison WI 53718 United States",Closed,"New six Unit Apartment, 5713-5723 Eternity Dr.  Basement bathrooms to be roughed in only.",,6,SR-C3,43.1105801,-89.2801679,UNKNOWN,Multiplex,BUILT
+BLDNCC-2023-17678,2023-11-06,"5703 Eternity DR, Madison WI 53718 United States",Closed,"New Four Unit Apartment, 5703-5709 Eternity Dr",,4,SR-C3,43.1105801,-89.2801679,UNKNOWN,Multiplex,BUILT
+BLDNCC-2023-17671,2023-11-06,"973 Wisdom RD, Madison WI 53718 United States",Closed,New Four Unit Apartment 973-979 Wisdom Rd,,4,SR-C3,43.1107359,-89.2802929,UNKNOWN,Multiplex,BUILT
+BLDNCC-2023-17664,2023-11-06,"983 Wisdom RD, Madison WI 53718 United States",Inspections Complete,"New Three Unit Apartment 983,985,987 Wisdom Rd",,3,SR-C3,43.1107359,-89.2802929,UNKNOWN,Duplex/Triplex,BUILT
 BLDNCC-2023-16456,2023-10-16,"109 E Wilson ST, Madison WI 53703 United States",Closed,"Quad Capital Partners - 340 unit apartment, shell commercial space, and three levels of parking",,340,TR-U1,43.0843027,-89.3646176,CONDITIONAL,Mid-Rise Mixed-Use,BUILT
 BLDNCC-2023-13516,2023-08-25,"112 S Hancock ST, Madison WI 53703 United States",Issued,Alter units on all floors after fire. Staircase and dormer additions. split unit to make 5-unit building,,5,DR1,43.0759678,-89.3788985,CONDITIONAL,Multiplex,DID_NOT_PROCEED
 BLDNCC-2023-13109,2023-08-21,"1701 Carns DR, Madison WI 53719 United States",Closed,Replace exterior stairs to 6 units.,,6,PD,43.0338524,-89.5235563,VARIES,Multiplex,BUILT
@@ -125,11 +125,11 @@ BLDNCC-2023-03770,2023-03-21,"9704 Paragon ST, Middleton WI 53562 United States"
 BLDNCC-2023-03496,2023-03-15,"10 S Paterson ST, Madison WI 53703 United States",Inspections Complete,Bakers Place - 204 unit apartment with parking and shell mercantile space.  Type IV-B construction on Type IA construction. 2021 IBC,,204,TE,43.0820686,-89.3732144,CONDITIONAL,Mid-Rise,BUILT
 BLDNCC-2023-03485,2023-03-15,"849 E Washington AVE, Madison WI 53703 United States",Closed,Build out of 2 residential units and amenity space in existing building,,2,TE,43.0815592,-89.3741274,CONDITIONAL,Duplex/Triplex,BUILT
 BLDNCC-2023-03185,2023-03-09,"3914 Monona DR, Madison WI 53716 United States",Closed,"New 69-unit apartment with parking, shell commercial space, and drive thru",,69,TSS,43.0833063,-89.3247353,CONDITIONAL,Mid-Rise Mixed-Use,BUILT
-BLDNCC-2023-02225,2023-02-17,"2110 Schlimgen AVE, Madison WI 53704 United States",Closed,"Avenue Square Apartments - 4 story, 70-units with underground apartment and shell commercial space",,70,NMX,43.1187904,-89.3560287,REZONED,Mid-Rise Mixed-Use,BUILT
-BLDNCC-2023-01623,2023-02-06,"3722 Speedway RD, Madison WI 53705 United States",Inspections Complete,New 31-unit apartment with parking and shell commercial space,,31,NMX,43.0612569,-89.4381701,REZONED,Mid-Rise Mixed-Use,BUILT
+BLDNCC-2023-02225,2023-02-17,"2110 Schlimgen AVE, Madison WI 53704 United States",Closed,"Avenue Square Apartments - 4 story, 70-units with underground apartment and shell commercial space",,70,NMX,43.1187904,-89.3560287,UNKNOWN,Mid-Rise Mixed-Use,BUILT
+BLDNCC-2023-01623,2023-02-06,"3722 Speedway RD, Madison WI 53705 United States",Inspections Complete,New 31-unit apartment with parking and shell commercial space,,31,NMX,43.0612569,-89.4381701,UNKNOWN,Mid-Rise Mixed-Use,BUILT
 BLDNCC-2023-01427,2023-02-01,"832 Regent ST, Madison WI 53715 United States",Closed,"CRG Chapter Apartments - 165 apartments, with parking and shell commercial",,165,UMX,43.0677265,-89.400306,PERMITTED,Mid-Rise Mixed-Use,BUILT
 BLDNCC-2023-01230,2023-01-27,"3007 University AVE, Madison WI 53705 United States",Closed,Smokey's Club Redevelopment - 59-unit apartment with underground parking and shell commercial space,,59,CC-T,43.075173,-89.4415596,CONDITIONAL,Mid-Rise Mixed-Use,BUILT
-BLDNCC-2023-00642,2023-01-17,"1605 Schmedeman AVE, Madison WI 53704 United States",Inspections Complete,Convert 7-unit second floor apartments to 4-unit apartments,,7,TR-V1,43.1158604,-89.3274069,REZONED,Multiplex,BUILT
+BLDNCC-2023-00642,2023-01-17,"1605 Schmedeman AVE, Madison WI 53704 United States",Inspections Complete,Convert 7-unit second floor apartments to 4-unit apartments,,7,TR-V1,43.1158604,-89.3274069,UNKNOWN,Multiplex,BUILT
 BLDNCC-2023-00338,2023-01-10,"7449 Weekend WAY, Madison WI 53719 United States",Closed,"Revelry: New six-story apartment building with 191 units, one level of enclosed parking below grade",,191,TR-U2,43.0547908,-89.5133192,CONDITIONAL,Mid-Rise,BUILT
 BLDNCC-2022-19248,2022-12-12,"405 Presidential LN, Madison WI 53711 United States",Closed,Interior alteration of 4 unit apartment - alter kitchens and closets,,4,SR-V1,43.0604935,-89.4638844,PERMITTED,Multiplex,BUILT
 BLDNCC-2022-18564,2022-11-29,"3917 Lien RD, Madison WI 53704 United States",Closed,Plato's - convert hotel to 190-unit apartment,,190,CC-T,43.1210686,-89.3176533,CONDITIONAL,Mid-Rise,BUILT
@@ -142,19 +142,19 @@ BLDNCC-2022-07767,2022-05-23,"220 Lakota WAY, Middleton WI 53562 United States",
 BLDNCC-2022-07761,2022-05-23,"215 Lakota WAY, Middleton WI 53562 United States",Closed,New 2 story 36 unit apartment bldg 6,,36,TR-V2,43.0656714,-89.5561588,CONDITIONAL,Mid-Rise,BUILT
 BLDNCC-2022-07623,2022-05-20,"334 W Mifflin ST, Madison WI 53703 United States",Closed,Convert retail space to 4 apartments,,4,DC,43.073791,-89.3877778,PERMITTED,Multiplex,BUILT
 BLDNCC-2022-07376,2022-05-18,"5817 Halley WAY, Madison WI 53718 United States",Rejected,"Capitol View Apts- 98 unit senior apartment bld, with underground parking",,98,PD,43.0877363,-89.2819296,VARIES,Mid-Rise,DID_NOT_PROCEED
-BLDNCC-2022-07305,2022-05-17,"1320 Bowen CT, Madison WI 53715 United States",Closed,Lucky's 1313 - 47-unit apartment addition to tavern,,47,TR-V1,43.0671511,-89.4077385,REZONED,Mid-Rise,BUILT
+BLDNCC-2022-07305,2022-05-17,"1320 Bowen CT, Madison WI 53715 United States",Closed,Lucky's 1313 - 47-unit apartment addition to tavern,,47,TR-V1,43.0671511,-89.4077385,UNKNOWN,Mid-Rise,BUILT
 BLDNCC-2022-07266,2022-05-17,"1959 E Mifflin ST, Madison WI 53704 United States",Inspections Complete,The Avenue - 24-unit apartment with underground parking,,24,TR-U1,43.094355,-89.3582872,PERMITTED,Mid-Rise,BUILT
 BLDNCC-2022-06532,2022-05-04,"339 W Gorham ST, Madison WI 53703 United States",Closed,Oliv - New Student Housing building - 377 units with parking and shell commercial space.  Includes rooftop solar,,377,PD,43.0742559,-89.3916081,VARIES,Mid-Rise Mixed-Use,BUILT
 BLDNCC-2022-06412,2022-05-03,"7603 Mineral Point RD, Madison WI 53717 United States",Closed,"New 4 story mixed use - 64 unit apartment, attached clubhouse, UG parking",,64,PD,43.0604949,-89.5142009,VARIES,Mid-Rise Mixed-Use,BUILT
 BLDNCC-2022-06122,2022-04-27,"2206 University AVE, Madison WI 53726 United States",Closed,"The Heights Apartments - New 79-unit podium building, office for future tenant, UG parking",,79,TSS,43.0725217,-89.4239622,CONDITIONAL,Mid-Rise,BUILT
-BLDNCC-2022-05754,2022-04-21,"226 N Midvale BLVD, Madison WI 53705 United States",Closed,The Manchester - 72-unit apartment with parking,,72,NMX,43.0686212,-89.4512348,REZONED,Mid-Rise,BUILT
+BLDNCC-2022-05754,2022-04-21,"226 N Midvale BLVD, Madison WI 53705 United States",Closed,The Manchester - 72-unit apartment with parking,,72,NMX,43.0686212,-89.4512348,UNKNOWN,Mid-Rise,BUILT
 BLDNCC-2022-05173,2022-04-12,"208 S Hamilton ST, Madison WI 53703 United States",Closed,The Luminous - New 4 unit live/work with commercial shell,,4,UMX,43.07155,-89.3843464,PERMITTED,Multiplex,BUILT
 BLDNCC-2022-03949,2022-03-22,"2701 University AVE, Madison WI 53705 United States",Closed,Rooftop decks for 7 apartments,,7,PD,43.0731682,-89.4341435,VARIES,Multiplex,BUILT
 BLDNCC-2022-03416,2022-03-11,"2012 Winnebago ST, Madison WI 53704 United States",Closed,New 24-unit apartment with shell commercial space and underground parking,,24,TSS,43.0926171,-89.3548576,PERMITTED,Mid-Rise Mixed-Use,BUILT
 BLDNCC-2022-02410,2022-02-18,"2350 Winnebago ST, Madison WI 53704 United States",Closed,"Movin' Out Red Caboose - 4 story, 38 unit apartment building, 1st floor story mixed use shell",,38,PD,43.0986628,-89.3482801,VARIES,Mid-Rise Mixed-Use,BUILT
-BLDNCC-2022-02263,2022-02-16,"131 E Lakeside ST, Madison WI 53715 United States",Closed,The Post - 66 unit apartment with shell commercial space and underground parking,,66,TR-V1,43.0559205,-89.3834929,REZONED,Mid-Rise Mixed-Use,BUILT
+BLDNCC-2022-02263,2022-02-16,"131 E Lakeside ST, Madison WI 53715 United States",Closed,The Post - 66 unit apartment with shell commercial space and underground parking,,66,TR-V1,43.0559205,-89.3834929,UNKNOWN,Mid-Rise Mixed-Use,BUILT
 BLDNCC-2022-00913,2022-01-21,"179 W Wilson ST, Madison WI 53703 United States",Closed,"Wilson 100 - 10 story mixed use - 207 units, 3 levels UG parking, shell commercial space",,207,DC,43.0721461,-89.3819344,PERMITTED,High-Rise Mixed-Use,BUILT
-BLDNCC-2022-00879,2022-01-20,"7803 Raymond RD, Madison WI 53719 United States",Closed,Esker #5 - 6 unit townhouse w/ private garages,,6,TR-C1,43.0238548,-89.521908,REZONED,Townhouse,BUILT
+BLDNCC-2022-00879,2022-01-20,"7803 Raymond RD, Madison WI 53719 United States",Closed,Esker #5 - 6 unit townhouse w/ private garages,,6,TR-C1,43.0238548,-89.521908,UNKNOWN,Townhouse,BUILT
 BLDNCC-2021-19898,2021-12-29,"18 Glacial Groove CT, Madison WI 53719 United States",Closed,New 4 story 38 unit apartment,,38,,,,UNKNOWN,Mid-Rise,BUILT
 BLDNCC-2021-18265,2021-11-23,"5615 Fraser CIR, Madison WI 53718 United States",Closed,Eastpark Apartments bldg #5 - 69-unit apartment with parking and shell space,,69,CC-T,43.1490273,-89.2869551,CONDITIONAL,Mid-Rise,BUILT
 BLDNCC-2021-18264,2021-11-23,"5627 Fraser CIR, Madison WI 53718 United States",Closed,Eastpark Apartments bldg #4 - 56-unit apartment with parking,,56,CC-T,43.1490273,-89.2869551,CONDITIONAL,Mid-Rise,BUILT
@@ -163,7 +163,7 @@ BLDNCC-2021-18262,2021-11-23,"5618 Fraser CIR, Madison WI 53718 United States",C
 BLDNCC-2021-18261,2021-11-23,"5606 Fraser CIR, Madison WI 53718 United States",Closed,Eastpark Apartments bldg #1 - 69-unit apartment with parking and shell space,,69,CC-T,43.1490273,-89.2869551,CONDITIONAL,Mid-Rise,BUILT
 BLDNCC-2021-16724,2021-10-25,"914 Spaight ST, Madison WI 53703 United States",Closed,4 unit apt building. remove and replace front and rear porch,,4,TR-V1,43.078727,-89.3676151,PERMITTED,Multiplex,BUILT
 BLDNCC-2021-15664,2021-10-06,"667 S Whitney WAY, Madison WI 53711 United States",Closed,Westgate Bld #4 -New 81 unit apt w/ under ground parking,,81,CC,43.0515537,-89.4726707,CONDITIONAL,Mid-Rise,BUILT
-BLDNCC-2021-15142,2021-09-28,"1868 E Washington AVE, Madison WI 53704 United States",Closed,6 story 289 unit apt with commercial and parking on 1st and parking below,,289,TR-V1,43.0918483,-89.359584,REZONED,Mid-Rise,BUILT
+BLDNCC-2021-15142,2021-09-28,"1868 E Washington AVE, Madison WI 53704 United States",Closed,6 story 289 unit apt with commercial and parking on 1st and parking below,,289,TR-V1,43.0918483,-89.359584,UNKNOWN,Mid-Rise,BUILT
 BLDNCC-2021-14350,2021-09-14,"4702 Madison Yards WAY, Madison WI 53705 United States",Closed,New 273-unit apt - Madison Yards Block 2,,273,PD,43.0744586,-89.4574646,VARIES,Mid-Rise,BUILT
 BLDNCC-2021-14164,2021-09-10,"1804 Maplecrest DR, Verona WI 53593 United States",Closed,Middleton Terrace - New 10-unit condominium,,10,,,,UNKNOWN,Mid-Rise,BUILT
 BLDNCC-2021-13475,2021-08-27,"649 Sand Pearl LN, Madison WI 53711 United States",Closed,Westgate Redevelopment bldg #3 - 68 unit apartment with underground parking,,68,PD,43.0526477,-89.4719912,VARIES,Mid-Rise,BUILT
@@ -181,8 +181,8 @@ BLDNCC-2021-11473,2021-07-26,"103 La Mariposa LN, Madison WI 53715 United States
 BLDNCC-2021-11400,2021-07-23,"720 W Washington AVE, Madison WI 53715 United States",Closed,Bayview building 1 - new 48-unit apartment with underground parking,,48,TR-U1,43.0668982,-89.395917,CONDITIONAL,Mid-Rise,BUILT
 BLDNCC-2021-11221,2021-07-21,"9740 Watts RD, Verona WI 53593 United States",Closed,Timber Valley bldg 4 - new 4 unit rowhouse,,4,,,,UNKNOWN,Townhouse,BUILT
 BLDNCC-2021-10847,2021-07-14,"1043 Melvin CT, Madison WI 53704 United States",Closed,Maginnis - basement remodel in 4 unit,,4,PD,43.1108416,-89.3381052,VARIES,Multiplex,BUILT
-BLDNCC-2021-09737,2021-06-24,"5265 University AVE, Madison WI 53705 United States",Closed,"Degen buildings A & B - 55 unit apartment, shell commercial space, finished office",,55,TR-P,43.0789158,-89.4714411,REZONED,Mid-Rise Mixed-Use,BUILT
-BLDNCC-2021-09726,2021-06-24,"5257 University AVE, Madison WI 53705 United States",Closed,Degen bldg C - New 30-unit apartment with parking,,30,TR-P,43.0787908,-89.4712991,REZONED,Mid-Rise,BUILT
+BLDNCC-2021-09737,2021-06-24,"5265 University AVE, Madison WI 53705 United States",Closed,"Degen buildings A & B - 55 unit apartment, shell commercial space, finished office",,55,TR-P,43.0789158,-89.4714411,UNKNOWN,Mid-Rise Mixed-Use,BUILT
+BLDNCC-2021-09726,2021-06-24,"5257 University AVE, Madison WI 53705 United States",Closed,Degen bldg C - New 30-unit apartment with parking,,30,TR-P,43.0787908,-89.4712991,UNKNOWN,Mid-Rise,BUILT
 BLDNCC-2021-08406,2021-06-02,"815 Cedar ST, Madison WI 53715 United States",Closed,six story mixed use building. 150 Units plus parking and shell retail,,150,TSS,43.051462,-89.3959309,CONDITIONAL,Mid-Rise Mixed-Use,BUILT
 BLDNCC-2021-08167,2021-05-28,"4612 Hammersley RD, Madison WI 53711 United States",Closed,New 53-unit apartement with commercial shell space and underground parking,,53,CC-T,43.03911,-89.4555471,CONDITIONAL,Mid-Rise,BUILT
 BLDNCC-2021-07992,2021-05-26,"821 Williamson ST, Madison WI 53703 United States",Closed,John Fontain - New 19-unit apartment with parking and shell commercial space,,19,TSS,43.0785159,-89.3706352,PERMITTED,Mid-Rise Mixed-Use,BUILT
@@ -193,7 +193,7 @@ BLDNCC-2021-06875,2021-05-10,"1841 Aberg AVE, Madison WI 53704 United States",Cl
 BLDNCC-2021-06734,2021-05-06,"601 Sand Pearl LN, Madison WI 53711 United States",Closed,Westgate Building #1 - new 156-unit apartment with underground parking,,156,PD,43.053054,-89.4716887,VARIES,Mid-Rise,BUILT
 BLDNCC-2021-06733,2021-05-06,"10 Glacial Groove CT, Madison WI 53719 United States",Closed,Esker Apartments bld #7 - 4 story 44 unit apartment w/ UG parking,,44,,,,UNKNOWN,Mid-Rise,BUILT
 BLDNCC-2021-06269,2021-04-29,"6410 Driscoll DR, Madison WI 53718 United States",Closed,new 4-unit apartment with heated garages,,4,PD,43.0988877,-89.2695809,VARIES,Multiplex,BUILT
-BLDNCC-2021-06256,2021-04-29,"6402 Driscoll DR, Madison WI 53718 United States",Closed,new 4-unit apartment with heated garages,,4,TR-C3,43.0988735,-89.2700761,REZONED,Multiplex,BUILT
+BLDNCC-2021-06256,2021-04-29,"6402 Driscoll DR, Madison WI 53718 United States",Closed,new 4-unit apartment with heated garages,,4,TR-C3,43.0988735,-89.2700761,UNKNOWN,Multiplex,BUILT
 BLDNCC-2021-05904,2021-04-23,"408 E Washington AVE, Madison WI 53703 United States",Closed,new mixed use building with 148 apartments,,148,UMX,43.0773987,-89.3800307,PERMITTED,Mid-Rise Mixed-Use,BUILT
 BLDNCC-2021-05653,2021-04-21,"9750 Watts RD, Verona WI 53593 United States",Closed,"Timber Valley 2 Apts Bld 5, 40 unit, 3 story bld with underground parking",,40,SR-V2,43.0524401,-89.5579367,CONDITIONAL,Mid-Rise,BUILT
 BLDNCC-2021-04860,2021-04-07,"5909 Sharpsburg DR, Madison WI 53718 United States",Closed,"Grandview Commons Apts, B block, 147 units, mixed use 1st floor, 6 stories and 2 stories of underground parking",,147,PD,43.0852737,-89.2792517,VARIES,Mid-Rise Mixed-Use,BUILT
@@ -205,7 +205,7 @@ BLDNCC-2021-02713,2021-02-25,"1308 Mica RD, Madison WI 53719 United States",Clos
 BLDNCC-2021-02709,2021-02-25,"1302 Mica RD, Madison WI 53719 United States",Closed,Springs at Pleasant View #7 - 20-unit apartment building with garages,,20,TR-U2,43.0382017,-89.5307571,PERMITTED,Mid-Rise,BUILT
 BLDNCC-2021-02333,2021-02-18,"1314 Mica RD, Madison WI 53719 United States",Closed,Springs at Pleasant View #4 - 20-unit apartment building with garages,,20,TR-U2,43.0377508,-89.5307599,PERMITTED,Mid-Rise,BUILT
 BLDNCC-2021-02324,2021-02-18,"1320 Mica RD, Madison WI 53719 United States",Closed,Springs at Pleasant View #5 - 20-unit apartment building with garages,,20,TR-U2,43.037812,-89.5319569,PERMITTED,Mid-Rise,BUILT
-BLDNCC-2021-02244,2021-02-17,"1725 City View DR, Madison WI 53718 United States",Closed,"Autumn Lake Apt Bld 6,35 units",,35,TR-P,43.1225685,-89.2856656,REZONED,Mid-Rise,BUILT
+BLDNCC-2021-02244,2021-02-17,"1725 City View DR, Madison WI 53718 United States",Closed,"Autumn Lake Apt Bld 6,35 units",,35,TR-P,43.1225685,-89.2856656,UNKNOWN,Mid-Rise,BUILT
 BLDNCC-2021-02050,2021-02-12,"1332 Mica RD, Madison WI 53719 United States",Closed,New 20 unit apatment,,20,TR-U2,43.0373644,-89.5319679,PERMITTED,Mid-Rise,BUILT
 BLDNCC-2021-02045,2021-02-12,"1326 Mica RD, Madison WI 53719 United States",Closed,New 20 Unit apartment,,20,TR-U2,43.0373042,-89.530771,PERMITTED,Mid-Rise,BUILT
 BLDNCC-2021-01620,2021-02-04,"8521 Mansion Hill AVE, Madison WI 53719 United States",Closed,Springs at Pleasant View #14 - 20-unit apartment building with garages,,20,PD,43.0347121,-89.5256833,VARIES,Mid-Rise,BUILT
@@ -228,21 +228,21 @@ BLDNCC-2020-17201,2020-11-20,"1338 Mica RD, Madison WI 53719 United States",Clos
 BLDNCC-2020-16743,2020-11-11,"1244 Huxley ST, Madison WI 53704 United States",Inspections Complete,Oscar Family Apartments: 4 story 55 unit apt bld with basement parking and shell commercial space on 1st floor.,,55,CC-T,43.1133304,-89.3590686,CONDITIONAL,Mid-Rise Mixed-Use,BUILT
 BLDNCC-2020-16737,2020-11-11,"1222 Huxley ST, Madison WI 53704 United States",Closed,Oscar Senior Apartments- new 4 story 55 unit apt with basement parking,,55,CC-T,43.1130255,-89.3590092,CONDITIONAL,Mid-Rise,BUILT
 BLDNCC-2020-14620,2020-10-08,"3836 Maple Grove DR, Madison WI 53719 United States",Closed,New 53-unit apartment - The 85 at Maple Grove A4,,53,PD,43.0048892,-89.4991685,VARIES,Mid-Rise,BUILT
-BLDNCC-2020-14458,2020-10-06,"4052 Manchester RD, Madison WI 53719 United States",Closed,New 4-unit townhome - The 85 at Maple Grove T8,,4,SR-C1,43.0164396,-89.4908008,REZONED,Townhouse,BUILT
-BLDNCC-2020-14454,2020-10-06,"4042 Manchester RD, Madison WI 53719 United States",Closed,New 4-unit townhome - The 85 at Maple Grove T7,,4,SR-C1,43.0189201,-89.4884371,REZONED,Townhouse,BUILT
-BLDNCC-2020-14288,2020-10-05,"4010 Manchester RD, Madison WI 53719 United States",Closed,new 4 unit townhouse,,4,SR-C1,43.0164396,-89.4908008,REZONED,Townhouse,BUILT
+BLDNCC-2020-14458,2020-10-06,"4052 Manchester RD, Madison WI 53719 United States",Closed,New 4-unit townhome - The 85 at Maple Grove T8,,4,SR-C1,43.0164396,-89.4908008,UNKNOWN,Townhouse,BUILT
+BLDNCC-2020-14454,2020-10-06,"4042 Manchester RD, Madison WI 53719 United States",Closed,New 4-unit townhome - The 85 at Maple Grove T7,,4,SR-C1,43.0189201,-89.4884371,UNKNOWN,Townhouse,BUILT
+BLDNCC-2020-14288,2020-10-05,"4010 Manchester RD, Madison WI 53719 United States",Closed,new 4 unit townhouse,,4,SR-C1,43.0164396,-89.4908008,UNKNOWN,Townhouse,BUILT
 BLDNCC-2020-14284,2020-10-05,"6741 Rockstream DR, Madison WI 53719 United States",Closed,new 4 unit townhouse,,4,TR-U1,43.0060568,-89.5019876,PERMITTED,Townhouse,BUILT
 BLDNCC-2020-14280,2020-10-05,"6747 Rockstream DR, Madison WI 53719 United States",Closed,new 4 unit townhouse,,4,TR-U1,43.0060568,-89.5019876,PERMITTED,Townhouse,BUILT
 BLDNCC-2020-14159,2020-10-01,"6711 Rockstream DR, Madison WI 53719 United States",Closed,New 10-unit townhouse - The 85 at Maple Grove T5,,10,TR-U1,43.0060568,-89.5019876,CONDITIONAL,Townhouse,BUILT
-BLDNCC-2020-14158,2020-10-01,"4062 Manchester RD, Madison WI 53719 United States",Closed,New 10-unit townhouse - The 85 at Maple Grove T2,,10,SR-C1,43.0189201,-89.4884371,REZONED,Townhouse,BUILT
-BLDNCC-2020-14157,2020-10-01,"4020 Manchester RD, Madison WI 53719 United States",Closed,New 10-unit townhouse - The 85 at Maple Grove T1,,10,SR-C1,43.0164396,-89.4908008,REZONED,Townhouse,BUILT
+BLDNCC-2020-14158,2020-10-01,"4062 Manchester RD, Madison WI 53719 United States",Closed,New 10-unit townhouse - The 85 at Maple Grove T2,,10,SR-C1,43.0189201,-89.4884371,UNKNOWN,Townhouse,BUILT
+BLDNCC-2020-14157,2020-10-01,"4020 Manchester RD, Madison WI 53719 United States",Closed,New 10-unit townhouse - The 85 at Maple Grove T1,,10,SR-C1,43.0164396,-89.4908008,UNKNOWN,Townhouse,BUILT
 BLDNCC-2020-13890,2020-09-29,"6825 Rockstream DR, Madison WI 53719 United States",Closed,New 8-unit apartment - The 85 at Maple Grove bldg S3,,8,TR-U1,43.0060568,-89.5019876,PERMITTED,Multiplex,BUILT
 BLDNCC-2020-13884,2020-09-29,"6807 Fairhaven RD, Madison WI 53719 United States",Closed,New 8-unit apartment - The 85 at Maple Grove bldg S2,,8,PD,43.0035145,-89.4991057,VARIES,Multiplex,BUILT
 BLDNCC-2020-13879,2020-09-29,"3828 Maple Grove DR, Madison WI 53719 United States",Closed,new 53 unit apt - The 85 at Maple Grove building A2,,53,PD,43.0049178,-89.4991681,VARIES,Mid-Rise,BUILT
-BLDNCC-2020-12783,2020-09-11,"4065 Manchester RD, Madison WI 53719 United States",Closed,New 8 unit apt S1,,8,SR-C1,43.0164396,-89.4908008,REZONED,Multiplex,BUILT
+BLDNCC-2020-12783,2020-09-11,"4065 Manchester RD, Madison WI 53719 United States",Closed,New 8 unit apt S1,,8,SR-C1,43.0164396,-89.4908008,UNKNOWN,Multiplex,BUILT
 BLDNCC-2020-12738,2020-09-11,"3824 Maple Grove DR, Madison WI 53719 United States",Closed,new 53 unit apt - The 85 at Maple Grove building A1,,53,PD,43.004932,-89.4991679,VARIES,Mid-Rise,BUILT
 BLDNCC-2020-12019,2020-08-28,"4088 Felland RD, Madison WI 53718 United States",Closed,"Felland Road Apartments - 2 story, 17 unit residential with UG parking",,17,PD,43.143998,-89.2761262,VARIES,Mid-Rise,BUILT
-BLDNCC-2020-11058,2020-08-13,"2002 Tennyson LN, Madison WI 53704 United States",Closed,New 62-unit apartment - building B,,62,SR-V2,43.1347916,-89.3564882,CONDITIONAL,Mid-Rise,BUILT
+BLDNCC-2020-11058,2020-08-13,"2002 Tennyson LN, Madison WI 53704 United States",Closed,New 62-unit apartment - building B,,62,SR-V2,43.1347916,-89.3564882,REZONED,Mid-Rise,BUILT
 BLDNCC-2020-10728,2020-08-07,"1121 S Park ST, Madison WI 53715 United States",Closed,New 44 Unit Apartment Bld with commercial space,,44,TSS,43.0556246,-89.3976372,CONDITIONAL,Mid-Rise Mixed-Use,BUILT
 BLDNCC-2020-10514,2020-08-04,"9726 Watts RD, Verona WI 53593 United States",Closed,Timber Valley Apartments building 3 - 28-unit,,28,SR-V2,43.0525753,-89.5566345,CONDITIONAL,Mid-Rise,BUILT
 BLDNCC-2020-09925,2020-07-27,"445 N Lake ST, Madison WI 53715 United States",Closed,remodel 5 units in an existing 14 unit building,,5,PD,43.0739888,-89.3972934,VARIES,Multiplex,BUILT
@@ -255,18 +255,18 @@ BLDNCC-2020-08328,2020-07-01,"1 Wind Stone DR, Madison WI 53718 United States",C
 BLDNCC-2020-08320,2020-07-01,"2 Wind Stone DR, Madison WI 53718 United States",Closed,65 Unit apartment,,65,PD,43.1009857,-89.2589742,VARIES,Mid-Rise,BUILT
 BLDNCC-2020-08314,2020-07-01,"6810 Milwaukee ST, Madison WI 53718 United States",Closed,65 unit apartment,,65,PD,43.099725,-89.2613767,VARIES,Mid-Rise,BUILT
 BLDNCC-2020-07356,2020-06-16,"2521 E Washington AVE, Madison WI 53704 United States",Closed,Union Corners - Nexus: new mixed use building with 105 apartments and shell retail space,,105,PD,43.0996787,-89.3487092,VARIES,Mid-Rise Mixed-Use,BUILT
-BLDNCC-2020-05222,2020-05-07,"5022 American PKWY, Madison WI 53718 United States",Closed,American Pkwy Apartments new 270 unit apt with commercial and parking garage.,,270,SEC,43.1513078,-89.2887127,REZONED,Mid-Rise,BUILT
+BLDNCC-2020-05222,2020-05-07,"5022 American PKWY, Madison WI 53718 United States",Closed,American Pkwy Apartments new 270 unit apt with commercial and parking garage.,,270,SEC,43.1513078,-89.2887127,UNKNOWN,Mid-Rise,BUILT
 BLDNCC-2020-05194,2020-05-06,"205 N Segoe RD, Madison WI 53705 United States",Closed,The Hamptons - Four story 59 unit apt,,59,TR-U2,43.0695446,-89.4539955,CONDITIONAL,Mid-Rise,BUILT
 BLDNCC-2020-05090,2020-05-04,"9604 Wilrich ST, Middleton WI 53562 United States",Closed,new 45 unit apartment building,,45,,,,UNKNOWN,Mid-Rise,BUILT
 BLDNCC-2020-04465,2020-04-13,"602 E Johnson ST, Madison WI 53703 United States",Issued,"Water damage on 4 units 102, 104, 202 & 302 repair only no change",,4,PD,43.0810209,-89.3815582,VARIES,Multiplex,DID_NOT_PROCEED
 BLDNCC-2020-04272,2020-04-06,"9708 Watts RD, Verona WI 53593 United States",Closed,Timber Valley building 1 - 40-unit apartment with parking,,40,SR-V2,43.0524316,-89.5550307,CONDITIONAL,Mid-Rise,BUILT
-BLDNCC-2020-04266,2020-04-06,"951 Acewood BLVD, Madison WI 53716 United States",Closed,Ace Apartments - 65-unit with parking and SHELL commercial,,65,SR-C3,43.085569,-89.3029839,REZONED,Mid-Rise Mixed-Use,BUILT
+BLDNCC-2020-04266,2020-04-06,"951 Acewood BLVD, Madison WI 53716 United States",Closed,Ace Apartments - 65-unit with parking and SHELL commercial,,65,SR-C3,43.085569,-89.3029839,UNKNOWN,Mid-Rise Mixed-Use,BUILT
 BLDNCC-2020-04259,2020-04-06,"4610 Cottage Grove RD, Madison WI 53716 United States",Closed,Ace Townhomes - New 5-unit,,5,CC-T,43.084293,-89.3027162,CONDITIONAL,Townhouse,BUILT
 BLDNCC-2020-03919,2020-03-26,"622 W Washington AVE, Madison WI 53703 United States",Inspections Complete,West Washington Place - 52-unit apartment with SHELL commercial space and underground parking,,52,UMX,43.0685932,-89.3936338,PERMITTED,Mid-Rise Mixed-Use,BUILT
 BLDNCC-2020-03615,2020-03-17,"6223 University AVE, Madison WI 53705 United States",Closed,53 unit apt,,53,,43.0896543,-89.4860293,UNKNOWN,Mid-Rise,BUILT
-BLDNCC-2020-03495,2020-03-13,"2402 Jeffy TRL, Madison WI 53719 United States",Closed,New 7-Unit apartment - Hawks Meadow #2,,7,TR-C3,43.0259733,-89.5264021,REZONED,Multiplex,BUILT
-BLDNCC-2020-03387,2020-03-11,"1011 Emerald ST, 1, Madison WI 53715 United States",Issued,Kitchen remodel in an existing 3 unit apt,,3,TR-C3,43.0608812,-89.402737,REZONED,Duplex/Triplex,DID_NOT_PROCEED
-BLDNCC-2020-03085,2020-03-05,"1703 City View DR, Madison WI 53718 United States",Closed,3 story 53 unit apartment  and basement parking,,53,TR-P,43.1218157,-89.2856439,REZONED,Mid-Rise,BUILT
+BLDNCC-2020-03495,2020-03-13,"2402 Jeffy TRL, Madison WI 53719 United States",Closed,New 7-Unit apartment - Hawks Meadow #2,,7,TR-C3,43.0259733,-89.5264021,UNKNOWN,Multiplex,BUILT
+BLDNCC-2020-03387,2020-03-11,"1011 Emerald ST, 1, Madison WI 53715 United States",Issued,Kitchen remodel in an existing 3 unit apt,,3,TR-C3,43.0608812,-89.402737,UNKNOWN,Duplex/Triplex,DID_NOT_PROCEED
+BLDNCC-2020-03085,2020-03-05,"1703 City View DR, Madison WI 53718 United States",Closed,3 story 53 unit apartment  and basement parking,,53,TR-P,43.1218157,-89.2856439,UNKNOWN,Mid-Rise,BUILT
 BLDNCC-2020-02778,2020-02-28,"19 N Hancock ST, Madison WI 53703 United States",Inspections Complete,convert a 3 unit apartment into single dwelling co-op housing,,3,DR1,43.0780706,-89.3809112,PERMITTED,Duplex/Triplex,BUILT
 BLDNCC-2020-01222,2020-01-28,"9502 Watts RD, Verona WI 53593 United States",Closed,The Edison - 147-unit apartment with clubhouse and underground parking,,147,,,,UNKNOWN,Mid-Rise,BUILT
 BLDNCC-2020-00298,2020-01-07,"2811 Bedrock LN, Madison WI 53719 United States",Closed,Esker townhomes #4 - 6-unit condominium,,6,,,,UNKNOWN,Townhouse,BUILT
@@ -281,15 +281,15 @@ BLDNCC-2019-16461,2019-10-21,"5630 Schroeder RD, Madison WI 53711 United States"
 BLDNCC-2019-12188,2019-08-13,"6518 Milwaukee ST, Madison WI 53718 United States",Closed,New 98-unit Apartment Building - Metrotech building 1- with underground parking and shell commercial space,,98,PD,43.1001827,-89.2671585,VARIES,Mid-Rise Mixed-Use,BUILT
 BLDNCC-2019-12112,2019-08-12,"5414 Mineral Point RD, Madison WI 53705 United States",Closed,Whitney Point Apts. 48 Unit Apartment with basement parking,,48,CC-T,43.0609604,-89.472571,CONDITIONAL,Mid-Rise,BUILT
 BLDNCC-2019-11214,2019-07-29,"2110 University AVE, Madison WI 53726 United States",Issued,"Oak Tree Apts phase 2 interior renovations for 16 units: 304, 310, 404, 409, 410, 303, 305, 206, 406, 408, 412, 311, 411, 108, 301",,16,TR-U2,43.073003,-89.4222283,PERMITTED,Mid-Rise,DID_NOT_PROCEED
-BLDNCC-2019-10111,2019-07-12,"1724 Willow Rock RD, Madison WI 53718 United States",Closed,Autumn Lake Apts Building 5 - 47 unit,,47,TR-P,43.1225291,-89.2847028,REZONED,Mid-Rise,BUILT
+BLDNCC-2019-10111,2019-07-12,"1724 Willow Rock RD, Madison WI 53718 United States",Closed,Autumn Lake Apts Building 5 - 47 unit,,47,TR-P,43.1225291,-89.2847028,UNKNOWN,Mid-Rise,BUILT
 BLDNCC-2019-09906,2019-07-10,"622 W Wilson ST, Madison WI 53703 United States",Closed,58-unit apartment with interior parking,,58,DR2,43.0662749,-89.3903474,CONDITIONAL,Mid-Rise,BUILT
 BLDNCC-2019-08588,2019-06-18,"1050 E Washington AVE, Madison WI 53703 United States",Closed,"Stonehouse Phase 2 - 124-unit apartment, parking garage, SHELL commercial space",,124,TE,43.0847973,-89.3706362,CONDITIONAL,Mid-Rise Mixed-Use,BUILT
-BLDNCC-2019-08538,2019-06-17,"1946 E Washington AVE, Madison WI 53704 United States",Closed,New 4 story 44 unit apt with first floor commercial and underground parking,,44,TR-V1,43.092918,-89.3581158,REZONED,Mid-Rise,BUILT
-BLDNCC-2019-08228,2019-06-12,"6072 Driscoll DR, Madison WI 53718 United States",Closed,New 4-unit apartment,,4,TR-P,43.0986103,-89.2783458,REZONED,Multiplex,BUILT
-BLDNCC-2019-08216,2019-06-12,"6062 Driscoll DR, Madison WI 53718 United States",Closed,New 4-unit apartment,,4,TR-P,43.09861,-89.2783665,REZONED,Multiplex,BUILT
+BLDNCC-2019-08538,2019-06-17,"1946 E Washington AVE, Madison WI 53704 United States",Closed,New 4 story 44 unit apt with first floor commercial and underground parking,,44,TR-V1,43.092918,-89.3581158,UNKNOWN,Mid-Rise,BUILT
+BLDNCC-2019-08228,2019-06-12,"6072 Driscoll DR, Madison WI 53718 United States",Closed,New 4-unit apartment,,4,TR-P,43.0986103,-89.2783458,UNKNOWN,Multiplex,BUILT
+BLDNCC-2019-08216,2019-06-12,"6062 Driscoll DR, Madison WI 53718 United States",Closed,New 4-unit apartment,,4,TR-P,43.09861,-89.2783665,UNKNOWN,Multiplex,BUILT
 BLDNCC-2019-08133,2019-06-11,"1824 Waldorf BLVD, Madison WI 53719 United States",Closed,"New 34-unit apartment with underground parking, Midtown Reserve Apartments",,34,PD,43.0326978,-89.526494,VARIES,Mid-Rise,BUILT
 BLDNCC-2019-06566,2019-05-16,"2024 Tennyson LN, Madison WI 53704 United States",Closed,New 67-unit apartment with SHELL commercial space and underground parking,,67,CC-T,43.1347866,-89.3562709,CONDITIONAL,Mid-Rise Mixed-Use,BUILT
-BLDNCC-2019-06457,2019-05-15,"810 W Olin AVE, Madison WI 53715 United States",Closed,"Hope Haven- new 2 story, 16 unit CBRF",,16,TR-C4,43.0541183,-89.395501,REZONED,Mid-Rise,BUILT
+BLDNCC-2019-06457,2019-05-15,"810 W Olin AVE, Madison WI 53715 United States",Closed,"Hope Haven- new 2 story, 16 unit CBRF",,16,TR-C4,43.0541183,-89.395501,UNKNOWN,Mid-Rise,BUILT
 BLDNCC-2019-06183,2019-05-09,"5 Maple Wood LN, 305, Madison WI 53704 United States",Closed,Divide condo unit into two units #305 & #306,,2,PD,43.1141318,-89.3658569,VARIES,Duplex/Triplex,BUILT
 BLDNCC-2019-05657,2019-04-30,"1958 Atwood AVE, Madison WI 53704 United States",Closed,"new 79 unit, parking, two commercial white box spaces and Prime Urban Properties tenant space @1952 Atwood Ave",,79,TSS,43.0919823,-89.3560568,CONDITIONAL,Mid-Rise,BUILT
 BLDNCC-2019-05246,2019-04-23,"6205 Mineral Point RD, 300, Madison WI 53705 United States",Closed,Apartment alteration - split unit into 2 units,,2,PD,43.060732,-89.4873543,VARIES,Duplex/Triplex,BUILT
@@ -299,32 +299,32 @@ BLDNCC-2019-04851,2019-04-16,"315 N Blair ST, Madison WI 53703 United States",Cl
 BLDNCC-2019-04849,2019-04-16,"323 N Blair ST, Madison WI 53703 United States",Issued,3-unit interior and exterior alterations. rebuild front porch add spire and exterior repairs,,3,PD,43.0809379,-89.3817174,VARIES,Duplex/Triplex,DID_NOT_PROCEED
 BLDNCC-2019-04198,2019-04-03,"211 S Henry ST, Madison WI 53703 United States",Closed,Barracuda: 19 unit apartment with SHELL commercial space,,19,UMX,43.0710446,-89.3848768,PERMITTED,Mid-Rise Mixed-Use,BUILT
 BLDNCC-2019-03878,2019-03-28,"915 Jenifer ST, Madison WI 53703 United States",Closed,Repair deck/fire escape for rear 3 units of 5 unit building.  See LNDMRK-2019-00029.,,3,TR-V2,43.0790795,-89.36817,PERMITTED,Duplex/Triplex,BUILT
-BLDNCC-2019-03382,2019-03-19,"6052 Driscoll DR, Madison WI 53718 United States",Closed,New 4-unit apartment,,4,TR-P,43.0986097,-89.2783872,REZONED,Multiplex,BUILT
+BLDNCC-2019-03382,2019-03-19,"6052 Driscoll DR, Madison WI 53718 United States",Closed,New 4-unit apartment,,4,TR-P,43.0986097,-89.2783872,UNKNOWN,Multiplex,BUILT
 BLDNCC-2019-03258,2019-03-14,"7945 Tree LN, Madison WI 53717 United States",Closed,Point Place - New 54-unit apartment building with parking,,54,CC,43.0617424,-89.5191802,CONDITIONAL,Mid-Rise,BUILT
-BLDNCC-2019-02866,2019-03-06,"5329 Fayette AVE, Madison WI 53713 United States",Inspections Complete,"Impact Virtual Services: tenant build out for a portion  of commercial space in 4-story mixed u se building, 48 residential units",,48,TR-C1,43.0479804,-89.3511419,REZONED,Mid-Rise Mixed-Use,BUILT
+BLDNCC-2019-02866,2019-03-06,"5329 Fayette AVE, Madison WI 53713 United States",Inspections Complete,"Impact Virtual Services: tenant build out for a portion  of commercial space in 4-story mixed u se building, 48 residential units",,48,TR-C1,43.0479804,-89.3511419,UNKNOWN,Mid-Rise Mixed-Use,BUILT
 BLDNCC-2019-02346,2019-02-22,"424 Meadow Rose LN, Madison WI 53717 United States",Closed,Attic Angel: garage addition and new toilet room. convert 2 unit to maintenance facility/model unit and living unit,,2,PD,43.0707762,-89.5363435,VARIES,Duplex/Triplex,BUILT
 BLDNCC-2019-01709,2019-02-07,"1250 Spaight ST, Madison WI 53703 United States",Closed,Add an existing kitchen to an existing 3 unitGeorge Hank made the decision to allow this building to remain a 3 unit.,,3,TR-C4,43.0831294,-89.3611854,PERMITTED,Duplex/Triplex,BUILT
 BLDNCC-2019-01498,2019-02-01,"647 Bear Claw WAY, Middleton WI 53562 United States",Closed,New 9 unit townhouse,,9,TR-U1,43.0626993,-89.5519569,CONDITIONAL,Townhouse,BUILT
-BLDNCC-2019-01465,2019-02-01,"6042 Driscoll DR, Madison WI 53718 United States",Closed,New 4 unit apartment,,4,TR-P,43.0986094,-89.2784079,REZONED,Multiplex,BUILT
+BLDNCC-2019-01465,2019-02-01,"6042 Driscoll DR, Madison WI 53718 United States",Closed,New 4 unit apartment,,4,TR-P,43.0986094,-89.2784079,UNKNOWN,Multiplex,BUILT
 BLDNCC-2019-00678,2019-01-15,"202 Cottage Grove RD, Madison WI 53716 United States",Closed,"New 112-unit apartment building with underground parking, SHELL commercial  space, and outdoor patio",,112,CC-T,43.0837816,-89.3230723,CONDITIONAL,Mid-Rise Mixed-Use,BUILT
-BLDNCC-2018-17861,2018-12-17,"6002 Driscoll DR, Madison WI 53718 United States",Closed,New 4 Unit Building,,4,TR-P,43.0985996,-89.2795573,REZONED,Multiplex,BUILT
-BLDNCC-2018-17694,2018-12-13,"1702 Willow Rock RD, Madison WI 53718 United States",Closed,"Autumn Lake Apts: new 35 unit, Bld 3",,35,TR-P,43.1218734,-89.284699,REZONED,Mid-Rise,BUILT
+BLDNCC-2018-17861,2018-12-17,"6002 Driscoll DR, Madison WI 53718 United States",Closed,New 4 Unit Building,,4,TR-P,43.0985996,-89.2795573,UNKNOWN,Multiplex,BUILT
+BLDNCC-2018-17694,2018-12-13,"1702 Willow Rock RD, Madison WI 53718 United States",Closed,"Autumn Lake Apts: new 35 unit, Bld 3",,35,TR-P,43.1218734,-89.284699,UNKNOWN,Mid-Rise,BUILT
 BLDNCC-2018-17250,2018-12-03,"1007 Fish Hatchery RD, Madison WI 53715 United States",Closed,"Peloton: New 172 unit apartment including live/work units, SHELL commercial space",,172,TSS,43.0567507,-89.3989512,CONDITIONAL,Mid-Rise Mixed-Use,BUILT
 BLDNCC-2018-17161,2018-11-30,"1825 Opus LN, Verona WI 53593 United States",Closed,New 10 unit Multi-family Building,,10,,,,UNKNOWN,Mid-Rise,BUILT
 BLDNCC-2018-16019,2018-11-06,"155 Langdon ST, Madison WI 53703 United States",Closed,4th floor build out  Evans Scholars - build out  7 units on fourth floor,,7,DR2,43.077245,-89.391617,PERMITTED,Multiplex,BUILT
-BLDNCC-2018-15737,2018-10-31,"6012 Driscoll DR, Madison WI 53718 United States",Closed,New 4-unit apartment,,4,TR-P,43.0986025,-89.279194,REZONED,Multiplex,BUILT
+BLDNCC-2018-15737,2018-10-31,"6012 Driscoll DR, Madison WI 53718 United States",Closed,New 4-unit apartment,,4,TR-P,43.0986025,-89.279194,UNKNOWN,Multiplex,BUILT
 BLDNCC-2018-15108,2018-10-19,"9601 Harvest Moon LN, Verona WI 53593 United States",Closed,New 50-unit apartment building - Timber Valley Building 1,,50,,,,UNKNOWN,Mid-Rise,BUILT
-BLDNCC-2018-15001,2018-10-17,"6032 Driscoll DR, Madison WI 53718 United States",Closed,Grandview Commons North: 4 unit Bld 2,,4,TR-P,43.0986092,-89.2784286,REZONED,Multiplex,BUILT
-BLDNCC-2018-14999,2018-10-17,"6022 Driscoll DR, Madison WI 53718 United States",Closed,Grandview Commons North: 4 unit Bld 1,,4,TR-P,43.0986054,-89.2788307,REZONED,Multiplex,BUILT
-BLDNCC-2018-12056,2018-08-23,"719 E Johnson ST, Madison WI 53703 United States",Closed,54 Unit apartment with SHELL retail space - 700 East LLC,,54,NMX,43.0821604,-89.3792906,REZONED,Mid-Rise,BUILT
+BLDNCC-2018-15001,2018-10-17,"6032 Driscoll DR, Madison WI 53718 United States",Closed,Grandview Commons North: 4 unit Bld 2,,4,TR-P,43.0986092,-89.2784286,UNKNOWN,Multiplex,BUILT
+BLDNCC-2018-14999,2018-10-17,"6022 Driscoll DR, Madison WI 53718 United States",Closed,Grandview Commons North: 4 unit Bld 1,,4,TR-P,43.0986054,-89.2788307,UNKNOWN,Multiplex,BUILT
+BLDNCC-2018-12056,2018-08-23,"719 E Johnson ST, Madison WI 53703 United States",Closed,54 Unit apartment with SHELL retail space - 700 East LLC,,54,NMX,43.0821604,-89.3792906,UNKNOWN,Mid-Rise,BUILT
 BLDNCC-2018-11451,2018-08-14,"749 E Johnson ST, Madison WI 53703 United States",Closed,Foundation for moved 5-unit building,,5,NMX,43.0829091,-89.3780225,PERMITTED,Multiplex,BUILT
 BLDNCC-2018-11355,2018-08-13,"4544 Tundra LN, McFarland WI 53558 United States",Closed,"Catalina Crossing Apts: Bld A2, new 6 unit",,6,,,,UNKNOWN,Multiplex,BUILT
 BLDNCC-2018-11354,2018-08-13,"4549 Tundra LN, McFarland WI 53558 United States",Closed,"Catalina Crossing Apts: Bld B1, New 6 unit",,6,,,,UNKNOWN,Multiplex,BUILT
 BLDNCC-2018-11353,2018-08-13,"4503 Tundra LN, McFarland WI 53558 United States",Closed,"Catalina Crossing Apt: Bld B3, New 6 unit",,6,,,,UNKNOWN,Multiplex,BUILT
 BLDNCC-2018-11352,2018-08-13,"4531 Tundra LN, McFarland WI 53558 United States",Closed,"Catalina Crossing Apts: bld E1, New 6 unit townhome",,6,,,,UNKNOWN,Townhouse,BUILT
 BLDNCC-2018-11351,2018-08-13,"4517 Tundra LN, McFarland WI 53558 United States",Closed,"Catalina Crossing Apts: Bld E3, 6 unit townhome",,6,,,,UNKNOWN,Townhouse,BUILT
-BLDNCC-2018-11346,2018-08-13,"4503 Catalina PKWY, McFarland WI 53558 United States",Closed,"Catalina Crossing: Bld F1, new 9 unit townhome",,9,TR-C3,43.0267911,-89.269816,REZONED,Townhouse,BUILT
-BLDNCC-2018-11343,2018-08-13,"4523 Catalina PKWY, McFarland WI 53558 United States",Closed,"Catalina Crossing Apts: BLD F2, new 9 unit townhouse",,9,TR-C3,43.0267911,-89.269816,REZONED,Townhouse,BUILT
+BLDNCC-2018-11346,2018-08-13,"4503 Catalina PKWY, McFarland WI 53558 United States",Closed,"Catalina Crossing: Bld F1, new 9 unit townhome",,9,TR-C3,43.0267911,-89.269816,UNKNOWN,Townhouse,BUILT
+BLDNCC-2018-11343,2018-08-13,"4523 Catalina PKWY, McFarland WI 53558 United States",Closed,"Catalina Crossing Apts: BLD F2, new 9 unit townhouse",,9,TR-C3,43.0267911,-89.269816,UNKNOWN,Townhouse,BUILT
 BLDNCC-2018-11338,2018-08-13,"4510 Tundra LN, McFarland WI 53558 United States",Closed,"Catalina Crossing: Bld A1, New 6 unit apartment",,6,,,,UNKNOWN,Multiplex,BUILT
 BLDNCC-2018-10360,2018-07-25,"2431 Winnebago ST, Madison WI 53704 United States",Closed,New 24 unit apartment,,24,PD,43.0977512,-89.3493487,VARIES,Mid-Rise,BUILT
 BLDNCC-2018-10353,2018-07-25,"2531 Winnebago ST, Madison WI 53704 United States",Closed,36 unit apartment building,,36,PD,43.0981897,-89.348746,VARIES,Mid-Rise,BUILT
@@ -332,12 +332,12 @@ BLDNCC-2018-08923,2018-06-28,"116 E Dayton ST, Madison WI 53703 United States",C
 BLDNCC-2018-08400,2018-06-21,"1607 Adams ST, Madison WI 53711 United States",Issued,2 Unit Rental: add entrance door to basement and concrete walkway,,2,TR-C4,43.0650641,-89.4112274,PERMITTED,Duplex/Triplex,DID_NOT_PROCEED
 BLDNCC-2018-07380,2018-06-07,"107 Sutherland CT, Madison WI 53704 United States",Closed,New 45-unit condominium with finished commercial suites and parking below,,45,TE,43.0936712,-89.3542563,CONDITIONAL,Mid-Rise,BUILT
 BLDNCC-2018-05397,2018-04-30,"6509 Normandy LN, Madison WI 53719 United States",Closed,Normandy Square: 58 unit senior housing,,58,CC,43.0568145,-89.4935606,CONDITIONAL,Mid-Rise,BUILT
-BLDNCC-2018-05360,2018-04-30,"5535 University AVE, Madison WI 53705 United States",Closed,new 66-unit apartment with underground parking and shell commercial space,,66,NMX,43.0837886,-89.4770737,REZONED,Mid-Rise Mixed-Use,BUILT
+BLDNCC-2018-05360,2018-04-30,"5535 University AVE, Madison WI 53705 United States",Closed,new 66-unit apartment with underground parking and shell commercial space,,66,NMX,43.0837886,-89.4770737,UNKNOWN,Mid-Rise Mixed-Use,BUILT
 BLDNCC-2018-05316,2018-04-30,"710 Ridge ST, Madison WI 53705 United States",Closed,new mixed use bldg. 1st fl commercial 39 unit apt and 8 unit townhouse,,39,CC-T,43.0742117,-89.438956,CONDITIONAL,Townhouse,BUILT
 BLDNCC-2018-05287,2018-04-27,"1722 Monroe ST, Madison WI 53711 United States",Closed,63-unit apartment with SHELL commercial space and underground parking,,63,PD,43.0658703,-89.416088,VARIES,Mid-Rise Mixed-Use,BUILT
 BLDNCC-2018-04942,2018-04-23,"5380 Congress AVE, Madison WI 53718 United States",Rejected,New 36-unit apartment building.  2009 I codes,,36,PD,43.1389023,-89.2847108,VARIES,Mid-Rise,DID_NOT_PROCEED
 BLDNCC-2018-04785,2018-04-18,"116 E Dayton ST, Madison WI 53703 United States",Issued,4-unit apartment alteration,,4,UOR,43.0775085,-89.3846771,PERMITTED,Multiplex,DID_NOT_PROCEED
-BLDNCC-2018-02309,2018-02-26,"171 S Fair Oaks AVE, Madison WI 53704 United States",Closed,New 161-Unit apartment with SHELL retail space and parking,,161,TR-V1,43.0951674,-89.3388837,REZONED,Mid-Rise,BUILT
+BLDNCC-2018-02309,2018-02-26,"171 S Fair Oaks AVE, Madison WI 53704 United States",Closed,New 161-Unit apartment with SHELL retail space and parking,,161,TR-V1,43.0951674,-89.3388837,UNKNOWN,Mid-Rise,BUILT
 BLDNCC-2018-02042,2018-02-19,"5102 Silvertree RUN, Madison WI 53705 United States",Closed,48-unit apartment building with commercial SHELL space and parking,,48,PD,43.0751711,-89.4685242,VARIES,Mid-Rise,BUILT
 BLDNCC-2018-01996,2018-02-19,"3501 Cross Hill DR, Madison WI 53718 United States",Closed,New 69-unit apartment building with underground parking,,69,TR-U1,43.1418892,-89.2825774,CONDITIONAL,Mid-Rise,BUILT
 BLDNCC-2018-01780,2018-02-13,"4702 Creekwood LN, Madison WI 53704 United States",Closed,New 97-unit apartment with underground garage,,97,,,,UNKNOWN,Mid-Rise,BUILT
@@ -345,19 +345,19 @@ BLDNCC-2018-01739,2018-02-13,"803 Williamson ST, Madison WI 53703 United States"
 BLDNCC-2017-18327,2017-12-06,"6410 Driscoll DR, Madison WI 53718 United States",Closed,New 4 unit apt,,4,PD,43.0988877,-89.2695809,VARIES,Multiplex,BUILT
 BLDNCC-2017-18234,2017-12-04,"550 Junction RD, Madison WI 53717 United States",Closed,City Center Phase II - 33-unit apartment with SHELL commercial space,,33,PD,43.0707076,-89.5250462,VARIES,Mid-Rise Mixed-Use,BUILT
 BLDNCC-2017-17607,2017-11-17,"3513 Cross Hill DR, Madison WI 53718 United States",Closed,New 120 unit apartment building with clubhouse,,120,TR-U1,43.141928,-89.2826713,CONDITIONAL,Mid-Rise,BUILT
-BLDNCC-2017-16796,2017-11-02,"1705 Autumn Lake PKWY, Madison WI 53718 United States",Closed,New 9-unit townhome,,9,TR-P,43.121633,-89.2817703,REZONED,Townhouse,BUILT
+BLDNCC-2017-16796,2017-11-02,"1705 Autumn Lake PKWY, Madison WI 53718 United States",Closed,New 9-unit townhome,,9,TR-P,43.121633,-89.2817703,UNKNOWN,Townhouse,BUILT
 BLDNCC-2017-16162,2017-10-23,"9629 Harvest Moon LN, Verona WI 53593 United States",Closed,New 54-unit apartment with underground parking - Timber Valley #5,,54,TR-U1,43.0519971,-89.5545379,CONDITIONAL,Mid-Rise,BUILT
 BLDNCC-2017-15285,2017-10-09,"8219 Flagstone DR, Verona WI 53593 United States",Inspections Complete,New seven unit apartment building,,7,,,,UNKNOWN,Multiplex,BUILT
 BLDNCC-2017-14744,2017-09-28,"5615 Summer Shine DR, Madison WI 53718 United States",Closed,New 29 unit apt,,29,CC-T,43.1219058,-89.2826005,PERMITTED,Mid-Rise,BUILT
 BLDNCC-2017-14614,2017-09-26,"301 Cross Oak DR, Verona WI 53593 United States",Closed,New 9-unit apartment building,,9,,,,UNKNOWN,Mid-Rise,BUILT
-BLDNCC-2017-14150,2017-09-19,"6418 Driscoll DR, Madison WI 53718 United States",Closed,New four unit apartment,,4,TR-P,43.0986558,-89.2742211,REZONED,Multiplex,BUILT
+BLDNCC-2017-14150,2017-09-19,"6418 Driscoll DR, Madison WI 53718 United States",Closed,New four unit apartment,,4,TR-P,43.0986558,-89.2742211,UNKNOWN,Multiplex,BUILT
 BLDNCC-2017-13595,2017-09-11,"2232 W Broadway, Madison WI 53713 United States",Closed,48 unit apartment with SHELL commercial space,,48,CC-T,43.0472408,-89.3501102,CONDITIONAL,Mid-Rise Mixed-Use,BUILT
 BLDNCC-2017-13328,2017-09-06,"114 Milky WAY, Madison WI 53718 United States",Closed,New 13-unit apartment building A1,,13,TR-U1,43.098108,-89.279867,CONDITIONAL,Mid-Rise,BUILT
 BLDNCC-2017-13222,2017-09-01,"4513 Grizzly LN, McFarland WI 53558 United States",Closed,New 12-unit apartment building,,12,,,,UNKNOWN,Mid-Rise,BUILT
 BLDNCC-2017-13218,2017-09-01,"4518 Grizzly LN, McFarland WI 53558 United States",Closed,New 6-unit townhouse apartment,,6,,,,UNKNOWN,Townhouse,BUILT
 BLDNCC-2017-13194,2017-09-01,"4538 Grizzly LN, McFarland WI 53558 United States",Closed,New 6-unit townhouse apartment,,6,,,,UNKNOWN,Townhouse,BUILT
-BLDNCC-2017-13176,2017-09-01,"4543 Catalina PKWY, McFarland WI 53558 United States",Closed,New 9-unit townhouse apartment,,9,TR-C3,43.0267911,-89.269816,REZONED,Townhouse,BUILT
-BLDNCC-2017-13172,2017-09-01,"4563 Catalina PKWY, McFarland WI 53558 United States",Closed,New 4-unit townhouse apartment,,4,TR-C3,43.0267911,-89.269816,REZONED,Townhouse,BUILT
+BLDNCC-2017-13176,2017-09-01,"4543 Catalina PKWY, McFarland WI 53558 United States",Closed,New 9-unit townhouse apartment,,9,TR-C3,43.0267911,-89.269816,UNKNOWN,Townhouse,BUILT
+BLDNCC-2017-13172,2017-09-01,"4563 Catalina PKWY, McFarland WI 53558 United States",Closed,New 4-unit townhouse apartment,,4,TR-C3,43.0267911,-89.269816,UNKNOWN,Townhouse,BUILT
 BLDNCC-2017-13157,2017-09-01,"118 Milky WAY, Madison WI 53718 United States",Closed,New 13 unit apartment,,13,TR-U1,43.0980288,-89.2798593,PERMITTED,Mid-Rise,BUILT
 BLDNCC-2017-13150,2017-09-01,"5924 Jackson Quarry LN, Madison WI 53718 United States",Closed,New 20unit apartment,,20,,,,UNKNOWN,Mid-Rise,BUILT
 BLDNCC-2017-13135,2017-09-01,"4543 Grizzly LN, McFarland WI 53558 United States",Closed,New 4-unit townhouse apartment,,4,,,,UNKNOWN,Townhouse,BUILT
@@ -373,7 +373,7 @@ BLDNCC-2017-07219,2017-05-19,"5607 Summer Shine DR, Madison WI 53718 United Stat
 BLDNCC-2017-04829,2017-04-11,"213 N Brooks ST, Madison WI 53715 United States",Closed,CONVERT FOUR UNIT TO THREE UNIT APARTMENT BUILDING; Combine two dwelling units on the third floor to one unit used for a tourist rooming facility.,,4,TR-U2,43.0716723,-89.4023426,PERMITTED,Multiplex,BUILT
 BLDNCC-2017-04779,2017-04-11,"9501 Paragon ST, Middleton WI 53562 United States",Closed,New 35-unit apartment building - Paragon Place building 2,,35,,,,UNKNOWN,Mid-Rise,BUILT
 BLDNCC-2017-04304,2017-03-31,"7944 Watts RD, Madison WI 53719 United States",Closed,THE RESERVE AT HIGH POINT APARTMENT BUILDING: Sixty-six unit apartment building with under ground parking.,,6,TR-U1,43.0521949,-89.5190478,PERMITTED,Multiplex,BUILT
-BLDNCC-2017-03623,2017-03-22,"1827 E Washington AVE, Madison WI 53704 United States",Closed,New 228 unit apartment with commercial shell space,,228,TR-V1,43.0915709,-89.3599622,REZONED,Mid-Rise,BUILT
+BLDNCC-2017-03623,2017-03-22,"1827 E Washington AVE, Madison WI 53704 United States",Closed,New 228 unit apartment with commercial shell space,,228,TR-V1,43.0915709,-89.3599622,UNKNOWN,Mid-Rise,BUILT
 BLDNCC-2017-02867,2017-03-08,"151 E Wilson ST, Madison WI 53703 United States",Closed,151 E WILSON STREET 121 UNIT APARTMENT BUILDING: Mixed use building with 121 residential apartments over grade level commercial space and three levels of below grade parking.,,121,DC,43.074233,-89.378322,PERMITTED,Mid-Rise Mixed-Use,BUILT
 BLDNCC-2017-00079,2017-01-04,"9632 Ancient Oak LN, Verona WI 53593 United States",Closed,New 36-unit apartment building - Sugar Maple #9,,36,,,,UNKNOWN,Mid-Rise,BUILT
 BLDNCC-2017-00078,2017-01-04,"9606 Ancient Oak LN, Verona WI 53593 United States",Closed,New 36-unit apartment building - Sugar Maple #10,,36,,,,UNKNOWN,Mid-Rise,BUILT
@@ -391,7 +391,7 @@ BLDNCC-2016-09899,2016-08-10,"8251 Flagstone DR, Verona WI 53593 United States",
 BLDNCC-2016-09840,2016-08-09,"117 S Hamilton ST, Madison WI 53703 United States",Closed,NEW 9 STORY RESIDENTIAL TOWER - 80 UNITS WITH 1ST FLOOR COMMERCIAL SHELL SPACE,,80,PD,43.0723213,-89.3841177,VARIES,High-Rise,BUILT
 BLDNCC-2016-09673,2016-08-05,"202 S Bedford ST, Madison WI 53703 United States",Closed,"New 88-unit four story, R-2 apartment building above a below grade parking level.",,88,PD,43.0672902,-89.3902608,VARIES,Mid-Rise,BUILT
 BLDNCC-2016-08892,2016-07-21,"3834 Whitman LN, Madison WI 53704 United States",Closed,New 47-unit apartment building with underground parking - Tennyson Ridge bldg A,,47,SR-V2,43.1353936,-89.3589114,CONDITIONAL,Mid-Rise,BUILT
-BLDNCC-2016-08881,2016-07-21,"3818 Whitman LN, Madison WI 53704 United States",Closed,25-Unit apartment building with underground parking Tennyson Ridge bldg B,,25,SR-C1,43.1351589,-89.358907,REZONED,Mid-Rise,BUILT
+BLDNCC-2016-08881,2016-07-21,"3818 Whitman LN, Madison WI 53704 United States",Closed,25-Unit apartment building with underground parking Tennyson Ridge bldg B,,25,SR-C1,43.1351589,-89.358907,UNKNOWN,Mid-Rise,BUILT
 BLDNCC-2016-08543,2016-07-14,"302 Cross Oak DR, Verona WI 53593 United States",Closed,4-unit townhouse condominium,,4,,,,UNKNOWN,Townhouse,BUILT
 BLDNCC-2016-08536,2016-07-14,"301 South Point RD, Verona WI 53593 United States",Closed,6-unit townhouse condominium,,6,,,,UNKNOWN,Townhouse,BUILT
 BLDNCC-2016-08503,2016-07-14,"5619 Black Onyx DR, Madison WI 53718 United States",Closed,33-unit apartment with underground parking - Building B2,,33,PD,43.1537836,-89.2786294,VARIES,Mid-Rise,BUILT
@@ -422,7 +422,7 @@ BLDNCC-2016-01996,2016-02-25,"3204 Golden Copper LN, Madison WI 53719 United Sta
 BLDNCC-2016-01473,2016-02-11,"521 GRAND OAK TRL, Madison WI 53716 United States",Closed,New 86 unit apt with commercial shell space on first floor,,86,TE,43.0842734,-89.3172889,CONDITIONAL,Mid-Rise,BUILT
 BLDNCC-2016-00185,2016-01-06,"9614 Red Forest LN, Verona WI 53593 United States",Closed,"SUGAR MAPLE APARTMENT BUILDING #4: Four story, thirty six unit apartment building with underground parking.",,6,,,,UNKNOWN,Multiplex,BUILT
 BLDNCC-2015-15108,2015-12-17,"810 E Washington AVE, Madison WI 53703 United States",Closed,Galaxie phase 2 addition - 48 apartments and SHELL commercial space,,48,TE,43.0814796,-89.375034,CONDITIONAL,Mid-Rise Mixed-Use,BUILT
-BLDNCC-2015-15052,2015-12-15,"2221 Sherman AVE, Madison WI 53704 United States",Issued,New 60 unit apartment building with SHELL commercial space and interior parking,,60,NMX,43.1019886,-89.3645456,REZONED,Mid-Rise Mixed-Use,DID_NOT_PROCEED
+BLDNCC-2015-15052,2015-12-15,"2221 Sherman AVE, Madison WI 53704 United States",Issued,New 60 unit apartment building with SHELL commercial space and interior parking,,60,NMX,43.1019886,-89.3645456,UNKNOWN,Mid-Rise Mixed-Use,DID_NOT_PROCEED
 BLDNCC-2015-14078,2015-11-18,"315 S Paterson ST, Madison WI 53703 United States",Closed,"New 25 unit apt, mixed use retail 1st floor, and underground parking",,25,TSS,43.0798431,-89.3699728,CONDITIONAL,Mid-Rise Mixed-Use,BUILT
 BLDNCC-2015-13738,2015-11-11,"1002 Cherry Blossom DR, Verona WI 53593 United States",Closed,"SUGAR MAPLE APARTMENTS BUILDING EIGHT; TWO STORY, SIX UNIT APARTMENT BUILDING WITH BASEMENT GARAGE",,6,,,,UNKNOWN,Multiplex,BUILT
 BLDNCC-2015-13626,2015-11-10,"2505 University AVE, Madison WI 53705 United States",Closed,New 20-Unit apartment with SHELL commercial space and underground parking,,20,TSS,43.0720195,-89.4289128,PERMITTED,Mid-Rise Mixed-Use,BUILT
@@ -448,4 +448,4 @@ BLDNCC-2015-02933,2015-03-18,"715 Rethke AVE, Madison WI 53714 United States",Cl
 BLDNCC-2015-02693,2015-03-12,"1030 Cherry Blossom DR, Verona WI 53593 United States",Closed,4 unit apt bldg,,4,,,,UNKNOWN,Multiplex,BUILT
 BLDNCC-2015-02267,2015-03-02,"427 E Gorham ST, Madison WI 53703 United States",Closed,NICHOLS STATION APARTMENTS INTERIOR AND EXTERIOR ALTERATIONS TO EXISTING 34 UNITS APARTMENT BUILDING,,34,PD,43.0802509,-89.3832271,VARIES,Mid-Rise,BUILT
 BLDNCC-2015-01552,2015-02-12,"433 W Johnson ST, Madison WI 53703 United States",Issued,160 UNIT APARTMENT BUILDING WITH SHELL COMMERCIAL SPACE,,160,UMX,43.0726412,-89.3923508,PERMITTED,Mid-Rise Mixed-Use,BUILT
-BLDNCC-2015-00363,2015-01-12,"15 W Gorham ST, Madison WI 53703 United States",Closed,Relocation and alteration of building to 3-unit apartment,,3,UMX,43.0769388,-89.388258,REZONED,Duplex/Triplex,BUILT
+BLDNCC-2015-00363,2015-01-12,"15 W Gorham ST, Madison WI 53703 United States",Closed,Relocation and alteration of building to 3-unit apartment,,3,UMX,43.0769388,-89.388258,UNKNOWN,Duplex/Triplex,BUILT

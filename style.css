@@ -284,6 +284,14 @@ body { font-family: system-ui, -apple-system, sans-serif }
 }
 .trends-title { font-size: 14px; font-weight: 600; color: #f8fafc; margin-right: 4px; }
 .trends-ctrl-group { display: flex; gap: 4px; }
+.trends-use-filter { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.tr-filter-label { font-size: 11px; color: #888; margin-right: 2px; }
+.tr-use {
+  padding: 2px 9px; border-radius: 10px; font-size: 11px; cursor: pointer;
+  border: 1.5px solid #555; background: transparent; color: #888;
+}
+.tr-use.tr-use-act { border-color: var(--uc); color: #fff; background: rgba(255,255,255,0.08); }
+.tr-use:hover:not(.tr-use-act) { border-color: #888; color: #ccc; }
 .tr-cat {
   padding: 4px 10px; border: 1px solid #555; background: transparent;
   color: #bbb; border-radius: 3px; cursor: pointer; font-size: 12px;
