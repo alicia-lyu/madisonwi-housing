@@ -594,10 +594,17 @@ tr.forEach(function(rt){{
   );
 }});
 var bikeRoutes={bike_json};
+var bikeCanvas=L.canvas({{padding:0.5}});
+var bikeGroups={{}};
 bikeRoutes.forEach(function(rt){{
-  var opts={{color:rt.color,weight:rt.weight,opacity:0.8}};
-  if(rt.dash)opts.dashArray=rt.dash;
-  L.polyline(rt.coords,opts).addTo(m);
+  var k=rt.color+'|'+rt.weight+'|'+(rt.dash||'');
+  if(!bikeGroups[k])bikeGroups[k]={{color:rt.color,weight:rt.weight,dash:rt.dash||null,segs:[]}};
+  bikeGroups[k].segs.push(rt.coords);
+}});
+Object.values(bikeGroups).forEach(function(g){{
+  var opts={{color:g.color,weight:g.weight,opacity:0.8,renderer:bikeCanvas}};
+  if(g.dash)opts.dashArray=g.dash;
+  L.polyline(g.segs,opts).addTo(m);
 }});
 var allProj={all_projects_json};
 var allRows={all_rows_json};
@@ -1210,8 +1217,11 @@ def _maybe_background_refresh():
     if not os.path.exists("geocode_cache.json"):
         return
 
-    with open("geocode_cache.json") as f:
-        cache = json.load(f)
+    try:
+        with open("geocode_cache.json") as f:
+            cache = json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return  # cache mid-write; skip check this run
 
     intervals = {
         "meta:geocode_retry":            30,
