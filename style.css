@@ -155,7 +155,7 @@ body { font-family: system-ui, -apple-system, sans-serif }
 
 /* List panel button & panel */
 #list-btn {
-  position: absolute; top: 10px; right: 170px; z-index: 1000;
+  position: absolute; top: 10px; right: 10px; z-index: 1000;
   background: #1e293b; color: #f8fafc; border: none; padding: 8px 16px;
   border-radius: 8px; cursor: pointer; font-size: 13px; font-family: inherit;
   box-shadow: 0 2px 8px rgba(0,0,0,0.35); transition: background 0.15s;
@@ -197,7 +197,7 @@ body { font-family: system-ui, -apple-system, sans-serif }
 .list-row.list-clickable:hover { filter: brightness(0.93) }
 .list-row.list-nomap { opacity: 0.45 }
 .lr-date { color: #94a3b8; font-size: 11px; white-space: nowrap; flex-shrink: 0 }
-.lr-name { font-weight: 500; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.lr-name { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 260px }
 .lr-meta { color: #64748b; font-size: 11px; white-space: nowrap; flex-shrink: 0 }
 
 /* Scrollbar for list panel */
