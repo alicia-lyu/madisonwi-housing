@@ -398,7 +398,7 @@ def build_legend_html(zoning_codes_used):
     # Shape legend
     parts.append(
         '<div class="leg-shapes">'
-        '&#9679; = Permitted &nbsp; &#9632; = Conditional / Rezoned / PD / Unknown'
+        '&#9679; = Permitted (i.e., legal) &nbsp; &#9632; = Conditional / Rezoned / PD / Unknown'
         '</div>'
     )
     # Transit frequency legend
@@ -1008,7 +1008,7 @@ def _build_header_html(total, total_units, mapped):
     return f"""\
 <div id="header">
   <div>
-    <h1>Madison Housing: Where It\u2019s Being Built and Where It\u2019s Allowed by Right</h1>
+    <h1>Madison Housing: Where It\u2019s Being Built and Where It\u2019s Legal</h1>
     <div class="stats">
       <span>{total} projects</span>
       <span>{total_units:,} total units</span>
@@ -1039,7 +1039,7 @@ def _build_filter_panel_html():
     </div>
     <div class="df-row">
       <span class="df-label">Use type</span>
-      <label class="df-cb"><input type="checkbox" name="usetype" value="PERMITTED" checked onchange="applyFilters()"><span style="color:#16a34a">Permitted</span></label>
+      <label class="df-cb"><input type="checkbox" name="usetype" value="PERMITTED" checked onchange="applyFilters()"><span style="color:#16a34a">Permitted</span> <span style="color:#64748b;font-size:11px">(i.e., legal)</span></label>
       <label class="df-cb"><input type="checkbox" name="usetype" value="CONDITIONAL" checked onchange="applyFilters()"><span style="color:#d97706">Conditional</span></label>
       <label class="df-cb"><input type="checkbox" name="usetype" value="REZONED" checked onchange="applyFilters()"><span style="color:#ef4444">Rezoned</span></label>
       <label class="df-cb"><input type="checkbox" name="usetype" value="VARIES" checked onchange="applyFilters()"><span style="color:#ef4444">PD</span></label>
@@ -1196,7 +1196,7 @@ def build_page_html(total, total_units, mapped, legend_html,
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Madison Housing: Where It\u2019s Being Built and Where It\u2019s Allowed by Right</title>
+<title>Madison Housing: Where It\u2019s Being Built and Where It\u2019s Legal</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='8' y='20' width='48' height='40' rx='2' fill='%234a90d9'/%3E%3Crect x='4' y='16' width='56' height='8' rx='2' fill='%23356bad'/%3E%3Crect x='14' y='28' width='8' height='8' rx='1' fill='%23ffe066'/%3E%3Crect x='28' y='28' width='8' height='8' rx='1' fill='%23ffe066'/%3E%3Crect x='42' y='28' width='8' height='8' rx='1' fill='%23ffe066'/%3E%3Crect x='14' y='42' width='8' height='8' rx='1' fill='%23ffe066'/%3E%3Crect x='28' y='42' width='8' height='8' rx='1' fill='%23ffe066'/%3E%3Crect x='42' y='42' width='8' height='8' rx='1' fill='%23ffe066'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
