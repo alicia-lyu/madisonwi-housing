@@ -133,6 +133,7 @@ HOUSING_COLORS = {
     # Mixed-use mid/high-rise → purple (density = darker)
     "Mid-Rise Mixed-Use":  "#d8b4fe",  # purple-300
     "High-Rise Mixed-Use": "#7c3aed",  # purple-700
+    "Alteration":          "#d1d5db",  # gray-300 — existing building modification
 }
 
 OUTCOME_COLORS = {"BUILT": "#10b981", "ACTIVE": "#d97706", "DID_NOT_PROCEED": "#ef4444"}
@@ -242,6 +243,7 @@ HOUSING_TYPE_ORDER = [
     "Duplex/Triplex", "Townhouse", "Multiplex",
     "Mid-Rise", "High-Rise",
     "Mid-Rise Mixed-Use", "High-Rise Mixed-Use",
+    "Alteration",
 ]
 
 ZONING_DENSITY_ORDER = [
@@ -689,7 +691,7 @@ function fillSel(sel,opts,idx){{
   sel.selectedIndex=Math.min(idx,opts.length-1);
 }}
 var HT_ORDER=["Duplex/Triplex","Townhouse","Multiplex",
-  "Mid-Rise","High-Rise","Mid-Rise Mixed-Use","High-Rise Mixed-Use"];
+  "Mid-Rise","High-Rise","Mid-Rise Mixed-Use","High-Rise Mixed-Use","Alteration"];
 var COL_KEYS=["permitted","conditional","rezoned_pd","unknown"];
 var COL_LABELS=[["Permitted","#16a34a"],["Conditional","#d97706"],
   ["Rezoned/PD","#ef4444"],["Unknown","#6b7280"]];
