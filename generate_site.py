@@ -831,10 +831,12 @@ function buildList(){{
       var offsetX=(listW-filterW)/2;
       var tpx=m.project([lat,lng],zoom);
       var adj=m.unproject(L.point(tpx.x+offsetX,tpx.y),zoom);
-      m.flyTo(adj,zoom);
-      markers.forEach(function(mk){{
-        var ll=mk.getLatLng();
-        if(Math.abs(ll.lat-lat)<0.0001&&Math.abs(ll.lng-lng)<0.0001)mk.openPopup();
+      m.flyTo(adj,zoom,{{duration:0.4,easeLinearity:1.0}});
+      m.once('moveend',function(){{
+        markers.forEach(function(mk){{
+          var ll=mk.getLatLng();
+          if(Math.abs(ll.lat-lat)<0.0001&&Math.abs(ll.lng-lng)<0.0001)mk.openPopup();
+        }});
       }});
     }};
   }});
