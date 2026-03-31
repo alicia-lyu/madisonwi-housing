@@ -175,8 +175,10 @@ def load_cache():
 
 
 def save_cache(cache):
-    with open(CACHE_FILE, "w") as f:
+    tmp = CACHE_FILE + ".tmp"
+    with open(tmp, "w") as f:
         json.dump(cache, f, indent=2)
+    os.replace(tmp, CACHE_FILE)  # atomic on POSIX — never leaves a partial file
 
 
 # ---------------------------------------------------------------------------
