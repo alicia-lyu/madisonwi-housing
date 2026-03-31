@@ -50,6 +50,55 @@ POLICY_AREA_PLANS = [
     ("2025-01", "Lamp House Block"),
 ]
 
+# Official links + hover summaries for major milestones
+POLICY_MAJOR_META = {
+    "Imagine Madison Plan": {
+        "url": "https://www.cityofmadison.com/dpced/planning/comprehensive-plan/3894/",
+        "summary": "Madison\u2019s 20-year comprehensive plan guiding housing, jobs, transportation, and land use.",
+    },
+    "TOD Overlay District": {
+        "url": "https://madison.legistar.com/LegislationDetail.aspx?ID=5940143",
+        "summary": "Eliminated parking minimums and allowed increased density near frequent transit corridors.",
+    },
+    "ADU Expansion": {
+        "url": "https://www.cityofmadison.com/development-services-center/1-2-family-residential/additions/attached-accessory-dwelling-unit",
+        "summary": "Removed owner-occupancy requirements; ADUs now allowed on properties with up to 8 units, up to 1,000\u00a0sq\u00a0ft.",
+    },
+    "BRT Launch": {
+        "url": "https://www.cityofmadison.com/metro/routes-schedules/bus-rapid-transit",
+        "summary": "Rapid Route A launched with dedicated lanes, all-electric buses, and 15-minute weekday frequency.",
+    },
+    "Housing Forward Pkg 1": {
+        "url": "https://www.cityofmadison.com/news/2025-02-25/common-council-approves-package-of-housing-demolition-ordinance-changes",
+        "summary": "Expanded ADU sizes to 1,000\u00a0sq\u00a0ft, removed bedroom limits, relaxed setbacks, streamlined demolition review.",
+    },
+    "Housing Forward Pkg 2": {
+        "url": "https://www.cityofmadison.com/mayor/priorities/housing-forward/2025-proposals",
+        "summary": "Allowed duplexes on ~32,000 citywide properties; simplified backyard lot subdivisions.",
+    },
+    "Housing Forward Pkg 3": {
+        "url": "https://www.cityofmadison.com/news/2025-12-09/common-council-passes-third-housing-forward-package-of-2025",
+        "summary": "Authorized cottage courts (up to 8 homes), allowed 4-unit buildings in transit corridors.",
+    },
+}
+
+_AREA_PLANS_INDEX = "https://www.cityofmadison.com/dpced/planning/area-plans/3910/"
+POLICY_AREA_META = {
+    "Emerson East-Eken Park-Yahara": "https://www.cityofmadison.com/dpced/planning/documents/eeepynp2016.pdf",
+    "High Point-Raymond":            "https://www.cityofmadison.com/dpced/planning/documents/High_Point_Raymond_NDP.pdf",
+    "Darbo Worthington Starkweather":"https://www.cityofmadison.com/dpced/planning/documents/FINALDarbo_Worthington_StarkweatherNeighPlan09192017.pdf",
+    "Cottage Grove Rd":              "https://www.cityofmadison.com/dpced/planning/documents/Cottage_Grove_NDP.pdf",
+    "Elderberry, Junction, Pioneer": _AREA_PLANS_INDEX,
+    "Milwaukee St":                  "https://www.cityofmadison.com/dpced/planning/documents/Milwaukee%20Street%20SAP%20121218%20web.pdf",
+    "Triangle Monona Bay":           "https://www.cityofmadison.com/dpced/planning/documents/TMB_2019.pdf",
+    "Mifflandia, Nelson":            _AREA_PLANS_INDEX,
+    "Oscar Mayer":                   "https://www.cityofmadison.com/dpced/planning/documents/OscarMayerSpecialAreaPlan.pdf",
+    "South Madison, Yahara Hills":   "https://www.cityofmadison.com/dpced/planning/documents/SMP_Plan_PDF_Version_FINAL.pdf",
+    "Rattman, Reiner, Shady Wood":   _AREA_PLANS_INDEX,
+    "Northeast, West Area Plan":     _AREA_PLANS_INDEX,
+    "Lamp House Block":              "https://www.cityofmadison.com/dpced/planning/documents/Amended_Report_Lamp_House_3-11-25.pdf",
+}
+
 # ---------------------------------------------------------------------------
 # Color maps
 # ---------------------------------------------------------------------------
@@ -95,7 +144,7 @@ DEFAULT_ZONING_COLOR = "#757575"
 
 STATUS_STYLES = {
     "Issued": "#2563eb", "In Process": "#f59e0b", "Closed": "#6b7280",
-    "Rejected": "#ef4444", "Inspections Complete": "#10b981",
+    "Rejected": "#ef4444", "Inspections Complete": "#16a34a",
 }
 
 USE_TYPE_COLORS = {
@@ -136,7 +185,7 @@ HOUSING_COLORS = {
     "Alteration":          "#d1d5db",  # gray-300 — existing building modification
 }
 
-OUTCOME_COLORS = {"BUILT": "#10b981", "ACTIVE": "#d97706", "DID_NOT_PROCEED": "#ef4444"}
+OUTCOME_COLORS = {"BUILT": "#16a34a", "ACTIVE": "#d97706", "DID_NOT_PROCEED": "#ef4444"}
 OUTCOME_LABELS = {"BUILT": "Built", "ACTIVE": "Active", "DID_NOT_PROCEED": "Did Not Proceed"}
 
 # ---------------------------------------------------------------------------
@@ -572,8 +621,10 @@ def _build_map_js(markers_json, all_projects_json, all_rows_json, transit_json, 
     milestones_year_js = json.dumps({k: ", ".join(v) for k, v in year_map.items()})
 
     month_map = {}
-    for date, label in POLICY_MAJOR + POLICY_AREA_PLANS:
+    for date, label in POLICY_MAJOR:
         month_map.setdefault(date, []).append(label)
+    for date, label in POLICY_AREA_PLANS:
+        month_map.setdefault(date, []).append(label + " Area Plan")
     milestones_month_js = json.dumps({k: ", ".join(v) for k, v in month_map.items()})
 
     chart_colors_housing_js = json.dumps(HOUSING_COLORS)
@@ -688,7 +739,7 @@ function fillSel(sel,opts,idx){{
   opts.forEach(function(v){{
     var o=document.createElement("option");o.value=v;
     var ml=gran==="year"?ML_Y:ML_M;
-    if(ml[v]){{o.text=fmtOpt(v)+" \u2139\ufe0e";o.title=fmtOpt(v)+" \u00b7 "+ml[v]}}else{{o.text=fmtOpt(v)}}
+    if(ml[v]){{o.text=fmtOpt(v)+" \u2139\ufe0e";o.title=ml[v]}}else{{o.text=fmtOpt(v)}}
     sel.appendChild(o);
   }});
   sel.selectedIndex=Math.min(idx,opts.length-1);
@@ -1089,7 +1140,7 @@ def _build_filter_panel_html():
       <label class="df-cb"><input type="checkbox" name="usetype" value="PERMITTED" checked onchange="applyFilters()"><span style="color:#16a34a">Permitted</span> <span style="color:#64748b;font-size:11px">(i.e., legal)</span></label>
       <label class="df-cb"><input type="checkbox" name="usetype" value="CONDITIONAL" checked onchange="applyFilters()"><span style="color:#d97706">Conditional</span></label>
       <label class="df-cb"><input type="checkbox" name="usetype" value="REZONED" checked onchange="applyFilters()"><span style="color:#ef4444">Rezoned</span></label>
-      <label class="df-cb"><input type="checkbox" name="usetype" value="VARIES" checked onchange="applyFilters()"><span style="color:#ef4444">PD</span><span class="info-tip" tabindex="0" data-tip="Planned Development zones each have a custom Master Plan \u2014 there\u2019s no uniform density range, so use type can\u2019t be automatically classified.">i</span></label>
+      <label class="df-cb"><input type="checkbox" name="usetype" value="VARIES" checked onchange="applyFilters()"><span style="color:#ef4444">PD</span><span class="info-tip" tabindex="0" data-tip="Planned Development zones each have a custom Master Plan \u2014 there\u2019s no uniform density range. Projects in these zones usually invoke admininistrative burden similar to rezoning, thus they share similar coloring.">i</span></label>
       <label class="df-cb"><input type="checkbox" name="usetype" value="UNKNOWN" checked onchange="applyFilters()"><span style="color:#6b7280">Unknown</span></label>
       <span id="df-count" class="df-count"></span>
     </div>
@@ -1233,16 +1284,31 @@ def _build_policy_html():
         y, m = d.split("-")
         return _months[int(m) - 1] + " " + y
 
-    major_rows = "\n".join(
-        f'    <div class="pol-row"><span class="pol-date">{_fmt(d)}</span>'
-        f'<span class="pol-name">{html.escape(name)}</span></div>'
-        for d, name in POLICY_MAJOR
-    )
-    area_rows = "\n".join(
-        f'    <div class="pol-row"><span class="pol-date">{_fmt(d)}</span>'
-        f'<span class="pol-name">{html.escape(name)}</span></div>'
-        for d, name in POLICY_AREA_PLANS
-    )
+    entries = []
+    for d, name in POLICY_MAJOR:
+        meta = POLICY_MAJOR_META.get(name, {})
+        entries.append({"date": d, "name": name, "type": "major",
+                        "url": meta.get("url", ""), "summary": meta.get("summary", "")})
+    for d, name in POLICY_AREA_PLANS:
+        entries.append({"date": d, "name": name + " Area Plan", "type": "area",
+                        "url": POLICY_AREA_META.get(name, ""), "summary": ""})
+    entries.sort(key=lambda e: e["date"])
+
+    rows = []
+    for e in entries:
+        label = html.escape(e["name"])
+        tip = (f' <span class="info-tip" tabindex="0" data-tip="{html.escape(e["summary"])}">i</span>'
+               if e["summary"] else "")
+        linked = (f'<a class="pol-link" href="{e["url"]}" target="_blank">{label}</a>'
+                  if e["url"] else label)
+        rows.append(
+            f'  <div class="pol-row pol-{e["type"]}">'
+            f'<span class="pol-date">{_fmt(e["date"])}</span>'
+            f'<span class="pol-name">{linked}{tip}</span>'
+            f'</div>'
+        )
+
+    rows_html = "\n".join(rows)
     return f"""\
 <div id="policy-overlay">
   <div id="policy-hdr">
@@ -1250,14 +1316,7 @@ def _build_policy_html():
     <button id="policy-close" onclick="closePolicy()">&times; Close</button>
   </div>
   <div id="policy-body">
-    <div class="pol-section">
-      <div class="pol-section-hdr">Major Milestones</div>
-{major_rows}
-    </div>
-    <div class="pol-section">
-      <div class="pol-section-hdr">Area Plans</div>
-{area_rows}
-    </div>
+{rows_html}
   </div>
 </div>"""
 

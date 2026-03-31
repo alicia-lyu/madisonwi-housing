@@ -136,20 +136,19 @@ body { font-family: system-ui, -apple-system, sans-serif }
 #policy-close:hover { border-color: #888; color: #fff; }
 #policy-body {
   flex: 1; overflow-y: auto; padding: 24px 40px;
-  display: flex; gap: 40px; flex-wrap: wrap; align-content: flex-start;
-}
-.pol-section { flex: 1 1 260px; }
-.pol-section-hdr {
-  font-size: 12px; font-weight: 600; color: #94a3b8;
-  text-transform: uppercase; letter-spacing: 0.06em;
-  margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid #333;
+  columns: 2; column-gap: 32px;
 }
 .pol-row {
   display: flex; gap: 12px; align-items: baseline;
   padding: 7px 0; border-bottom: 1px solid #222;
+  break-inside: avoid;
 }
 .pol-date { font-size: 11px; color: #64748b; white-space: nowrap; min-width: 72px; }
-.pol-name { font-size: 13px; color: #e2e8f0; }
+.pol-name { font-size: 13px; }
+.pol-major .pol-name { color: #e2e8f0; font-weight: 500; }
+.pol-area  .pol-name { color: #94a3b8; }
+.pol-link { color: inherit; text-decoration: none; }
+.pol-link:hover { text-decoration: underline; }
 
 /* Map — fills remaining viewport below header */
 #map-wrap { position: relative; flex: 0 0 auto; height: calc(100vh - 96px); width: 100% }
@@ -270,6 +269,7 @@ body { font-family: system-ui, -apple-system, sans-serif }
   #trends-hdr { padding: 8px 10px; gap: 6px; }
   #trends-body { padding: 8px 12px; overflow-y: auto; align-items: flex-start; justify-content: flex-start; }
   #trends-canvas { max-height: none; width: 100%; }
+  #policy-body { columns: 1; padding: 16px 18px; }
 }
 
 /* Popup */
@@ -404,6 +404,12 @@ body { font-family: system-ui, -apple-system, sans-serif }
   font-size: 13px; white-space: nowrap; align-self: center;
 }
 #zoning-btn:hover { background: rgba(255,255,255,0.2); }
+#policy-btn {
+  background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.25);
+  color: #f8fafc; padding: 5px 12px; border-radius: 4px; cursor: pointer;
+  font-size: 13px; white-space: nowrap; align-self: center;
+}
+#policy-btn:hover { background: rgba(255,255,255,0.2); }
 #zoning-overlay {
   display: none; position: fixed; inset: 0;
   background: #1a1a1a; z-index: 2000; flex-direction: column;
