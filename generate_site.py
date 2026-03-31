@@ -399,6 +399,26 @@ def build_legend_html(zoning_codes_used):
         '&#9679; = Permitted &nbsp; &#9632; = Conditional / Rezoned / PD / Unknown'
         '</div>'
     )
+    # Transit frequency legend
+    def _line(w, style, color="#999"):
+        return (f'<span class="leg-line" style="border-top:{w}px {style} {color}"></span>')
+    parts.append(
+        '<div class="leg-row leg-overlay-hdr"><span class="leg-cat">Bus lines:</span>'
+        f'<span class="leg-item">{_line(4,"solid")} <span class="leg-code">Frequent</span></span>'
+        f'<span class="leg-item">{_line(3,"solid")} <span class="leg-code">Standard</span></span>'
+        f'<span class="leg-item">{_line(2,"dashed")} <span class="leg-code">Peak</span></span>'
+        f'<span class="leg-item">{_line(2,"dotted")} <span class="leg-code">Supplemental</span></span>'
+        '</div>'
+    )
+    # Bike layer legend
+    parts.append(
+        '<div class="leg-row">'
+        '<span class="leg-cat">Bike:</span>'
+        f'<span class="leg-item">{_line(2,"solid","#16a34a")} <span class="leg-code">Protected / Path</span></span>'
+        f'<span class="leg-item">{_line(2,"dashed","#4ade80")} <span class="leg-code">Shared / Boulevard</span></span>'
+        f'<span class="leg-item">{_line(2,"dashed","#86efac")} <span class="leg-code">Bike Lane</span></span>'
+        '</div>'
+    )
     return "\n".join(parts)
 
 

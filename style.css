@@ -66,6 +66,8 @@ body { font-family: system-ui, -apple-system, sans-serif }
 .leg-row { margin-bottom: 3px; line-height: 1.5 }
 .leg-cat { font-size: 9px; color: #94a3b8; margin-right: 5px; text-transform: uppercase; letter-spacing: 0.03em }
 .leg-shapes { margin-top: 4px; font-size: 10px; color: #cbd5e1; padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.1) }
+.leg-line { display: inline-block; width: 22px; height: 0; margin-right: 3px; vertical-align: middle; }
+.leg-overlay-hdr { margin-top: 4px; padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.1) }
 
 /* Date filter — top left */
 #filter-panel { top: 10px; left: 60px; bottom: auto; padding: 8px 12px }

@@ -199,10 +199,17 @@ def parse_csv():
                 iso_date = datetime.strptime(raw_date, "%m/%d/%Y").strftime("%Y-%m-%d")
             except ValueError:
                 iso_date = raw_date
+            address = row.get("Address", "").strip()
+            # Skip permits outside Madison jurisdiction
+            addr_lower = address.lower()
+            if any(f"{city}, wi" in addr_lower for city in
+                   ("verona", "mcfarland", "middleton", "fitchburg", "sun prairie")):
+                continue
+
             projects.append({
                 "record_number": record,
                 "date": iso_date,
-                "address": row.get("Address", "").strip(),
+                "address": address,
                 "status": row.get("Status", "").strip(),
                 "description": desc.strip(),
                 "project_name": (row.get("Project Name", "") or "").strip(),
@@ -684,6 +691,19 @@ def _step_classify_types(projects):
     print()
 
 
+def _step_clear_failed_geocodes(projects, cache):
+    """Clear cached null geocodes so they get retried on next run."""
+    cleared = 0
+    for p in projects:
+        key = f"geo:{p['address']}"
+        if key in cache and cache[key].get("lat") is None:
+            del cache[key]
+            cleared += 1
+    if cleared:
+        save_cache(cache)
+        print(f"  Cleared {cleared} failed geocode cache entries for retry\n")
+
+
 def _step_geocode(projects, cache):
     """Step 3: geocode all project addresses."""
     print("Step 3: Geocoding addresses...")
@@ -1093,6 +1113,7 @@ def main():
 
     _step_extract_units(projects)
     _step_classify_types(projects)
+    _step_clear_failed_geocodes(projects, cache)
     _step_geocode(projects, cache)
     _step_fetch_zoning(projects, cache)
     _step_classify_use(projects)
