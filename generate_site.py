@@ -841,7 +841,24 @@ function buildList(){{
     }};
   }});
 }}
+var OVERLAY_IDS=['legend','stats-panel','filter-panel'];
+function _closeOverlay(id){{
+  var el=document.getElementById(id);
+  if(el)el.classList.add('collapsed');
+  var togMap={{'legend':'legend-toggle','stats-panel':'stats-toggle','filter-panel':'filter-toggle'}};
+  var tog=document.getElementById(togMap[id]);
+  if(tog)tog.style.display='block';
+}}
+function _exclusiveBefore(openingId){{
+  var mob=window.innerWidth<=600;
+  OVERLAY_IDS.forEach(function(id){{if(mob||openingId==='list-panel'||id==='stats-panel')if(id!==openingId)_closeOverlay(id);}});
+  if(mob||openingId==='stats-panel')closeListPanel();
+}}
+function openLegend(){{_exclusiveBefore('legend');document.getElementById('legend').classList.remove('collapsed');document.getElementById('legend-toggle').style.display='none';}}
+function openStats(){{_exclusiveBefore('stats-panel');document.getElementById('stats-panel').classList.remove('collapsed');document.getElementById('stats-toggle').style.display='none';}}
+function openFilter(){{_exclusiveBefore('filter-panel');document.getElementById('filter-panel').classList.remove('collapsed');document.getElementById('filter-toggle').style.display='none';}}
 function openListPanel(){{
+  _exclusiveBefore('list-panel');
   document.getElementById("list-panel").classList.add("open");
   document.getElementById("list-btn").style.display="none";
   buildList();
@@ -1041,7 +1058,7 @@ def _build_header_html(total, total_units, mapped):
 
 def _build_filter_panel_html():
     return """\
-  <button id="filter-toggle" class="map-overlay-btn" onclick="document.getElementById('filter-panel').classList.remove('collapsed');this.style.display='none'">Filters</button>
+  <button id="filter-toggle" class="map-overlay-btn" onclick="openFilter()">Filters</button>
   <div id="filter-panel" class="map-overlay">
     <button class="map-overlay-close" onclick="this.parentElement.classList.add('collapsed');document.getElementById('filter-toggle').style.display='block'">&times;</button>
     <div class="df-row">
@@ -1226,12 +1243,12 @@ def build_page_html(total, total_units, mapped, legend_html,
 {classif_overlay}
 {zoning_overlay}
 <div id="map-wrap">
-  <button id="legend-toggle" class="map-overlay-btn" onclick="document.getElementById('legend').classList.remove('collapsed');this.style.display='none'">Legend</button>
+  <button id="legend-toggle" class="map-overlay-btn" onclick="openLegend()">Legend</button>
   <div id="legend" class="map-overlay">
     <button class="map-overlay-close" onclick="this.parentElement.classList.add('collapsed');document.getElementById('legend-toggle').style.display='block'">&times;</button>
     {legend_html}
   </div>
-  <button id="stats-toggle" class="map-overlay-btn" onclick="document.getElementById('stats-panel').classList.remove('collapsed');this.style.display='none'">Project Summary</button>
+  <button id="stats-toggle" class="map-overlay-btn" onclick="openStats()">Project Summary</button>
   <div id="stats-panel" class="map-overlay">
     <button class="map-overlay-close" onclick="this.parentElement.classList.add('collapsed');document.getElementById('stats-toggle').style.display='block'">&times;</button>
     <div id="stats-body"></div>
