@@ -542,6 +542,7 @@ def build_all_rows_data(rows):
             "t": r.get("use_type", "UNKNOWN"),
             "h": r.get("housing_type", "Unknown"),
             "z": r.get("zoning", ""),
+            "c": zoning_color(r.get("zoning", "")),
             "s": r.get("status", ""),
             "o": r.get("outcome", "BUILT"),
             "lat": lat,
@@ -804,19 +805,33 @@ function buildList(){{
   else if(sortKey==="units")filtered.sort(function(a,b){{return b.u-a.u}});
   else filtered.sort(function(a,b){{return a.n.localeCompare(b.n)}});
   document.getElementById("list-count").textContent=filtered.length+" projects";
-  var h='<table class="list-table"><tr><th>Date</th><th>Name</th><th>Units</th><th>Type</th><th>Zoning</th><th>Use</th></tr>';
+  var h='<div class="list-rows">';
   filtered.forEach(function(r,i){{
-    var cls=r.lat!==null?' class="list-clickable"':' class="list-nomap"';
-    var data=r.lat!==null?' data-lat="'+r.lat+'" data-lng="'+r.lng+'"':'';
-    h+='<tr'+cls+data+'><td>'+r.d+'</td><td>'+r.n+'</td><td>'+r.u+'</td><td>'+r.h+'</td><td>'+r.z+'</td><td>'+(USE_LABELS[r.t]||r.t)+'</td></tr>';
+    var clickable=r.lat!==null;
+    var cls=clickable?'list-row list-clickable':'list-row list-nomap';
+    var data=clickable?' data-lat="'+r.lat+'" data-lng="'+r.lng+'"':'';
+    var col=r.c||'#94a3b8';
+    h+='<div class="'+cls+'"'+data+' style="border-left:3px solid '+col+';background:'+col+'18">'
+      +'<span class="lr-date">'+r.d+'</span>'
+      +'<span class="lr-name">'+r.n+'</span>'
+      +'<span class="lr-meta">'+r.u+'\u202fu &middot; '+r.h+' &middot; '+r.z+' &middot; '+(USE_LABELS[r.t]||r.t)+'</span>'
+      +'</div>';
   }});
-  h+='</table>';
+  h+='</div>';
   body.innerHTML=h;
-  body.querySelectorAll("tr.list-clickable").forEach(function(tr){{
-    tr.onclick=function(){{
+  body.querySelectorAll("div.list-clickable").forEach(function(div){{
+    div.onclick=function(){{
       var lat=parseFloat(this.dataset.lat);
       var lng=parseFloat(this.dataset.lng);
-      m.flyTo([lat,lng],16);
+      var zoom=16;
+      var listEl=document.getElementById('list-panel');
+      var filterEl=document.getElementById('filter-panel');
+      var listW=listEl?listEl.offsetWidth:0;
+      var filterW=filterEl?filterEl.offsetWidth:0;
+      var offsetX=(listW-filterW)/2;
+      var tpx=m.project([lat,lng],zoom);
+      var adj=m.unproject(L.point(tpx.x+offsetX,tpx.y),zoom);
+      m.flyTo(adj,zoom);
       markers.forEach(function(mk){{
         var ll=mk.getLatLng();
         if(Math.abs(ll.lat-lat)<0.0001&&Math.abs(ll.lng-lng)<0.0001)mk.openPopup();
@@ -999,7 +1014,7 @@ def _build_header_html(total, total_units, mapped):
     return f"""\
 <div id="header">
   <div>
-    <h1>Madison WI Multi-Family Housing Permits (2015\u20132026)</h1>
+    <h1>Madison Housing: Where It\u2019s Being Built and Where It\u2019s Allowed by Right</h1>
     <div class="stats">
       <span>{total} projects</span>
       <span>{total_units:,} total units</span>
@@ -1185,7 +1200,7 @@ def build_page_html(total, total_units, mapped, legend_html,
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Madison WI Multi-Family Housing Permits (2015\u20132026)</title>
+<title>Madison Housing: Where It\u2019s Being Built and Where It\u2019s Allowed by Right</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='8' y='20' width='48' height='40' rx='2' fill='%234a90d9'/%3E%3Crect x='4' y='16' width='56' height='8' rx='2' fill='%23356bad'/%3E%3Crect x='14' y='28' width='8' height='8' rx='1' fill='%23ffe066'/%3E%3Crect x='28' y='28' width='8' height='8' rx='1' fill='%23ffe066'/%3E%3Crect x='42' y='28' width='8' height='8' rx='1' fill='%23ffe066'/%3E%3Crect x='14' y='42' width='8' height='8' rx='1' fill='%23ffe066'/%3E%3Crect x='28' y='42' width='8' height='8' rx='1' fill='%23ffe066'/%3E%3Crect x='42' y='42' width='8' height='8' rx='1' fill='%23ffe066'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
