@@ -11,3 +11,4 @@
 !outcome_overrides.csv
 .DS_Store
 __pycache__/
+*.log
