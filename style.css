@@ -97,7 +97,7 @@ body { font-family: system-ui, -apple-system, sans-serif }
 }
 
 /* Map — fills remaining viewport below header */
-#map-wrap { position: relative; flex: 0 0 auto; height: calc(100vh - 60px); width: 100% }
+#map-wrap { position: relative; flex: 0 0 auto; height: calc(100vh - 96px); width: 100% }
 #map { height: 100%; width: 100% }
 
 /* Responsive: smaller legend on narrow screens */
