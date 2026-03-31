@@ -459,7 +459,9 @@ def _build_zoning_row(z):
         f'{toggle_td}'
         f'<td class="zp-code">'
         f'<span class="zp-dot" style="background:{color}"></span>'
-        f'{html.escape(code)}</td>'
+        f'{html.escape(code)}'
+        + (f'<span class="info-tip" tabindex="0" data-tip="Planned Development \u2014 use rules and density limits are set by each project\u2019s individual Master Plan, not a district-wide standard.">i</span>' if code.startswith("PD") else "")
+        + f'</td>'
         f'<td class="zp-name"><b>{html.escape(z["name"])}</b>{desc_div}</td>'
         f'<td class="zp-cell">{permitted}</td>'
         f'<td class="zp-cell">{conditional}</td>'
@@ -686,7 +688,7 @@ function fillSel(sel,opts,idx){{
   opts.forEach(function(v){{
     var o=document.createElement("option");o.value=v;
     var ml=gran==="year"?ML_Y:ML_M;
-    if(ml[v]){{o.text=fmtOpt(v)+" \u25c6";o.title=fmtOpt(v)+" \u00b7 "+ml[v]}}else{{o.text=fmtOpt(v)}}
+    if(ml[v]){{o.text=fmtOpt(v)+" \u2139\ufe0e";o.title=fmtOpt(v)+" \u00b7 "+ml[v]}}else{{o.text=fmtOpt(v)}}
     sel.appendChild(o);
   }});
   sel.selectedIndex=Math.min(idx,opts.length-1);
@@ -943,6 +945,12 @@ function openClassif(){{
 function closeClassif(){{
   document.getElementById("classif-overlay").classList.remove("open");
 }}
+function openPolicy(){{
+  document.getElementById("policy-overlay").classList.add("open");
+}}
+function closePolicy(){{
+  document.getElementById("policy-overlay").classList.remove("open");
+}}
 function setTrendCat(cat,btn){{
   _tCat=cat;
   document.querySelectorAll(".tr-cat").forEach(function(b){{b.classList.remove("tr-active");}});
@@ -1057,6 +1065,7 @@ def _build_header_html(total, total_units, mapped):
   <button id="trends-btn" onclick="openTrends()">Trends \u2197</button>
   <button id="classif-btn" onclick="openClassif()">Classification \u2197</button>
   <button id="zoning-btn" onclick="openZoningPanel()">Zoning Reference \u2197</button>
+  <button id="policy-btn" onclick="openPolicy()">Policy \u2197</button>
 </div>"""
 
 
@@ -1080,7 +1089,7 @@ def _build_filter_panel_html():
       <label class="df-cb"><input type="checkbox" name="usetype" value="PERMITTED" checked onchange="applyFilters()"><span style="color:#16a34a">Permitted</span> <span style="color:#64748b;font-size:11px">(i.e., legal)</span></label>
       <label class="df-cb"><input type="checkbox" name="usetype" value="CONDITIONAL" checked onchange="applyFilters()"><span style="color:#d97706">Conditional</span></label>
       <label class="df-cb"><input type="checkbox" name="usetype" value="REZONED" checked onchange="applyFilters()"><span style="color:#ef4444">Rezoned</span></label>
-      <label class="df-cb"><input type="checkbox" name="usetype" value="VARIES" checked onchange="applyFilters()"><span style="color:#ef4444">PD</span></label>
+      <label class="df-cb"><input type="checkbox" name="usetype" value="VARIES" checked onchange="applyFilters()"><span style="color:#ef4444">PD</span><span class="info-tip" tabindex="0" data-tip="Planned Development zones each have a custom Master Plan \u2014 there\u2019s no uniform density range, so use type can\u2019t be automatically classified.">i</span></label>
       <label class="df-cb"><input type="checkbox" name="usetype" value="UNKNOWN" checked onchange="applyFilters()"><span style="color:#6b7280">Unknown</span></label>
       <span id="df-count" class="df-count"></span>
     </div>
@@ -1218,6 +1227,41 @@ def _build_classif_html():
 </div>"""
 
 
+def _build_policy_html():
+    _months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+    def _fmt(d):
+        y, m = d.split("-")
+        return _months[int(m) - 1] + " " + y
+
+    major_rows = "\n".join(
+        f'    <div class="pol-row"><span class="pol-date">{_fmt(d)}</span>'
+        f'<span class="pol-name">{html.escape(name)}</span></div>'
+        for d, name in POLICY_MAJOR
+    )
+    area_rows = "\n".join(
+        f'    <div class="pol-row"><span class="pol-date">{_fmt(d)}</span>'
+        f'<span class="pol-name">{html.escape(name)}</span></div>'
+        for d, name in POLICY_AREA_PLANS
+    )
+    return f"""\
+<div id="policy-overlay">
+  <div id="policy-hdr">
+    <span class="policy-title">Policy Milestones</span>
+    <button id="policy-close" onclick="closePolicy()">&times; Close</button>
+  </div>
+  <div id="policy-body">
+    <div class="pol-section">
+      <div class="pol-section-hdr">Major Milestones</div>
+{major_rows}
+    </div>
+    <div class="pol-section">
+      <div class="pol-section-hdr">Area Plans</div>
+{area_rows}
+    </div>
+  </div>
+</div>"""
+
+
 def build_page_html(total, total_units, mapped, legend_html,
                     zoning_panel_html, map_js):
     """Assemble the full HTML page from pre-built components."""
@@ -1227,6 +1271,7 @@ def build_page_html(total, total_units, mapped, legend_html,
     zoning_overlay = _build_zoning_overlay(zoning_panel_html)
     trends_overlay = _build_trends_html()
     classif_overlay = _build_classif_html()
+    policy_overlay = _build_policy_html()
 
     return f"""\
 <!DOCTYPE html>
@@ -1246,6 +1291,7 @@ def build_page_html(total, total_units, mapped, legend_html,
 {trends_overlay}
 {classif_overlay}
 {zoning_overlay}
+{policy_overlay}
 <div id="map-wrap">
   <button id="legend-toggle" class="map-overlay-btn" onclick="openLegend()">Legend</button>
   <div id="legend" class="map-overlay">

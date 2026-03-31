@@ -96,6 +96,61 @@ body { font-family: system-ui, -apple-system, sans-serif }
   border-radius: 4px; padding: 4px 8px; font-size: 11px; font-family: inherit;
 }
 
+/* Info-tip tooltip badge */
+.info-tip {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: rgba(0,0,0,0.12); color: inherit;
+  font-size: 10px; font-style: normal; font-weight: 700;
+  cursor: default; margin-left: 3px; position: relative;
+  user-select: none; vertical-align: middle; flex-shrink: 0;
+}
+.info-tip::after {
+  content: attr(data-tip);
+  position: absolute; bottom: calc(100% + 6px); left: 50%;
+  transform: translateX(-50%);
+  background: #1e293b; color: #f8fafc;
+  padding: 6px 9px; border-radius: 6px;
+  font-size: 11px; line-height: 1.45; white-space: normal; width: 210px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.35);
+  pointer-events: none; opacity: 0; transition: opacity 0.15s;
+  z-index: 9999; text-align: left; font-weight: 400;
+}
+.info-tip:hover::after, .info-tip:focus::after { opacity: 1; }
+
+/* Policy overlay */
+#policy-overlay {
+  display: none; position: fixed; inset: 0;
+  background: #1a1a1a; z-index: 2000; flex-direction: column;
+}
+#policy-overlay.open { display: flex; }
+#policy-hdr {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 20px; background: #111; border-bottom: 1px solid #333; flex-shrink: 0;
+}
+.policy-title { font-size: 14px; font-weight: 600; color: #f8fafc; }
+#policy-close {
+  padding: 4px 10px; background: transparent;
+  border: 1px solid #555; color: #bbb; border-radius: 3px; cursor: pointer; font-size: 12px;
+}
+#policy-close:hover { border-color: #888; color: #fff; }
+#policy-body {
+  flex: 1; overflow-y: auto; padding: 24px 40px;
+  display: flex; gap: 40px; flex-wrap: wrap; align-content: flex-start;
+}
+.pol-section { flex: 1 1 260px; }
+.pol-section-hdr {
+  font-size: 12px; font-weight: 600; color: #94a3b8;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid #333;
+}
+.pol-row {
+  display: flex; gap: 12px; align-items: baseline;
+  padding: 7px 0; border-bottom: 1px solid #222;
+}
+.pol-date { font-size: 11px; color: #64748b; white-space: nowrap; min-width: 72px; }
+.pol-name { font-size: 13px; color: #e2e8f0; }
+
 /* Map — fills remaining viewport below header */
 #map-wrap { position: relative; flex: 0 0 auto; height: calc(100vh - 96px); width: 100% }
 #map { height: 100%; width: 100% }
