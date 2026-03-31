@@ -1225,7 +1225,7 @@ def build_page_html(total, total_units, mapped, legend_html,
 </div>
 <footer id="site-footer">
   <div class="footer-inner">
-    <p class="footer-license">Released under the <a href="https://opensource.org/licenses/MIT" target="_blank">MIT License</a>.</p>
+    <p class="footer-license">Released under the <a href="https://opensource.org/licenses/MIT" target="_blank">MIT License</a>. This site is not an official resource of the City of Madison.</p>
     <p class="footer-disclaimer"><strong>Data sources:</strong> Permit records from the <a href="https://www.cityofmadison.com/dpced/bi/" target="_blank">City of Madison Building Inspection Division</a>. Zoning data from <a href="https://maps.cityofmadison.com/arcgis/rest/services/Planning/Zoning/MapServer" target="_blank">City of Madison GIS</a>. Transit routes from <a href="https://www.cityofmadison.com/metro" target="_blank">Metro Transit GTFS</a>. Bike infrastructure from <a href="https://maps.cityofmadison.com/arcgis/rest/services/MPO/BicycleMap_Pro/MapServer" target="_blank">Madison MPO BicycleMap_Pro</a>. Geocoding via <a href="https://nominatim.openstreetmap.org/" target="_blank">OpenStreetMap Nominatim</a>.</p>
   </div>
 </footer>

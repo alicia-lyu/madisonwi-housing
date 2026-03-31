@@ -8,6 +8,7 @@
 !projects.csv
 !zoning_districts.csv
 !transit_routes.json
+!bike_routes.json
 !outcome_overrides.csv
 .DS_Store
 __pycache__/
