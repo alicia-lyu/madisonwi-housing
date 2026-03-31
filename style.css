@@ -112,75 +112,45 @@ body { font-family: system-ui, -apple-system, sans-serif }
   #filter-panel { left: 10px; right: auto; max-width: calc(100vw - 20px) }
 }
 
-/* Zoning reference button & panel */
-#zoning-btn {
-  position: absolute; top: 10px; right: 10px; z-index: 1000;
-  background: #1e293b; color: #f8fafc; border: none; padding: 8px 16px;
-  border-radius: 8px; cursor: pointer; font-size: 13px; font-family: inherit;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.35); transition: background 0.15s;
-}
-#zoning-btn:hover { background: #334155 }
-#zoning-panel {
-  position: absolute; top: 10px; right: 10px; z-index: 1001;
-  background: #fff; border-radius: 10px; box-shadow: 0 4px 24px rgba(0,0,0,0.28);
-  width: 900px; max-width: calc(100vw - 30px); max-height: calc(100vh - 100px);
-  overflow-y: auto; padding: 22px 26px; display: none;
-}
-#zoning-panel.open { display: block }
-#panel-close {
-  float: right; background: none; border: none; font-size: 32px;
-  cursor: pointer; color: #64748b; line-height: 1;
-  width: 44px; height: 44px; display: inline-flex;
-  align-items: center; justify-content: center; border-radius: 8px;
-  transition: background 0.15s, color 0.15s;
-  margin: -6px -8px 0 8px;
-}
-#panel-close:hover { color: #1e293b; background: #e2e8f0 }
-#panel-title { font-size: 17px; font-weight: 600; margin-bottom: 12px; color: #1e293b; letter-spacing: -0.01em }
-#panel-note { font-size: 11px; color: #64748b; margin-bottom: 16px; line-height: 1.6 }
 
 /* Zoning panel table */
 .zp-section { margin-bottom: 20px }
 .zp-cat {
-  font-weight: 600; font-size: 13px; color: #3b82f6;
-  margin-bottom: 8px; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px;
+  font-weight: 600; font-size: 13px; color: #60a5fa;
+  margin-bottom: 8px; border-bottom: 1px solid #1e3a5f; padding-bottom: 5px;
 }
 .zp-table { font-size: 12px; border-collapse: collapse; width: 100% }
-.zp-hdr { color: #94a3b8; font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em }
+.zp-hdr { color: #64748b; font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em }
 .zp-hdr th { text-align: left; padding: 6px 6px 4px }
-.zp-row { border-bottom: 1px solid #f1f5f9 }
-.zp-row:hover { background: rgba(59,130,246,0.03) }
+.zp-row { border-bottom: 1px solid #2a2a2a }
+.zp-row:hover { background: rgba(255,255,255,0.03) }
 .zp-code { white-space: nowrap; font-weight: 600; vertical-align: top; padding: 6px 8px 6px 0 }
 .zp-dot {
   display: inline-block; width: 12px; height: 12px; border-radius: 50%;
   vertical-align: middle; margin-right: 4px;
-  border: 1px solid rgba(0,0,0,0.15);
+  border: 1px solid rgba(255,255,255,0.15);
 }
 .zp-name { vertical-align: top; padding: 6px 8px 6px 0; min-width: 120px }
 .zp-expand {
   width: 32px; min-width: 32px; text-align: center; vertical-align: top;
-  cursor: pointer; color: #94a3b8; font-size: 20px;
-  padding: 6px 0 0; user-select: none; border-right: 1px solid #f1f5f9;
+  cursor: pointer; color: #475569; font-size: 20px;
+  padding: 6px 0 0; user-select: none; border-right: 1px solid #2a2a2a;
 }
-.zp-expand:hover { color: #3b82f6; background: rgba(59,130,246,0.06) }
+.zp-expand:hover { color: #60a5fa; background: rgba(96,165,250,0.06) }
 .zp-expand-empty { width: 32px; min-width: 32px; padding: 0 }
 .zp-desc-inline {
   margin-top: 4px; font-size: 11px; color: #64748b; line-height: 1.5;
   font-weight: normal;
 }
 .zp-desc { font-size: 11px; color: #64748b }
-.zp-cell { vertical-align: top; padding: 6px 6px; font-size: 11px; color: #475569; line-height: 1.4 }
+.zp-cell { vertical-align: top; padding: 6px 6px; font-size: 11px; color: #94a3b8; line-height: 1.4 }
 .zp-nowrap { white-space: nowrap; font-size: 12px }
 .zp-last { padding-left: 6px; padding-right: 0 }
 
 /* Scrollbar styling for panels */
-#zoning-panel::-webkit-scrollbar,
 #stats-panel::-webkit-scrollbar { width: 6px }
-#zoning-panel::-webkit-scrollbar-track,
 #stats-panel::-webkit-scrollbar-track { background: transparent }
-#zoning-panel::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px }
 #stats-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px }
-#zoning-panel::-webkit-scrollbar-thumb:hover { background: #94a3b8 }
 #stats-panel::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.25) }
 
 /* List panel button & panel */
@@ -321,3 +291,32 @@ body { font-family: system-ui, -apple-system, sans-serif }
   align-items: center; justify-content: center; overflow: hidden;
 }
 #trends-canvas { max-height: 75vh; max-width: 100%; }
+
+/* Zoning overlay (full-screen, dark) */
+#zoning-btn {
+  background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.25);
+  color: #f8fafc; padding: 5px 12px; border-radius: 4px; cursor: pointer;
+  font-size: 13px; white-space: nowrap; align-self: center;
+}
+#zoning-btn:hover { background: rgba(255,255,255,0.2); }
+#zoning-overlay {
+  display: none; position: fixed; inset: 0;
+  background: #1a1a1a; z-index: 2000; flex-direction: column;
+}
+#zoning-overlay.open { display: flex; }
+#zoning-overlay-hdr {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 20px; background: #111; border-bottom: 1px solid #333; flex-shrink: 0;
+}
+.zoning-overlay-title { font-size: 14px; font-weight: 600; color: #f8fafc; }
+#zoning-overlay-close {
+  padding: 4px 10px; background: transparent;
+  border: 1px solid #555; color: #bbb; border-radius: 3px; cursor: pointer; font-size: 12px;
+}
+#zoning-overlay-close:hover { border-color: #888; color: #fff; }
+#zoning-overlay-body { flex: 1; overflow-y: auto; padding: 24px 32px; }
+#panel-note { font-size: 11px; color: #64748b; margin-bottom: 16px; line-height: 1.6; }
+#zoning-overlay-body::-webkit-scrollbar { width: 6px; }
+#zoning-overlay-body::-webkit-scrollbar-track { background: transparent; }
+#zoning-overlay-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
+#zoning-overlay-body::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.25); }

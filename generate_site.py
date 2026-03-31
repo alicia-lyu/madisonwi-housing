@@ -826,26 +826,18 @@ function buildList(){{
 }}
 function openListPanel(){{
   document.getElementById("list-panel").classList.add("open");
-  document.getElementById("zoning-panel").classList.remove("open");
   document.getElementById("list-btn").style.display="none";
-  document.getElementById("zoning-btn").style.display="none";
   buildList();
 }}
 function closeListPanel(){{
   document.getElementById("list-panel").classList.remove("open");
   document.getElementById("list-btn").style.display="";
-  document.getElementById("zoning-btn").style.display="";
 }}
 function openZoningPanel(){{
-  document.getElementById("zoning-panel").classList.add("open");
-  document.getElementById("list-panel").classList.remove("open");
-  document.getElementById("list-btn").style.display="none";
-  document.getElementById("zoning-btn").style.display="none";
+  document.getElementById("zoning-overlay").classList.add("open");
 }}
 function closeZoningPanel(){{
-  document.getElementById("zoning-panel").classList.remove("open");
-  document.getElementById("list-btn").style.display="";
-  document.getElementById("zoning-btn").style.display="";
+  document.getElementById("zoning-overlay").classList.remove("open");
 }}
 function pushHash(){{
   var from=document.getElementById("df-from").value;
@@ -1002,6 +994,7 @@ def _build_header_html(total, total_units, mapped):
     </div>
   </div>
   <button id="trends-btn" onclick="openTrends()">Trends \u2197</button>
+  <button id="zoning-btn" onclick="openZoningPanel()">Zoning Reference \u2197</button>
 </div>"""
 
 
@@ -1056,20 +1049,21 @@ def _build_list_button_and_panel():
   </div>"""
 
 
-def _build_zoning_button_and_panel(zoning_panel_html):
+def _build_zoning_overlay(zoning_panel_html):
     return f"""\
-  <button id="zoning-btn" onclick="openZoningPanel()">Zoning Reference</button>
-  <div id="zoning-panel">
-    <button id="panel-close" onclick="closeZoningPanel()">&times;</button>
-    <div id="panel-title">City of Madison Zoning District Summary</div>
-    <div id="panel-note">
-      Source: Zoning District Summary, October 17, 2025. Density = max dwelling units/acre.
+<div id="zoning-overlay">
+  <div id="zoning-overlay-hdr">
+    <span class="zoning-overlay-title">Zoning District Reference</span>
+    <button id="zoning-overlay-close" onclick="closeZoningPanel()">&times; Close</button>
+  </div>
+  <div id="zoning-overlay-body">
+    <div id="panel-note">Source: Zoning District Summary, October 17, 2025. Density = max dwelling units/acre.
       Stories marked * allow additional with Conditional Use approval.
-      "Height Map" = determined by Downtown Height Map. "By plan" = determined by Master Plan / PD.
-      Contact: zoning@cityofmadison.com | 608-266-4551
-    </div>
+      \u201cHeight Map\u201d = determined by Downtown Height Map. \u201cBy plan\u201d = determined by Master Plan / PD.
+      Contact: zoning@cityofmadison.com | 608-266-4551</div>
     {zoning_panel_html}
-  </div>"""
+  </div>
+</div>"""
 
 
 def _build_trends_html():
@@ -1108,7 +1102,7 @@ def build_page_html(total, total_units, mapped, legend_html,
     header = _build_header_html(total, total_units, mapped)
     filter_panel = _build_filter_panel_html()
     list_section = _build_list_button_and_panel()
-    zoning_section = _build_zoning_button_and_panel(zoning_panel_html)
+    zoning_overlay = _build_zoning_overlay(zoning_panel_html)
     trends_overlay = _build_trends_html()
 
     return f"""\
@@ -1127,6 +1121,7 @@ def build_page_html(total, total_units, mapped, legend_html,
 <body style="display:flex;flex-direction:column;min-height:100vh">
 {header}
 {trends_overlay}
+{zoning_overlay}
 <div id="map-wrap">
   <button id="legend-toggle" class="map-overlay-btn" onclick="document.getElementById('legend').classList.remove('collapsed');this.style.display='none'">Legend</button>
   <div id="legend" class="map-overlay">
@@ -1140,7 +1135,6 @@ def build_page_html(total, total_units, mapped, legend_html,
   </div>
 {filter_panel}
 {list_section}
-{zoning_section}
   <div id="map"></div>
 </div>
 <footer id="site-footer">
