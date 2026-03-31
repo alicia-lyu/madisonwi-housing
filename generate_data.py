@@ -87,6 +87,17 @@ _RESIDENTIAL_INDICATOR_RE = re.compile(
     re.IGNORECASE,
 )
 
+_ALTERATION_RE = re.compile(
+    r"\balt(?:er|eration|erations)\b|interior\s+alteration"
+    r"|\bconvert\b|\bconversion\b|\bsplit\b|\brenovat\b|\bremodel\b",
+    re.IGNORECASE,
+)
+_NEW_CONSTRUCTION_RE = re.compile(
+    r"\bnew\s+(?:construction|building|structure|duplex|apartment|unit)\b"
+    r"|\bconstruct\b",
+    re.IGNORECASE,
+)
+
 # ---------------------------------------------------------------------------
 # Unit count extraction patterns
 # ---------------------------------------------------------------------------
@@ -258,6 +269,10 @@ def classify_housing_type(description, units):
     """
     desc = description.lower()
     stories = extract_stories(description)
+
+    # Alterations/conversions of existing buildings — not new construction
+    if _ALTERATION_RE.search(description) and not _NEW_CONSTRUCTION_RE.search(description):
+        return "Alteration"
 
     # Townhouse/rowhouse — explicit in description
     if re.search(r"townho(?:me|use)|row\s?house", desc):
