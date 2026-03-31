@@ -968,24 +968,40 @@ function buildTrendsChart(){{
       backgroundColor:colorMap[cv]||"#888",
     }};
   }});
+  var isMob=window.innerWidth<=600;
+  if(isMob){{
+    var cv=document.getElementById('trends-canvas');
+    cv.style.height=(years.length*44+80)+'px';
+    cv.style.width='100%';
+  }}
   if(_tChart)_tChart.destroy();
   _tChart=new Chart(document.getElementById("trends-canvas"),{{
     type:"bar",
     data:{{labels:years,datasets:datasets}},
     options:{{
-      responsive:true,maintainAspectRatio:true,
+      responsive:true,
+      maintainAspectRatio:!isMob,
+      indexAxis:isMob?'y':'x',
       plugins:{{
-        legend:{{position:"bottom",labels:{{color:"#ccc",padding:16}}}},
+        legend:{{position:"bottom",labels:{{color:"#ccc",padding:isMob?8:16,boxWidth:isMob?10:40}}}},
         tooltip:{{callbacks:{{label:function(ctx){{return " "+ctx.dataset.label+": "+ctx.raw;}}}}}},
       }},
       scales:{{
-        x:{{stacked:true,ticks:{{color:"#aaa"}},grid:{{color:"#2a2a2a"}}}},
+        x:{{stacked:true,ticks:{{color:"#aaa",maxTicksLimit:isMob?6:undefined}},grid:{{color:"#2a2a2a"}},
+           title:{{display:isMob,color:"#aaa",text:_tMetric==="units"?"Total Units":"Building Count"}}}},
         y:{{stacked:true,ticks:{{color:"#aaa"}},grid:{{color:"#2a2a2a"}},
-           title:{{display:true,color:"#aaa",text:_tMetric==="units"?"Total Units":"Building Count"}}}},
+           title:{{display:!isMob,color:"#aaa",text:_tMetric==="units"?"Total Units":"Building Count"}}}},
       }},
     }},
   }});
 }}
+function _resizeMap(){{
+  if(window.innerWidth>600)return;
+  var hdr=document.getElementById('header').offsetHeight;
+  document.getElementById('map-wrap').style.height=(window.innerHeight-hdr-32)+'px';
+}}
+_resizeMap();
+window.addEventListener('resize',_resizeMap);
 if(window.innerWidth<=768){{
   ['legend','stats-panel','filter-panel'].forEach(function(id){{
     var el=document.getElementById(id);

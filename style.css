@@ -209,9 +209,12 @@ body { font-family: system-ui, -apple-system, sans-serif }
 
 /* Responsive: list panel */
 @media (max-width: 600px) {
-  #list-btn { right: 10px; top: 55px }
+  #list-btn { right: 10px; top: 10px }
   #list-panel { width: calc(100vw - 20px); padding: 14px 10px }
   .lr-name { max-width: 50vw }
+  #trends-hdr { padding: 8px 10px; gap: 6px; }
+  #trends-body { padding: 8px 12px; overflow-y: auto; align-items: flex-start; justify-content: flex-start; }
+  #trends-canvas { max-height: none; width: 100%; }
 }
 
 /* Popup */
