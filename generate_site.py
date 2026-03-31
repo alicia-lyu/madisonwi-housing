@@ -907,6 +907,12 @@ function openTrends(){{
 function closeTrends(){{
   document.getElementById("trends-overlay").classList.remove("open");
 }}
+function openClassif(){{
+  document.getElementById("classif-overlay").classList.add("open");
+}}
+function closeClassif(){{
+  document.getElementById("classif-overlay").classList.remove("open");
+}}
 function setTrendCat(cat,btn){{
   _tCat=cat;
   document.querySelectorAll(".tr-cat").forEach(function(b){{b.classList.remove("tr-active");}});
@@ -1002,6 +1008,7 @@ def _build_header_html(total, total_units, mapped):
     </div>
   </div>
   <button id="trends-btn" onclick="openTrends()">Trends \u2197</button>
+  <button id="classif-btn" onclick="openClassif()">Classification \u2197</button>
 </div>"""
 
 
@@ -1102,6 +1109,66 @@ def _build_trends_html():
 </div>"""
 
 
+CLASSIF_CARDS = {
+    "PERMITTED": {
+        "desc": "The project's unit count falls within the permitted density range for its zoning district under the base zoning code. No special approval is required beyond a standard building permit.",
+        "method": "Rule-based: unit count matched against permitted ranges in zoning_districts.csv",
+    },
+    "CONDITIONAL": {
+        "desc": "The unit count falls in the conditional use range for the zoning district, or a Conditional Use Permit (CUP) application for the project's address was found in Madison's Legistar legislative database. Requires Plan Commission approval.",
+        "method": "Rule-based match + Legistar CUP lookup (authoritative override)",
+    },
+    "REZONED": {
+        "desc": "The project's address matched a rezoning ordinance in Legistar containing keywords 'change the zoning' or 'rezone'. The site's zoning district was amended before or during construction.",
+        "method": "Legistar rezoning ordinance lookup (authoritative override)",
+    },
+    "VARIES": {
+        "desc": "The zoning code begins with 'PD' (Planned Development) or is 'TR-P'. Each PD zone has its own Master Plan with unique density and use rules \u2014 there is no uniform range to classify against.",
+        "method": "Zone name pattern match (zoning.startswith('PD') or zoning == 'TR-P')",
+    },
+    "UNKNOWN": {
+        "desc": "The unit count is missing, the zoning code was not found in the reference table, or the unit count falls outside all defined ranges for the district.",
+        "method": "Default when no rule matches",
+    },
+}
+
+CLASSIF_LABELS = dict(USE_TYPE_LABELS)
+CLASSIF_LABELS["VARIES"] = "PD / Planned Development"
+
+
+def _build_classif_html():
+    cards = []
+    for key, color in TREND_USE_COLORS.items():
+        label = CLASSIF_LABELS.get(key, key)
+        info = CLASSIF_CARDS[key]
+        cards.append(
+            f'    <div class="classif-card" style="--cc:{color}">\n'
+            f'      <div class="classif-badge">{html.escape(label)}</div>\n'
+            f'      <div class="classif-desc">{html.escape(info["desc"])}</div>\n'
+            f'      <div class="classif-method">&#9432; {html.escape(info["method"])}</div>\n'
+            f'    </div>'
+        )
+    cards_html = "\n".join(cards)
+    return f"""\
+<div id="classif-overlay">
+  <div id="classif-hdr">
+    <span class="classif-title">Use Type Classification</span>
+    <button id="classif-close" onclick="closeClassif()">&times; Close</button>
+  </div>
+  <div id="classif-body">
+{cards_html}
+    <div class="classif-note">
+      Classification runs in two passes: (1) rule-based matching against
+      zoning district density ranges in <code>zoning_districts.csv</code>;
+      (2) Legistar API lookup that overrides to CONDITIONAL or REZONED from
+      authoritative Madison legislative records.
+      These are automated approximations &mdash; some projects may be misclassified
+      due to incomplete data or unusual permit descriptions.
+    </div>
+  </div>
+</div>"""
+
+
 def build_page_html(total, total_units, mapped, legend_html,
                     zoning_panel_html, map_js):
     """Assemble the full HTML page from pre-built components."""
@@ -1110,6 +1177,7 @@ def build_page_html(total, total_units, mapped, legend_html,
     list_section = _build_list_button_and_panel()
     zoning_section = _build_zoning_button_and_panel(zoning_panel_html)
     trends_overlay = _build_trends_html()
+    classif_overlay = _build_classif_html()
 
     return f"""\
 <!DOCTYPE html>
@@ -1127,6 +1195,7 @@ def build_page_html(total, total_units, mapped, legend_html,
 <body style="display:flex;flex-direction:column;min-height:100vh">
 {header}
 {trends_overlay}
+{classif_overlay}
 <div id="map-wrap">
   <button id="legend-toggle" class="map-overlay-btn" onclick="document.getElementById('legend').classList.remove('collapsed');this.style.display='none'">Legend</button>
   <div id="legend" class="map-overlay">
@@ -1146,8 +1215,7 @@ def build_page_html(total, total_units, mapped, legend_html,
 <footer id="site-footer">
   <div class="footer-inner">
     <p class="footer-license">Released under the <a href="https://opensource.org/licenses/MIT" target="_blank">MIT License</a>.</p>
-    <p class="footer-disclaimer"><strong>Data sources:</strong> Permit records from the <a href="https://www.cityofmadison.com/dpced/bi/" target="_blank">City of Madison Building Inspection Division</a>. Zoning data from <a href="https://geodata.wisc.edu/" target="_blank">Madison/Dane County GIS</a>. Transit routes from <a href="https://www.cityofmadison.com/metro" target="_blank">Metro Transit GTFS</a>. Geocoding via <a href="https://nominatim.openstreetmap.org/" target="_blank">OpenStreetMap Nominatim</a>.</p>
-    <p class="footer-disclaimer"><strong>Classification logic:</strong> Permitted vs. Conditional Use is determined by rule-based matching of each project's unit count against the density ranges defined in Madison's zoning code for its district. Project outcomes (Built, Active, Did Not Proceed) are inferred from permit status and date. Some projects could not be geocoded to a map location and are excluded from the map but included in summary statistics. These classifications are automated approximations and may contain errors. This site is not an official City of Madison resource.</p>
+    <p class="footer-disclaimer"><strong>Data sources:</strong> Permit records from the <a href="https://www.cityofmadison.com/dpced/bi/" target="_blank">City of Madison Building Inspection Division</a>. Zoning data from <a href="https://maps.cityofmadison.com/arcgis/rest/services/Planning/Zoning/MapServer" target="_blank">City of Madison GIS</a>. Transit routes from <a href="https://www.cityofmadison.com/metro" target="_blank">Metro Transit GTFS</a>. Bike infrastructure from <a href="https://maps.cityofmadison.com/arcgis/rest/services/MPO/BicycleMap_Pro/MapServer" target="_blank">Madison MPO BicycleMap_Pro</a>. Geocoding via <a href="https://nominatim.openstreetmap.org/" target="_blank">OpenStreetMap Nominatim</a>.</p>
   </div>
 </footer>
 <script>

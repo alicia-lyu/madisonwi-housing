@@ -44,4 +44,4 @@ JSON, CSV, PDF, HTML, TXT, and ZIP files are all gitignored. Only `.py`, `.css`,
 
 ## SESSION DISCIPLINE
 
-Commit early and often. Don't wait for user's specific request. If a commit is in a worktree, merge it with the main directory immediately after every commit. After merging, regenerate the site in the main directory and check for errors.
+Commit early and often. Don't wait for user's specific request. If a commit is in a worktree, merge it with the main directory and sync it back to the worktree immediately after every commit. After merging, regenerate the site in the main directory and check for errors.
