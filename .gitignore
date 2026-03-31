@@ -10,7 +10,6 @@
 !transit_routes.json
 !bike_routes.json
 !outcome_overrides.csv
-!geocode_cache.json
 .DS_Store
 __pycache__/
 *.log

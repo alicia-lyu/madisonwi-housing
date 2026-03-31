@@ -1150,6 +1150,48 @@ def _write_outputs(projects):
 # Main
 # ---------------------------------------------------------------------------
 
+def _maybe_background_refresh():
+    """Spawn refresh.py in the background if any data source is stale.
+
+    Runs only when invoked directly (not when called from refresh.py itself,
+    detected via REFRESH_RUNNING env var).
+    """
+    import subprocess
+    import sys
+
+    if os.environ.get("REFRESH_RUNNING"):
+        return
+    if not os.path.exists("refresh.py"):
+        return
+    if not os.path.exists("geocode_cache.json"):
+        return
+
+    try:
+        with open("geocode_cache.json") as f:
+            cache = json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return  # cache mid-write; skip check this run
+
+    intervals = {
+        "meta:geocode_retry":            30,
+        "meta:legistar:Conditional Use": 7,
+        "meta:legistar:Ordinance":       7,
+        "meta:bike_routes":              90,
+    }
+    now = datetime.now(timezone.utc)
+    stale = any(
+        not cache.get(k) or
+        now - datetime.fromisoformat(cache[k]) > timedelta(days=d)
+        for k, d in intervals.items()
+    )
+    if stale:
+        print("Data sources stale — background refresh starting (check refresh.log)")
+        log = open("refresh.log", "w")
+        env = os.environ.copy()
+        env["REFRESH_RUNNING"] = "1"
+        subprocess.Popen([sys.executable, "refresh.py"], env=env, stdout=log, stderr=log)
+
+
 def main():
     cache = load_cache()
 
@@ -1170,6 +1212,7 @@ def main():
     _step_bike_routes(cache)
     projects = _step_filter_low_quality(projects)
     _write_outputs(projects)
+    _maybe_background_refresh()
 
 
 if __name__ == "__main__":
