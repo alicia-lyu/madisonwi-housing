@@ -10,7 +10,7 @@ import time
 import urllib.request
 import urllib.parse
 import urllib.error
-from datetime import date, datetime
+from datetime import date, datetime, timezone, timedelta
 
 # ---------------------------------------------------------------------------
 # File paths
@@ -27,6 +27,14 @@ BIKE_JSON = "bike_routes.json"
 OUTCOME_OVERRIDES_CSV = "outcome_overrides.csv"
 USE_TYPE_OVERRIDES_CSV = "use_type_overrides.csv"
 LOW_QUALITY_CSV = "projects_low_quality.csv"
+
+# ---------------------------------------------------------------------------
+# Refresh intervals (days) for cached external data sources
+# ---------------------------------------------------------------------------
+
+GEOCODE_RETRY_INTERVAL_DAYS = 30   # Nominatim picks up new streets ~monthly
+LEGISTAR_TTL_DAYS            = 7   # Plan Commission / BZA meets bi-weekly
+BIKE_TTL_DAYS                = 90  # MPO infrastructure updates are slow
 
 # ---------------------------------------------------------------------------
 # API endpoints
@@ -139,6 +147,14 @@ CSV_FIELDS = [
 # ---------------------------------------------------------------------------
 # Cache helpers
 # ---------------------------------------------------------------------------
+
+def _is_stale(cache, meta_key, interval_days):
+    """Return True if meta_key is absent or older than interval_days."""
+    ts = cache.get(meta_key)
+    if not ts:
+        return True
+    return datetime.now(timezone.utc) - datetime.fromisoformat(ts) > timedelta(days=interval_days)
+
 
 def load_cache():
     if os.path.exists(CACHE_FILE):
@@ -692,16 +708,21 @@ def _step_classify_types(projects):
 
 
 def _step_clear_failed_geocodes(projects, cache):
-    """Clear cached null geocodes so they get retried on next run."""
+    """Clear cached null geocodes for retry — at most every GEOCODE_RETRY_INTERVAL_DAYS."""
+    meta_key = "meta:geocode_retry"
+    if not _is_stale(cache, meta_key, GEOCODE_RETRY_INTERVAL_DAYS):
+        age = (datetime.now(timezone.utc) - datetime.fromisoformat(cache[meta_key])).days
+        print(f"  Skipping geocode retry (last run {age}d ago; interval {GEOCODE_RETRY_INTERVAL_DAYS}d)\n")
+        return
     cleared = 0
     for p in projects:
         key = f"geo:{p['address']}"
         if key in cache and cache[key].get("lat") is None:
             del cache[key]
             cleared += 1
-    if cleared:
-        save_cache(cache)
-        print(f"  Cleared {cleared} failed geocode cache entries for retry\n")
+    cache[meta_key] = datetime.now(timezone.utc).isoformat()
+    save_cache(cache)
+    print(f"  Cleared {cleared} failed geocode cache entries for retry\n")
 
 
 def _step_geocode(projects, cache):
@@ -772,8 +793,10 @@ def _normalize_addr(addr):
 def _fetch_legistar_matters(type_name, cache):
     """Fetch all Legistar matters of a given type, using cache to avoid re-fetching."""
     cache_key = f"legistar:{type_name}"
-    if cache_key in cache:
+    meta_key = f"meta:legistar:{type_name}"
+    if cache_key in cache and not _is_stale(cache, meta_key, LEGISTAR_TTL_DAYS):
         return cache[cache_key]
+    cache.pop(cache_key, None)  # drop stale entry before re-fetch
 
     matters = []
     skip = 0
@@ -806,6 +829,7 @@ def _fetch_legistar_matters(type_name, cache):
             break
 
     cache[cache_key] = matters
+    cache[meta_key] = datetime.now(timezone.utc).isoformat()
     return matters
 
 
@@ -1019,6 +1043,10 @@ _DEFAULT_BIKE_STYLE = ("#22c55e", 2, None)
 
 def _step_bike_routes(cache):
     """Step 8: fetch bike lane/path data from Madison MPO ArcGIS and write bike_routes.json."""
+    meta_key = "meta:bike_routes"
+    if _is_stale(cache, meta_key, BIKE_TTL_DAYS):
+        cache.pop("bike:offstreet:features", None)
+        cache.pop("bike:onstreet:features", None)
     print("Step 8: Fetching bike route data from Madison MPO BicycleMap_Pro...")
 
     # Off-street paths (layer 7)
@@ -1059,6 +1087,7 @@ def _step_bike_routes(cache):
     print(f"  Wrote {len(bike_routes)} bike route segments ({total_pts} points) to {BIKE_JSON}")
     print(f"  Category breakdown: {type_counts}\n")
 
+    cache["meta:bike_routes"] = datetime.now(timezone.utc).isoformat()
     save_cache(cache)
 
 

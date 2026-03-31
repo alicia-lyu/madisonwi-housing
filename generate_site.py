@@ -1190,6 +1190,48 @@ def main():
     print(f"Generated {OUTPUT_HTML}: {total} projects, {mapped} mapped, "
           f"{total_units:,} total units")
 
+    _maybe_background_refresh()
+
+
+def _maybe_background_refresh():
+    """Spawn refresh.py in the background if any data source is stale.
+
+    Runs only when invoked directly (not when called from refresh.py itself,
+    detected via REFRESH_RUNNING env var).
+    """
+    import subprocess
+    import sys
+    from datetime import datetime, timezone, timedelta
+
+    if os.environ.get("REFRESH_RUNNING"):
+        return
+    if not os.path.exists("refresh.py"):
+        return
+    if not os.path.exists("geocode_cache.json"):
+        return
+
+    with open("geocode_cache.json") as f:
+        cache = json.load(f)
+
+    intervals = {
+        "meta:geocode_retry":            30,
+        "meta:legistar:Conditional Use": 7,
+        "meta:legistar:Ordinance":       7,
+        "meta:bike_routes":              90,
+    }
+    now = datetime.now(timezone.utc)
+    stale = any(
+        not cache.get(k) or
+        now - datetime.fromisoformat(cache[k]) > timedelta(days=d)
+        for k, d in intervals.items()
+    )
+    if stale:
+        print("Data sources stale — background refresh starting (check refresh.log)")
+        log = open("refresh.log", "w")
+        env = os.environ.copy()
+        env["REFRESH_RUNNING"] = "1"
+        subprocess.Popen([sys.executable, "refresh.py"], env=env, stdout=log, stderr=log)
+
 
 if __name__ == "__main__":
     main()
