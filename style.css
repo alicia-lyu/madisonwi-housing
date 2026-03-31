@@ -189,7 +189,7 @@ body { font-family: system-ui, -apple-system, sans-serif }
 #list-count { font-size: 12px; color: #64748b; margin-left: auto }
 .list-rows { display: flex; flex-direction: column; gap: 2px }
 .list-row {
-  display: flex; align-items: baseline; gap: 10px;
+  display: flex; align-items: baseline; flex-wrap: wrap; gap: 2px 8px;
   padding: 4px 8px; border-radius: 4px; font-size: 12px; color: #475569;
   border-left: 3px solid transparent;
 }
@@ -197,7 +197,8 @@ body { font-family: system-ui, -apple-system, sans-serif }
 .list-row.list-clickable:hover { filter: brightness(0.93) }
 .list-row.list-nomap { opacity: 0.45 }
 .lr-date { color: #94a3b8; font-size: 11px; white-space: nowrap; flex-shrink: 0 }
-.lr-name { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 260px }
+.lr-name { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  flex-shrink: 1; min-width: 80px; max-width: min(260px, 50vw) }
 .lr-meta { color: #64748b; font-size: 11px; white-space: nowrap; flex-shrink: 0 }
 
 /* Scrollbar for list panel */
@@ -209,7 +210,8 @@ body { font-family: system-ui, -apple-system, sans-serif }
 /* Responsive: list panel */
 @media (max-width: 600px) {
   #list-btn { right: 10px; top: 55px }
-  #list-panel { width: calc(100vw - 20px) }
+  #list-panel { width: calc(100vw - 20px); padding: 14px 10px }
+  .lr-name { max-width: 50vw }
 }
 
 /* Popup */
