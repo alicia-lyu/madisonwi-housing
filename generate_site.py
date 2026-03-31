@@ -850,9 +850,13 @@ function _closeOverlay(id){{
   if(tog)tog.style.display='block';
 }}
 function _exclusiveBefore(openingId){{
-  var mob=window.innerWidth<=600;
-  OVERLAY_IDS.forEach(function(id){{if(mob||openingId==='list-panel'||id==='stats-panel')if(id!==openingId)_closeOverlay(id);}});
-  if(mob||openingId==='stats-panel')closeListPanel();
+  if(window.innerWidth<=600){{
+    OVERLAY_IDS.forEach(function(id){{if(id!==openingId)_closeOverlay(id);}});
+    if(openingId!=='list-panel')closeListPanel();
+  }}else{{
+    if(openingId==='list-panel')_closeOverlay('stats-panel');
+    if(openingId==='stats-panel')closeListPanel();
+  }}
 }}
 function openLegend(){{_exclusiveBefore('legend');document.getElementById('legend').classList.remove('collapsed');document.getElementById('legend-toggle').style.display='none';}}
 function openStats(){{_exclusiveBefore('stats-panel');document.getElementById('stats-panel').classList.remove('collapsed');document.getElementById('stats-toggle').style.display='none';}}
