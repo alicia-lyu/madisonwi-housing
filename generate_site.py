@@ -999,6 +999,7 @@ function _resizeMap(){{
   if(window.innerWidth>600)return;
   var hdr=document.getElementById('header').offsetHeight;
   document.getElementById('map-wrap').style.height=(window.innerHeight-hdr-32)+'px';
+  if(typeof m!=='undefined')m.invalidateSize();
 }}
 _resizeMap();
 window.addEventListener('resize',_resizeMap);
