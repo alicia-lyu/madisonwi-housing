@@ -6,6 +6,8 @@ import csv
 import json
 import os
 import re
+import subprocess
+import sys
 import time
 import urllib.request
 import urllib.parse
@@ -16,7 +18,7 @@ from datetime import date, datetime, timezone, timedelta
 # File paths
 # ---------------------------------------------------------------------------
 
-CSV_FILE = "01012015-03152026.csv"
+CSV_FILE = "permits_merged.csv"
 OUTPUT_JSON = "projects.json"
 OUTPUT_CSV = "projects.csv"
 CACHE_FILE = "geocode_cache.json"
@@ -1193,6 +1195,8 @@ def _maybe_background_refresh():
 
 
 def main():
+    subprocess.run([sys.executable, "merge_permits.py"], check=True)
+
     cache = load_cache()
 
     print("Step 1: Parsing CSV and filtering multi-family projects...")
