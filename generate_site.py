@@ -837,6 +837,14 @@ function applyFilters(){{
     }}
   }});
   document.getElementById("df-count").textContent=shown+"/"+markers.length;
+  var fAll=allProj.filter(function(p){{
+    var k=p.d?(gran==="year"?p.d.slice(0,4):p.d.slice(0,7)):"";
+    return k&&k>=from&&k<=to&&useTypes.has(p.t)&&outcomes.has(p.o||"BUILT");
+  }});
+  var fUnits=fAll.reduce(function(s,p){{return s+(p.u||0);}},0);
+  document.getElementById("stat-projects").textContent=fAll.length+" projects";
+  document.getElementById("stat-units").textContent=fUnits.toLocaleString()+" total units";
+  document.getElementById("stat-mapped").textContent=shown+" mapped";
   buildStats(from,to,useTypes,outcomes);
   buildList();
   pushHash();
@@ -1107,10 +1115,9 @@ def _build_header_html(total, total_units, mapped):
   <div>
     <h1>Madison Housing: Where It\u2019s Being Built and Where It\u2019s Legal</h1>
     <div class="stats">
-      <span>{total} projects</span>
-      <span>{total_units:,} total units</span>
-      <span>{mapped} mapped</span>
-      <span>Size = unit count (log scale)</span>
+      <span id="stat-projects">{total} projects</span>
+      <span id="stat-units">{total_units:,} total units</span>
+      <span id="stat-mapped">{mapped} mapped</span>
     </div>
   </div>
   <button id="trends-btn" onclick="openTrends()">Trends \u2197</button>
@@ -1199,8 +1206,8 @@ def _build_trends_html():
   <div id="trends-hdr">
     <span class="trends-title">Annual Trends</span>
     <div class="trends-ctrl-group">
-      <button class="tr-cat tr-active" onclick="setTrendCat('housing',this)">Housing</button>
-      <button class="tr-cat" onclick="setTrendCat('zoning',this)">Zoning</button>
+      <button class="tr-cat tr-active" onclick="setTrendCat('housing',this)">Housing Type</button>
+      <button class="tr-cat" onclick="setTrendCat('zoning',this)">Zoning Type</button>
     </div>
     <div class="trends-use-filter">
       <span class="tr-filter-label">Filter:</span>

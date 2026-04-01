@@ -107,7 +107,7 @@ body { font-family: system-ui, -apple-system, sans-serif }
 }
 .info-tip::after {
   content: attr(data-tip);
-  position: absolute; bottom: calc(100% + 6px); left: 50%;
+  position: absolute; top: calc(100% + 6px); left: 50%;
   transform: translateX(-50%);
   background: #1e293b; color: #f8fafc;
   padding: 6px 9px; border-radius: 6px;
