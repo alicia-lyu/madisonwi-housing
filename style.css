@@ -150,6 +150,13 @@ body { font-family: system-ui, -apple-system, sans-serif }
 .pol-link { color: inherit; text-decoration: none; }
 .pol-link:hover { text-decoration: underline; }
 
+/* Popup links (Street View / Google Earth) */
+.popup-links {
+  margin-top: 6px; font-size: 11px;
+}
+.popup-links a { color: #2563eb; text-decoration: none; }
+.popup-links a:hover { text-decoration: underline; }
+
 /* Map — fills remaining viewport below header */
 #map-wrap { position: relative; flex: 0 0 auto; height: calc(100vh - 96px); width: 100% }
 #map { height: 100%; width: 100% }
