@@ -267,20 +267,9 @@ def build_popup_html(row):
     if lat and lng:
         sv = f"https://www.google.com/maps?cbll={lat},{lng}&cbp=0,0,0,0,0&layer=c"
         ge = f"https://earth.google.com/web/@{lat},{lng},0a,500d,35y,0h,45t,0r"
-        # Estimate imagery staleness vs. project timeline
-        permit_year = int(row["date"][:4]) if row.get("date") else 0
-        sv_stale = ge_stale = ""
-        if outcome == "ACTIVE":
-            sv_stale = ge_stale = '<span class="stale-tag">(pre-construction)</span>'
-        elif outcome == "BUILT":
-            # Street View ~2022, Earth ~2024; construction takes ~1-2 yr
-            if permit_year >= 2021:
-                sv_stale = '<span class="stale-tag">(may predate)</span>'
-            if permit_year >= 2023:
-                ge_stale = '<span class="stale-tag">(may predate)</span>'
         links = (f'<div class="popup-links">'
-                 f'<a href="{sv}" target="_blank">Street View</a>{sv_stale}'
-                 f' \u00b7 <a href="{ge}" target="_blank">Google Earth</a>{ge_stale}'
+                 f'<a href="{sv}" target="_blank">Street View</a>'
+                 f' \u00b7 <a href="{ge}" target="_blank">Google Earth</a>'
                  f'</div>')
 
     return (
