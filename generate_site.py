@@ -262,6 +262,16 @@ def build_popup_html(row):
     outcome_color = OUTCOME_COLORS.get(outcome, "#6b7280")
     outcome_label = OUTCOME_LABELS.get(outcome, outcome)
 
+    lat, lng = row.get("lat", ""), row.get("lng", "")
+    links = ""
+    if lat and lng:
+        sv = f"https://www.google.com/maps/@?api=1&map_action=pano&viewpoint={lat},{lng}"
+        ge = f"https://earth.google.com/web/@{lat},{lng},0a,200d,35y,0h,45t,0r"
+        links = (f'<div class="popup-links">'
+                 f'<a href="{sv}" target="_blank">Street View</a>'
+                 f' \u00b7 <a href="{ge}" target="_blank">Google Earth</a>'
+                 f'</div>')
+
     return (
         f'<div class="popup">'
         f'<div class="popup-name">{html.escape(name)}</div>'
@@ -280,6 +290,7 @@ def build_popup_html(row):
         f'<b>Record:</b> {html.escape(row["record_number"])}'
         f'</div>'
         f'<div class="popup-desc">{html.escape(row["description"])}</div>'
+        f'{links}'
         f'</div>'
     )
 
