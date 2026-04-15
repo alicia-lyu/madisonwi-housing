@@ -11,6 +11,7 @@ import html
 import json
 import math
 import os
+import urllib.parse
 
 INPUT_CSV = "projects.csv"
 ZONING_CSV = "zoning_districts.csv"
@@ -265,7 +266,8 @@ def build_popup_html(row):
     lat, lng = row.get("lat", ""), row.get("lng", "")
     links = ""
     if lat and lng:
-        sv = f"https://www.google.com/maps?cbll={lat},{lng}&cbp=0,0,0,0,0&layer=c"
+        addr_q = urllib.parse.quote(row["address"])
+        sv = f"https://www.google.com/maps/place/{addr_q}/@{lat},{lng},3a,75y,0h,90t"
         ge = f"https://earth.google.com/web/@{lat},{lng},0a,500d,35y,0h,45t,0r"
         links = (f'<div class="popup-links">'
                  f'<a href="{sv}" target="_blank">Street View</a>'
