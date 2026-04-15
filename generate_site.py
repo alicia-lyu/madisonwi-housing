@@ -265,8 +265,8 @@ def build_popup_html(row):
     lat, lng = row.get("lat", ""), row.get("lng", "")
     links = ""
     if lat and lng:
-        sv = f"https://www.google.com/maps/@?api=1&map_action=pano&viewpoint={lat},{lng}"
-        ge = f"https://earth.google.com/web/@{lat},{lng},0a,200d,35y,0h,45t,0r"
+        sv = f"https://www.google.com/maps/@{lat},{lng},3a,75y,0h,90t/data=!3m1!1e3"
+        ge = f"https://earth.google.com/web/@{lat},{lng},0a,500d,35y,0h,45t,0r"
         links = (f'<div class="popup-links">'
                  f'<a href="{sv}" target="_blank">Street View</a>'
                  f' \u00b7 <a href="{ge}" target="_blank">Google Earth</a>'
