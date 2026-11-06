@@ -39,6 +39,19 @@ class ExtractUnitsTest(unittest.TestCase):
         self.assertIsNone(gd.extract_units("interior remodel of kitchen"))
 
 
+class CleanAddressTest(unittest.TestCase):
+
+    def test_strips_legacy_country_suffix(self):
+        self.assertEqual(
+            gd.clean_address("222 W Washington AVE, 705, Madison WI 53703 United States"),
+            "222 W Washington AVE, Madison WI 53703")
+
+    def test_strips_full_country_name(self):
+        self.assertEqual(
+            gd.clean_address("302 Acewood Blvd, MADISON WI 53714 United States of America"),
+            "302 Acewood Blvd, MADISON WI 53714")
+
+
 class StockChangeRegexTest(unittest.TestCase):
 
     def test_matches_stock_changing_language(self):

@@ -352,7 +352,8 @@ def classify_housing_type(description, units):
 
 def clean_address(address):
     """Clean address for geocoding — remove unit numbers and 'United States'."""
-    address = re.sub(r",?\s*United States\s*$", "", address)
+    # ELAM exports end in "United States" (pre-2026) or "United States of America"
+    address = re.sub(r",?\s*United States(?: of America)?\s*$", "", address)
     address = re.sub(r",\s*\d+,", ",", address)
     return address.strip()
 
