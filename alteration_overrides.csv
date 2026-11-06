@@ -1,0 +1,7 @@
+record_number,action,reason
+BLDNCC-2023-05502,exclude,Converts 2 units to 1 + outpatient care (net loss)
+BLDNCC-2023-00642,exclude,Converts 7-unit to 4-unit (net loss)
+BLDNCC-2020-02778,exclude,Converts 3-unit apartment to single dwelling (net loss)
+BLDNCC-2019-02346,exclude,Converts 2-unit to maintenance facility (net loss)
+BLDNCC-2017-04829,exclude,Converts 4-unit to 3-unit (net loss)
+BLDNCC-2015-00363,include,Relocation + alteration to 3-unit apartment (adds stock)

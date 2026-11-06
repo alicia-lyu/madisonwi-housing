@@ -28,6 +28,7 @@ TRANSIT_JSON = "transit_routes.json"
 BIKE_JSON = "bike_routes.json"
 OUTCOME_OVERRIDES_CSV = "outcome_overrides.csv"
 USE_TYPE_OVERRIDES_CSV = "use_type_overrides.csv"
+ALTERATION_OVERRIDES_CSV = "alteration_overrides.csv"
 LOW_QUALITY_CSV = "projects_low_quality.csv"
 
 # ---------------------------------------------------------------------------
@@ -97,6 +98,16 @@ _RESIDENTIAL_INDICATOR_RE = re.compile(
     re.IGNORECASE,
 )
 
+# For Alteration-classified projects: does the description indicate housing
+# stock is actually changing?  "convert/split" imply structural change;
+# "add ... unit/apartment" implies net new housing.  Alterations lacking any
+# of these are treated as renovation-only and excluded.
+_STOCK_CHANGE_RE = re.compile(
+    r"\bconvert\b|\bsplit\b"
+    r"|\badd\s+(?:\w+\s+){0,3}(?:unit|apartment|dwelling)",
+    re.IGNORECASE,
+)
+
 _ALTERATION_RE = re.compile(
     r"\balt(?:er|eration|erations)\b|interior\s+alteration"
     r"|\bconvert\b|\bconversion\b|\bsplit\b|\brenovat\b|\bremodel\b",
@@ -125,8 +136,20 @@ WORD_TO_NUM = {
     "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10,
     "eleven": 11, "twelve": 12, "thirteen": 13, "fourteen": 14, "fifteen": 15,
     "sixteen": 16, "seventeen": 17, "eighteen": 18, "nineteen": 19, "twenty": 20,
+    "thirty": 30, "forty": 40, "fifty": 50, "sixty": 60,
+    "seventy": 70, "eighty": 80, "ninety": 90,
 }
 _WORD_PAT = "|".join(WORD_TO_NUM.keys())
+_TENS = {"twenty": 20, "thirty": 30, "forty": 40, "fifty": 50,
+         "sixty": 60, "seventy": 70, "eighty": 80, "ninety": 90}
+_ONES = {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5,
+         "six": 6, "seven": 7, "eight": 8, "nine": 9}
+_TENS_PAT = "|".join(_TENS.keys())
+_ONES_PAT = "|".join(_ONES.keys())
+_COMPOUND_UNIT_RE = re.compile(
+    rf"({_TENS_PAT})[- ]?({_ONES_PAT})[- ]?(?:dwelling )?units?",
+    re.IGNORECASE,
+)
 
 WORD_UNIT_PATTERNS = [
     re.compile(rf"({_WORD_PAT})[- ]?(?:dwelling )?units?", re.IGNORECASE),
@@ -177,7 +200,7 @@ def load_cache():
 
 
 def save_cache(cache):
-    tmp = CACHE_FILE + ".tmp"
+    tmp = CACHE_FILE + ".writing"
     with open(tmp, "w") as f:
         json.dump(cache, f, indent=2)
     os.replace(tmp, CACHE_FILE)  # atomic on POSIX — never leaves a partial file
@@ -260,6 +283,12 @@ def extract_units(description):
             count = int(m.group(1))
             if count >= 2:
                 return count
+    # Compound spelled-out numbers ("sixty-six unit")
+    m = _COMPOUND_UNIT_RE.search(description)
+    if m:
+        count = _TENS[m.group(1).lower()] + _ONES[m.group(2).lower()]
+        if count >= 2:
+            return count
     # Fallback: spelled-out numbers ("two apartment units")
     for pattern in WORD_UNIT_PATTERNS:
         m = pattern.search(description)
@@ -724,6 +753,49 @@ def _step_classify_types(projects):
     for ht, count in sorted(type_counts.items()):
         print(f"  {ht}: {count}")
     print()
+
+
+def _step_filter_alterations(projects):
+    """Step 2c: remove Alteration permits that don't change housing stock.
+
+    Rule: Alteration-classified projects whose description lacks any
+    stock-changing language (convert, split, add units) are treated as
+    renovation-only and excluded.
+
+    alteration_overrides.csv can override the rule:
+      record_number,action,reason
+      BLDNCC-...,exclude,Converts 4-unit to 3-unit (net loss)
+      BLDNCC-...,include,Relocation to 3-unit apartment (adds stock)
+    """
+    print("Step 2c: Filtering renovation-only alterations...")
+    overrides = {}
+    if os.path.exists(ALTERATION_OVERRIDES_CSV):
+        with open(ALTERATION_OVERRIDES_CSV, newline="") as f:
+            for row in csv.DictReader(f):
+                overrides[row["record_number"].strip()] = row["action"].strip().lower()
+
+    kept = []
+    excluded = 0
+    for p in projects:
+        rec = p["record_number"]
+        if rec in overrides:
+            if overrides[rec] == "exclude":
+                print(f"  EXCLUDE (override): {rec}")
+                excluded += 1
+                continue
+            # "include" override — keep regardless of rule
+            kept.append(p)
+            continue
+        if p.get("housing_type") == "Alteration":
+            if not _STOCK_CHANGE_RE.search(p["description"]):
+                print(f"  EXCLUDE (rule):     {rec}  {p['description'][:80]}")
+                excluded += 1
+                continue
+        kept.append(p)
+
+    print(f"  Excluded {excluded} renovation-only alterations "
+          f"({len(kept)} projects remaining)\n")
+    return kept
 
 
 def _step_clear_failed_geocodes(projects, cache):
@@ -1205,6 +1277,7 @@ def main():
 
     _step_extract_units(projects)
     _step_classify_types(projects)
+    projects = _step_filter_alterations(projects)
     _step_clear_failed_geocodes(projects, cache)
     _step_geocode(projects, cache)
     _step_fetch_zoning(projects, cache)

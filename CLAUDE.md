@@ -10,7 +10,7 @@ Interactive Leaflet map of multi-family housing construction permits in Madison,
 
 The site is generated in two steps — data processing then HTML generation:
 
-1. **`python generate_data.py`** — Parses the raw permits CSV (`RecordList20260314-2.csv`), filters for multi-family housing, geocodes addresses via Nominatim, fetches zoning from Madison's ArcGIS API, classifies permitted vs conditional use, processes GTFS transit data, and outputs `projects.json`, `projects.csv`, and `transit_routes.json`. Uses `geocode_cache.json` to avoid re-hitting APIs. Slow due to API rate limits — only re-run when input data changes.
+1. **`python generate_data.py`** — Runs `merge_permits.py` to merge manually-downloaded ELAM permit exports (`MMDDYYYY-MMDDYYYY.csv`, latest end date wins per record) into `permits_merged.csv`, then parses it, filters for multi-family housing, drops renovation-only alterations, geocodes addresses via Nominatim, fetches zoning from Madison's ArcGIS API, classifies permitted vs conditional use, processes GTFS transit data, and outputs `projects.json`, `projects.csv`, and `transit_routes.json`. Uses `geocode_cache.json` to avoid re-hitting APIs. Slow due to API rate limits — only re-run when input data changes.
 
 2. **`python generate_site.py`** — Reads `projects.csv` and `transit_routes.json`, computes all marker properties (colors, sizes, popups) in Python, and writes a self-contained `index.html`. The generated HTML has minimal JS — just Leaflet map init, marker placement, and zoom scaling. Re-run this after any visual/UI changes.
 
@@ -19,7 +19,7 @@ Both scripts use only Python stdlib (no pip dependencies).
 ## Key Data Flow
 
 ```
-RecordList CSV → generate_data.py → projects.csv + transit_routes.json
+ELAM CSVs → merge_permits.py → permits_merged.csv → generate_data.py → projects.csv + transit_routes.json
                                           ↓
 zoning_districts.csv + style.css → generate_site.py → index.html
 ```
@@ -37,10 +37,17 @@ zoning_districts.csv + style.css → generate_site.py → index.html
 - **Transit route styling**: Line weight/dash pattern reflects service level (Frequent > Standard > Peak > Supplemental), using route colors from GTFS data.
 - All HTML generation uses Python f-strings with `html.escape()` — no template engine.
 - `EXCLUDE_RECORDS` in `generate_data.py` lists manually-identified false positives to skip.
+- **Alteration filter** (`_step_filter_alterations`, Step 2c): Alteration-classified permits are kept only if the description signals a housing-stock change (`_STOCK_CHANGE_RE`: convert, split, add units). `alteration_overrides.csv` (`record_number,action,reason` with `include`/`exclude`) overrides the rule in either direction.
+- `outcome_overrides.csv` and `use_type_overrides.csv` hand-correct project outcome and use type.
+- `refresh.py` re-runs both stages when any cached source (geocode retries, Legistar, bike routes) exceeds its TTL.
+
+## Tests
+
+Stdlib `unittest`, no dependencies: `python3 -m unittest` (tests live in `test_generate_data.py`).
 
 ## .gitignore
 
-JSON, CSV, PDF, HTML, TXT, and ZIP files are all gitignored. Only `.py`, `.css`, and `.md` files are tracked.
+JSON, CSV, PDF, HTML, TXT, and ZIP files are gitignored, except whitelisted inputs/outputs: `projects.csv`, `zoning_districts.csv`, `transit_routes.json`, `bike_routes.json`, `outcome_overrides.csv`, `alteration_overrides.csv`. Cache temp files (`*.tmp`, `*.writing`, `*.corrupt`, `*.verify`) are ignored too.
 
 ## SESSION DISCIPLINE
 
