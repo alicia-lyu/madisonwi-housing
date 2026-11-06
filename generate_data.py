@@ -50,6 +50,11 @@ BIKE_OFFSTREET_URL = "https://maps.cityofmadison.com/arcgis/rest/services/MPO/Bi
 BIKE_ONSTREET_URL  = "https://maps.cityofmadison.com/arcgis/rest/services/MPO/BicycleMap_Pro/MapServer/14/query"
 USER_AGENT = "MadisonWI-HousingPermits/1.0"
 
+# Generous box around Madison; geocodes outside it are treated as misses
+# (e.g. a city-less "N Fair Oaks AVE" otherwise resolves to Pasadena, CA).
+MADISON_LAT_RANGE = (42.95, 43.25)
+MADISON_LNG_RANGE = (-89.65, -89.20)
+
 LEGISTAR_BASE = "https://webapi.legistar.com/v1/madison"
 LEGISTAR_STREET_SUFFIXES = (
     "Drive", "Street", "Avenue", "Road", "Lane", "Court", "Place", "Boulevard",
@@ -354,8 +359,16 @@ def clean_address(address):
     """Clean address for geocoding — remove unit numbers and 'United States'."""
     # ELAM exports end in "United States" (pre-2026) or "United States of America"
     address = re.sub(r",?\s*United States(?: of America)?\s*$", "", address)
-    address = re.sub(r",\s*\d+,", ",", address)
-    return address.strip()
+    address = re.sub(r",\s*\d+,", ",", address).strip()
+    # Some exports omit the city entirely; every kept permit is in Madison
+    if not re.search(r",.*\bWI\b", address, re.IGNORECASE):
+        address += ", Madison WI"
+    return address
+
+
+def in_madison_area(lat, lng):
+    return (MADISON_LAT_RANGE[0] <= lat <= MADISON_LAT_RANGE[1]
+            and MADISON_LNG_RANGE[0] <= lng <= MADISON_LNG_RANGE[1])
 
 
 def _api_request(url):
@@ -371,9 +384,12 @@ def _api_request(url):
 def geocode(address, cache):
     """Geocode an address using Nominatim. Returns (lat, lng) or (None, None)."""
     cache_key = f"geo:{address}"
-    if cache_key in cache:
-        cached = cache[cache_key]
-        return cached.get("lat"), cached.get("lng")
+    cached = cache.get(cache_key)
+    if cached is not None:
+        lat, lng = cached.get("lat"), cached.get("lng")
+        # Entries cached before the area check may be wrong-city matches
+        if lat is None or in_madison_area(lat, lng):
+            return lat, lng
 
     cleaned = clean_address(address)
     params = urllib.parse.urlencode({
@@ -408,6 +424,10 @@ def geocode(address, cache):
     if data:
         lat = float(data[0]["lat"])
         lng = float(data[0]["lon"])
+        if not in_madison_area(lat, lng):
+            print(f"  Outside Madison, ignored: {cleaned} -> ({lat}, {lng})")
+            cache[cache_key] = {"lat": None, "lng": None}
+            return None, None
         cache[cache_key] = {"lat": lat, "lng": lng}
         print(f"  Geocoded: {cleaned} -> ({lat}, {lng})")
         return lat, lng

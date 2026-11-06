@@ -51,6 +51,54 @@ class CleanAddressTest(unittest.TestCase):
             gd.clean_address("302 Acewood Blvd, MADISON WI 53714 United States of America"),
             "302 Acewood Blvd, MADISON WI 53714")
 
+    def test_appends_city_when_missing(self):
+        self.assertEqual(gd.clean_address("952 N Fair Oaks AVE"),
+                         "952 N Fair Oaks AVE, Madison WI")
+
+    def test_keeps_existing_city(self):
+        self.assertEqual(gd.clean_address("9701 Brader WAY, Middleton WI 53562"),
+                         "9701 Brader WAY, Middleton WI 53562")
+
+
+class InMadisonAreaTest(unittest.TestCase):
+
+    def test_capitol_inside(self):
+        self.assertTrue(gd.in_madison_area(43.0747, -89.3842))
+
+    def test_pasadena_outside(self):
+        self.assertFalse(gd.in_madison_area(34.1623, -118.1505))
+
+
+class GeocodeTest(unittest.TestCase):
+
+    def _geocode_with_response(self, payload):
+        resp = mock.MagicMock()
+        resp.__enter__.return_value.read.return_value = payload.encode()
+        cache = {}
+        with mock.patch.object(gd.urllib.request, "urlopen", return_value=resp), \
+                redirect_stdout(StringIO()):
+            result = gd.geocode("952 N Fair Oaks AVE", cache)
+        return result, cache
+
+    def test_out_of_area_result_cached_as_miss(self):
+        result, cache = self._geocode_with_response(
+            '[{"lat": "34.1623", "lon": "-118.1505"}]')
+        self.assertEqual(result, (None, None))
+        self.assertEqual(cache["geo:952 N Fair Oaks AVE"], {"lat": None, "lng": None})
+
+    def test_stale_out_of_area_cache_entry_is_refetched(self):
+        resp = mock.MagicMock()
+        resp.__enter__.return_value.read.return_value = b'[{"lat": "43.098", "lon": "-89.330"}]'
+        cache = {"geo:952 N Fair Oaks AVE": {"lat": 34.1623, "lng": -118.1505}}
+        with mock.patch.object(gd.urllib.request, "urlopen", return_value=resp), \
+                redirect_stdout(StringIO()):
+            result = gd.geocode("952 N Fair Oaks AVE", cache)
+        self.assertEqual(result, (43.098, -89.330))
+
+    def test_in_area_result_kept(self):
+        result, _ = self._geocode_with_response('[{"lat": "43.098", "lon": "-89.330"}]')
+        self.assertEqual(result, (43.098, -89.330))
+
 
 class StockChangeRegexTest(unittest.TestCase):
 
