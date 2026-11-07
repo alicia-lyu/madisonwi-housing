@@ -650,9 +650,17 @@ var CHART_COLORS_HOUSING={chart_colors_housing_js};
 var CHART_COLORS_ZONE={chart_colors_zone_js};
 var ZONING_ORDER={zoning_order_js};
 var m=L.map("map").setView([43.073,-89.401],12);
-L.tileLayer("https://{{s}}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{{z}}/{{x}}/{{y}}@2x.png",{{
-  attribution:'&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
-  subdomains:'abcd',maxZoom:20}}).addTo(m);
+// Esri Light Gray: keyless (CARTO basemaps now require an API key).
+// Labels get their own pane above route lines but below markers.
+var ESRI="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/";
+L.tileLayer(ESRI+"World_Light_Gray_Base/MapServer/tile/{{z}}/{{y}}/{{x}}",{{
+  attribution:'Tiles &copy; <a href="https://www.esri.com/">Esri</a> &mdash; Esri, HERE, Garmin, &copy; OpenStreetMap contributors',
+  maxNativeZoom:16,maxZoom:20}}).addTo(m);
+m.createPane("basemapLabels");
+m.getPane("basemapLabels").style.zIndex=450;
+m.getPane("basemapLabels").style.pointerEvents="none";
+L.tileLayer(ESRI+"World_Light_Gray_Reference/MapServer/tile/{{z}}/{{y}}/{{x}}",{{
+  pane:"basemapLabels",maxNativeZoom:16,maxZoom:20}}).addTo(m);
 var tr={transit_json};
 tr.forEach(function(rt){{
   var opts={{color:rt.color,weight:rt.weight,opacity:0.7}};

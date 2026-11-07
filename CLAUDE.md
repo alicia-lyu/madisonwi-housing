@@ -35,6 +35,7 @@ zoning_districts.csv + style.css → generate_site.py → index.html
 - **Zoning classification** (`classify_use`): Matches project unit count against parsed ranges from `zoning_districts.csv`. PD zones always return VARIES. Falls back through townhouse → multifamily → generic building ranges.
 - **Housing type taxonomy** follows Missing Middle Housing typology: Duplex/Triplex, Townhouse, Multiplex, Mid-Rise, High-Rise, with Mixed-Use variants.
 - **Transit route styling**: Line weight/dash pattern reflects service level (Frequent > Standard > Peak > Supplemental), using route colors from GTFS data.
+- **Basemap**: Esri `World_Light_Gray_Base` plus `World_Light_Gray_Reference` labels in a pane above route lines and below markers. It's keyless; CARTO basemaps started requiring an API key in late 2026.
 - All HTML generation uses Python f-strings with `html.escape()` — no template engine.
 - `EXCLUDE_RECORDS` in `generate_data.py` lists manually-identified false positives to skip.
 - **Alteration filter** (`_step_filter_alterations`, Step 2c): Alteration-classified permits are kept only if the description signals a housing-stock change (`_STOCK_CHANGE_RE`: convert, split, add units). `alteration_overrides.csv` (`record_number,action,reason` with `include`/`exclude`) overrides the rule in either direction.
