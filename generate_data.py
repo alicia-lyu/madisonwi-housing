@@ -63,11 +63,18 @@ LEGISTAR_BASE = "https://webapi.legistar.com/v1/madison"
 LEGISTAR_STREET_SUFFIXES = (
     "Drive", "Street", "Avenue", "Road", "Lane", "Court", "Place", "Boulevard",
     "Parkway", "Way", "Circle", "Trail", "Run", "Terrace", "Walk", "Alley", "Pass",
+    "Plaza", "Loop", "Crossing", "Square", "Highway",
 )
-LEGISTAR_ADDR_RE = re.compile(
-    r'\bat\s+(\d+\s+\S.+?(?:' + '|'.join(LEGISTAR_STREET_SUFFIXES) + r')\w*)',
-    re.I
+# Address lists in titles: "6502-6602 Grand Teton Plaza; 6501, 6601-6637 and
+# 6701 Mineral Point Road".  Group 1 = house numbers/ranges, group 2 = street.
+_LEGISTAR_NUMS = r"\d+(?:\s*-\s*\d+)?"
+LEGISTAR_TITLE_ADDR_RE = re.compile(
+    rf"({_LEGISTAR_NUMS}(?:\s*(?:,\s*and|,|and|&)\s*{_LEGISTAR_NUMS})*)\s+"
+    rf"((?:[NSEW]\.?\s+)?[A-Z][\w.']*(?:\s+[A-Z][\w.']*)*?\s+"
+    rf"(?:{'|'.join(LEGISTAR_STREET_SUFFIXES)}))\b"
 )
+LEGISTAR_MAX_RANGE_SPAN = 400   # wider "ranges" are typos, not a block of parcels
+LEGISTAR_DATE_SLACK_DAYS = 180  # permits are often filed while approval is pending
 LEGISTAR_REZONE_KEYWORDS = ("change the zoning", "rezone")
 
 # ---------------------------------------------------------------------------
@@ -988,6 +995,9 @@ def _normalize_addr(addr):
         (r'\bdr\b', 'drive'), (r'\bst\b', 'street'), (r'\bave\b', 'avenue'),
         (r'\bblvd\b', 'boulevard'), (r'\brd\b', 'road'), (r'\bln\b', 'lane'),
         (r'\bct\b', 'court'), (r'\bpl\b', 'place'), (r'\bpkwy\b', 'parkway'),
+        (r'\bplz\b', 'plaza'), (r'\btrl\b', 'trail'), (r'\bter\b', 'terrace'),
+        (r'\bcir\b', 'circle'), (r'\bhwy\b', 'highway'), (r'\bsq\b', 'square'),
+        (r'\bxing\b', 'crossing'),
         (r'\bn\b', 'north'), (r'\bs\b', 'south'), (r'\be\b', 'east'), (r'\bw\b', 'west'),
     ]:
         addr = re.sub(abbr, full, addr)
@@ -1037,18 +1047,55 @@ def _fetch_legistar_matters(type_name, cache):
     return matters
 
 
+def _street_key(address):
+    """Normalized street (no house number, no city): '6526 Grand Teton Plz, ...' -> 'grand teton plaza'."""
+    street = _normalize_addr(address).split(",")[0]
+    return re.sub(r"^\d+\s+", "", street).strip()
+
+
+def legistar_address_ranges(title):
+    """All (street_key, low, high) house-number ranges named in a Legistar title."""
+    ranges = []
+    for m in LEGISTAR_TITLE_ADDR_RE.finditer(title):
+        street = _street_key(m.group(2))
+        for part in re.findall(_LEGISTAR_NUMS, m.group(1)):
+            low, _, high = part.partition("-")
+            low, high = int(low), int(high or low)
+            if low <= high <= low + LEGISTAR_MAX_RANGE_SPAN:
+                ranges.append((street, low, high))
+    return ranges
+
+
 def _build_legistar_index(matters):
-    """Build a normalized-address -> matter dict from Legistar matter list."""
+    """Build a street_key -> [(low, high, matter), ...] index from Legistar matters."""
     index = {}
     matched = 0
     for m in matters:
-        hit = LEGISTAR_ADDR_RE.search(m["title"])
-        if hit:
-            norm = _normalize_addr(hit.group(1))
-            index[norm] = m
-            matched += 1
+        ranges = legistar_address_ranges(m["title"])
+        for street, low, high in ranges:
+            index.setdefault(street, []).append((low, high, m))
+        matched += bool(ranges)
     print(f"  Address index: {matched}/{len(matters)} titles had extractable addresses")
     return index
+
+
+def find_legistar_matter(index, address, permit_date):
+    """First matter whose address range covers this permit and that predates it.
+
+    "Predates" allows LEGISTAR_DATE_SLACK_DAYS after the permit date, since
+    permits are often filed while the approval is still pending.
+    """
+    parsed = parse_street_address(address)
+    if not parsed or not permit_date:
+        return None
+    number = parsed[0]
+    latest = date.fromisoformat(permit_date[:10]) + timedelta(days=LEGISTAR_DATE_SLACK_DAYS)
+    for low, high, matter in index.get(_street_key(address), []):
+        if not (low <= number <= high) or not matter.get("intro"):
+            continue
+        if date.fromisoformat(matter["intro"][:10]) <= latest:
+            return matter
+    return None
 
 
 def _step_legistar_classify(projects, cache):
@@ -1067,18 +1114,22 @@ def _step_legistar_classify(projects, cache):
 
     save_cache(cache)
 
-    overrides = 0
+    # A rezoning is what made the project possible on that land, so it wins
+    # over a conditional use granted within the new district.
+    overrides = {"REZONED": 0, "CONDITIONAL": 0}
     for p in projects:
         if p.get("use_type") == "VARIES":
             continue
-        norm = _normalize_addr(p.get("address", ""))
-        if norm in cu_index:
-            p["use_type"] = "CONDITIONAL"
-            overrides += 1
-        elif norm in rezone_index:
+        address, permit_date = p.get("address", ""), p.get("date", "")
+        if find_legistar_matter(rezone_index, address, permit_date):
             p["use_type"] = "REZONED"
-            overrides += 1
-    print(f"  Legistar overrides applied: {overrides}\n")
+        elif find_legistar_matter(cu_index, address, permit_date):
+            p["use_type"] = "CONDITIONAL"
+        else:
+            continue
+        overrides[p["use_type"]] += 1
+    print(f"  Legistar overrides applied: {overrides['REZONED']} REZONED, "
+          f"{overrides['CONDITIONAL']} CONDITIONAL\n")
 
 
 def classify_outcome(status, date_str):

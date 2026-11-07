@@ -322,5 +322,102 @@ class StepGeocodeTest(unittest.TestCase):
         self.assertEqual((project["lat"], project["geocode_source"]), (None, ""))
 
 
+GRAND_TETON_TITLE = (
+    "Creating Section 28.022-00613 of the Madison General Ordinances to change the "
+    "zoning of property located at 6502-6602 Grand Teton Plaza; 6501, 6601-6637 and "
+    "6701 Mineral Point Road; and 406-414 Grand Canyon Drive, 19th Alder District, "
+    "from SE (Suburban Employment) District and CC (Commercial Center) District to "
+    "RMX (Regional Mixed-Use) District")
+
+
+class LegistarAddressRangesTest(unittest.TestCase):
+
+    def test_ranges_and_lists(self):
+        self.assertEqual(gd.legistar_address_ranges(GRAND_TETON_TITLE), [
+            ("grand teton plaza", 6502, 6602),
+            ("mineral point road", 6501, 6501),
+            ("mineral point road", 6601, 6637),
+            ("mineral point road", 6701, 6701),
+            ("grand canyon drive", 406, 414),
+        ])
+
+    def test_slash_separated_pair(self):
+        self.assertEqual(
+            gd.legistar_address_ranges(
+                "9454 Spirit Street/ 353 Bear Claw Way (District 9): Consideration"),
+            [("spirit street", 9454, 9454), ("bear claw way", 353, 353)])
+
+    def test_direction_prefix(self):
+        self.assertEqual(gd.legistar_address_ranges("at 401 S Yellowstone Drive, 19th"),
+                         [("south yellowstone drive", 401, 401)])
+
+    def test_reversed_and_overwide_ranges_skipped(self):
+        self.assertEqual(gd.legistar_address_ranges("9510-9502 Watts Road"), [])
+        self.assertEqual(gd.legistar_address_ranges("100-900 Watts Road"), [])
+
+    def test_plz_abbreviation_matches_title_spelling(self):
+        self.assertEqual(gd._street_key("6526 Grand Teton Plz, Madison WI 53719"),
+                         "grand teton plaza")
+
+
+class FindLegistarMatterTest(unittest.TestCase):
+
+    def setUp(self):
+        self.matter = {"title": GRAND_TETON_TITLE, "intro": "2023-01-10T00:00:00"}
+        with redirect_stdout(StringIO()):
+            self.index = gd._build_legistar_index([self.matter])
+
+    def _find(self, address, permit_date="2026-09-04"):
+        return gd.find_legistar_matter(self.index, address, permit_date)
+
+    def test_inside_range(self):
+        self.assertIs(self._find("6526 Grand Teton Plz, Madison WI 53719"), self.matter)
+
+    def test_outside_range_or_other_street(self):
+        self.assertIsNone(self._find("6610 Grand Teton Plz, Madison WI"))
+        self.assertIsNone(self._find("6526 Grand Canyon DR, Madison WI"))
+
+    def test_date_slack_boundary(self):
+        # intro 2023-01-10: 179 days after a 2022-07-15 permit, 181 after 2022-07-13
+        self.assertIs(self._find("6526 Grand Teton Plz", "2022-07-15"), self.matter)
+        self.assertIsNone(self._find("6526 Grand Teton Plz", "2022-07-13"))
+
+    def test_missing_intro_date_skipped(self):
+        self.matter["intro"] = ""
+        self.assertIsNone(self._find("6526 Grand Teton Plz"))
+
+
+class LegistarClassifyTest(unittest.TestCase):
+
+    def _classify(self, projects, cu_titles, rezone_titles):
+        cache = {
+            "legistar:Conditional Use": [{"title": t, "intro": "2020-01-01"} for t in cu_titles],
+            "legistar:Ordinance": [{"title": "to change the zoning of " + t, "intro": "2020-01-01"}
+                                   for t in rezone_titles],
+        }
+        with mock.patch.object(gd, "_is_stale", return_value=False), \
+                mock.patch.object(gd, "save_cache"), redirect_stdout(StringIO()):
+            gd._step_legistar_classify(projects, cache)
+        return [p["use_type"] for p in projects]
+
+    def _project(self, use_type, address="6526 Grand Teton Plz, Madison WI"):
+        return {"use_type": use_type, "address": address, "date": "2024-01-01"}
+
+    def test_rezoning_wins_over_conditional_use(self):
+        self.assertEqual(self._classify([self._project("PERMITTED")],
+                                        ["6526 Grand Teton Plaza"], ["6502-6602 Grand Teton Plaza"]),
+                         ["REZONED"])
+
+    def test_conditional_use_alone(self):
+        self.assertEqual(self._classify([self._project("UNKNOWN")],
+                                        ["6500-6530 Grand Teton Plaza"], []),
+                         ["CONDITIONAL"])
+
+    def test_varies_left_alone(self):
+        self.assertEqual(self._classify([self._project("VARIES")],
+                                        [], ["6502-6602 Grand Teton Plaza"]),
+                         ["VARIES"])
+
+
 if __name__ == "__main__":
     unittest.main()
