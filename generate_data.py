@@ -417,8 +417,8 @@ def geocode(address, cache):
             cache[cache_key] = {"lat": None, "lng": None}
             return None, None
         except (urllib.error.URLError, OSError) as e:
+            # Network failures are transient — don't cache them as misses
             print(f"  Geocode error for {cleaned}: {e}")
-            cache[cache_key] = {"lat": None, "lng": None}
             return None, None
 
     if data:
@@ -465,8 +465,8 @@ def get_zoning(lat, lng, cache):
         with urllib.request.urlopen(req, timeout=10) as resp:
             data = json.loads(resp.read().decode())
     except (urllib.error.URLError, OSError) as e:
+        # Network failures are transient — don't cache them as misses
         print(f"  Zoning error for ({lat}, {lng}): {e}")
-        cache[cache_key] = None
         return None
 
     features = data.get("features", [])

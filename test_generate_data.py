@@ -95,6 +95,15 @@ class GeocodeTest(unittest.TestCase):
             result = gd.geocode("952 N Fair Oaks AVE", cache)
         self.assertEqual(result, (43.098, -89.330))
 
+    def test_network_error_not_cached(self):
+        error = gd.urllib.error.URLError("nodename nor servname provided")
+        cache = {}
+        with mock.patch.object(gd.urllib.request, "urlopen", side_effect=error), \
+                redirect_stdout(StringIO()):
+            result = gd.geocode("952 N Fair Oaks AVE", cache)
+        self.assertEqual(result, (None, None))
+        self.assertEqual(cache, {})
+
     def test_in_area_result_kept(self):
         result, _ = self._geocode_with_response('[{"lat": "43.098", "lon": "-89.330"}]')
         self.assertEqual(result, (43.098, -89.330))
@@ -158,6 +167,17 @@ class FilterAlterationsTest(unittest.TestCase):
                 redirect_stdout(StringIO()):
             kept = gd._step_filter_alterations(projects)
         self.assertEqual([p["record_number"] for p in kept], ["A"])
+
+
+class GetZoningTest(unittest.TestCase):
+
+    def test_network_error_not_cached(self):
+        error = gd.urllib.error.URLError("timed out")
+        cache = {}
+        with mock.patch.object(gd.urllib.request, "urlopen", side_effect=error), \
+                redirect_stdout(StringIO()):
+            self.assertIsNone(gd.get_zoning(43.07, -89.38, cache))
+        self.assertEqual(cache, {})
 
 
 if __name__ == "__main__":
