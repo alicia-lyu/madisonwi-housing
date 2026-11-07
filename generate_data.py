@@ -44,7 +44,8 @@ BIKE_TTL_DAYS                = 90  # MPO infrastructure updates are slow
 # ---------------------------------------------------------------------------
 
 NOMINATIM_URL = "https://nominatim.openstreetmap.org/search"
-ZONING_URL = "https://maps.cityofmadison.com/arcgis/rest/services/Planning/Zoning/MapServer/2/query"
+# Layer 1 = "Zoning Districts" (layer 2 became TaxParcels in a 2026 reorg)
+ZONING_URL = "https://maps.cityofmadison.com/arcgis/rest/services/Planning/Zoning/MapServer/1/query"
 # MPO BicycleMap_Pro: layer 7 = off-street paths, layer 14 = on-street facilities
 BIKE_OFFSTREET_URL = "https://maps.cityofmadison.com/arcgis/rest/services/MPO/BicycleMap_Pro/MapServer/7/query"
 BIKE_ONSTREET_URL  = "https://maps.cityofmadison.com/arcgis/rest/services/MPO/BicycleMap_Pro/MapServer/14/query"
@@ -467,6 +468,12 @@ def get_zoning(lat, lng, cache):
     except (urllib.error.URLError, OSError) as e:
         # Network failures are transient — don't cache them as misses
         print(f"  Zoning error for ({lat}, {lng}): {e}")
+        return None
+
+    # ArcGIS reports bad queries (e.g. a renumbered layer) as HTTP 200 with an
+    # "error" body; treat that as a failure, not as "no zoning here"
+    if "error" in data:
+        print(f"  Zoning API error for ({lat}, {lng}): {data['error']}")
         return None
 
     features = data.get("features", [])

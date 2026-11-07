@@ -171,6 +171,32 @@ class FilterAlterationsTest(unittest.TestCase):
 
 class GetZoningTest(unittest.TestCase):
 
+    def _zoning_with_response(self, payload):
+        resp = mock.MagicMock()
+        resp.__enter__.return_value.read.return_value = payload.encode()
+        cache = {}
+        with mock.patch.object(gd.urllib.request, "urlopen", return_value=resp), \
+                redirect_stdout(StringIO()):
+            result = gd.get_zoning(43.07, -89.38, cache)
+        return result, cache
+
+    def test_feature_returns_code(self):
+        result, cache = self._zoning_with_response(
+            '{"features": [{"attributes": {"ZONING_CODE": "UMX"}}]}')
+        self.assertEqual(result, "UMX")
+        self.assertEqual(cache, {"zone:43.07,-89.38": "UMX"})
+
+    def test_empty_result_cached_as_miss(self):
+        result, cache = self._zoning_with_response('{"features": []}')
+        self.assertIsNone(result)
+        self.assertEqual(cache, {"zone:43.07,-89.38": None})
+
+    def test_api_error_body_not_cached(self):
+        result, cache = self._zoning_with_response(
+            '{"error": {"code": 400, "message": "Failed to execute query."}}')
+        self.assertIsNone(result)
+        self.assertEqual(cache, {})
+
     def test_network_error_not_cached(self):
         error = gd.urllib.error.URLError("timed out")
         cache = {}
