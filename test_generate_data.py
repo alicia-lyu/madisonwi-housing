@@ -1,6 +1,7 @@
 """Unit tests for generate_data.py (stdlib unittest; run: python3 -m unittest)."""
 
 import csv
+import json
 import os
 import tempfile
 import unittest
@@ -204,6 +205,121 @@ class GetZoningTest(unittest.TestCase):
                 redirect_stdout(StringIO()):
             self.assertIsNone(gd.get_zoning(43.07, -89.38, cache))
         self.assertEqual(cache, {})
+
+
+def _square(lat, lng, d=0.0002):
+    """Tiny parcel polygon centered on (lat, lng), ArcGIS ring order (x=lng, y=lat)."""
+    return {"rings": [[[lng - d, lat - d], [lng + d, lat - d],
+                       [lng + d, lat + d], [lng - d, lat + d]]]}
+
+
+class ParseStreetAddressTest(unittest.TestCase):
+
+    def test_plain(self):
+        self.assertEqual(
+            gd.parse_street_address("8113 Grotto LN, Madison WI 53711 United States"),
+            (8113, None, "Grotto"))
+
+    def test_direction_and_multiword_name(self):
+        self.assertEqual(gd.parse_street_address("952 N Fair Oaks AVE, Madison WI"),
+                         (952, "N", "Fair Oaks"))
+
+    def test_city_less(self):
+        self.assertEqual(gd.parse_street_address("4205 Gallatin Range RD"),
+                         (4205, None, "Gallatin Range"))
+
+    def test_unparseable(self):
+        self.assertIsNone(gd.parse_street_address("Lot 12, Madison WI"))
+
+
+class GeocodeParcelTest(unittest.TestCase):
+
+    ADDRESS = "9451 Spirit ST, Middleton WI 53562 United States"
+
+    def _run(self, payload=None, error=None, cache=None):
+        cache = {} if cache is None else cache
+        if error is not None:
+            patch = mock.patch.object(gd.urllib.request, "urlopen", side_effect=error)
+        else:
+            resp = mock.MagicMock()
+            resp.__enter__.return_value.read.return_value = json.dumps(payload).encode()
+            patch = mock.patch.object(gd.urllib.request, "urlopen", return_value=resp)
+        with patch as urlopen, redirect_stdout(StringIO()):
+            result = gd.geocode_parcel(self.ADDRESS, cache)
+        return result, cache, urlopen
+
+    def _features(self, *numbers_and_points):
+        return {"features": [{"attributes": {"HouseNbr": n}, "geometry": _square(lat, lng)}
+                             for n, lat, lng in numbers_and_points]}
+
+    def test_exact_match_wins(self):
+        (lat, lng, match), cache, _ = self._run(self._features(
+            (9454, 43.10, -89.50), (9451, 43.11, -89.51)))
+        self.assertEqual(match, "parcel")
+        self.assertAlmostEqual(lat, 43.11)
+        self.assertAlmostEqual(lng, -89.51)
+        self.assertEqual(cache[f"parcel:{self.ADDRESS}"]["match"], "parcel")
+
+    def test_nearest_within_window(self):
+        (lat, _, match), _, urlopen = self._run(self._features(
+            (9480, 43.12, -89.50), (9454, 43.10, -89.50)))
+        self.assertEqual(match, "parcel_nearest")
+        self.assertAlmostEqual(lat, 43.10)
+        # The query itself enforces the half-block window
+        url = urlopen.call_args[0][0].full_url
+        self.assertIn("BETWEEN+9401+AND+9501", url)
+
+    def test_no_parcels_cached_as_miss(self):
+        result, cache, _ = self._run({"features": []})
+        self.assertEqual(result, (None, None, None))
+        self.assertEqual(cache[f"parcel:{self.ADDRESS}"],
+                         {"lat": None, "lng": None, "match": None})
+
+    def test_out_of_area_parcel_rejected(self):
+        result, _, _ = self._run(self._features((9451, 34.16, -118.15)))
+        self.assertEqual(result, (None, None, None))
+
+    def test_api_error_body_not_cached(self):
+        result, cache, _ = self._run({"error": {"code": 400}})
+        self.assertEqual(result, (None, None, None))
+        self.assertEqual(cache, {})
+
+    def test_network_error_not_cached(self):
+        result, cache, _ = self._run(error=gd.urllib.error.URLError("down"))
+        self.assertEqual(result, (None, None, None))
+        self.assertEqual(cache, {})
+
+    def test_cached_result_skips_request(self):
+        cache = {f"parcel:{self.ADDRESS}": {"lat": 43.1, "lng": -89.5, "match": "parcel"}}
+        result, _, urlopen = self._run({"features": []}, cache=cache)
+        self.assertEqual(result, (43.1, -89.5, "parcel"))
+        urlopen.assert_not_called()
+
+
+class StepGeocodeTest(unittest.TestCase):
+
+    def _run(self, nominatim, parcel):
+        project = {"address": "8113 Grotto LN, Madison WI 53711"}
+        cache = {f"geo:{project['address']}": {"lat": None, "lng": None}}
+        with mock.patch.object(gd, "geocode", return_value=nominatim), \
+                mock.patch.object(gd, "geocode_parcel", return_value=parcel) as fallback, \
+                mock.patch.object(gd, "save_cache"), mock.patch.object(gd.time, "sleep"), \
+                redirect_stdout(StringIO()):
+            gd._step_geocode([project], cache)
+        return project, fallback
+
+    def test_nominatim_hit_skips_parcel_fallback(self):
+        project, fallback = self._run((43.07, -89.38), (None, None, None))
+        self.assertEqual(project["geocode_source"], "nominatim")
+        fallback.assert_not_called()
+
+    def test_falls_back_to_parcel(self):
+        project, _ = self._run((None, None), (43.03, -89.52, "parcel_nearest"))
+        self.assertEqual((project["lat"], project["geocode_source"]), (43.03, "parcel_nearest"))
+
+    def test_unlocated_has_empty_source(self):
+        project, _ = self._run((None, None), (None, None, None))
+        self.assertEqual((project["lat"], project["geocode_source"]), (None, ""))
 
 
 if __name__ == "__main__":

@@ -10,7 +10,7 @@ Interactive Leaflet map of multi-family housing construction permits in Madison,
 
 The site is generated in two steps — data processing then HTML generation:
 
-1. **`python generate_data.py`** — Runs `merge_permits.py` to merge manually-downloaded ELAM permit exports (`MMDDYYYY-MMDDYYYY.csv`, latest end date wins per record) into `permits_merged.csv`, then parses it, filters for multi-family housing, drops renovation-only alterations, geocodes addresses via Nominatim, fetches zoning from Madison's ArcGIS API, classifies permitted vs conditional use, processes GTFS transit data, and outputs `projects.json`, `projects.csv`, and `transit_routes.json`. Uses `geocode_cache.json` to avoid re-hitting APIs. Slow due to API rate limits — only re-run when input data changes.
+1. **`python generate_data.py`** — Runs `merge_permits.py` to merge manually-downloaded ELAM permit exports (`MMDDYYYY-MMDDYYYY.csv`, latest end date wins per record) into `permits_merged.csv`, then parses it, filters for multi-family housing, drops renovation-only alterations, geocodes addresses via Nominatim (falling back to Madison's tax parcel layer), fetches zoning from Madison's ArcGIS API, classifies permitted vs conditional use, processes GTFS transit data, and outputs `projects.json`, `projects.csv`, and `transit_routes.json`. Uses `geocode_cache.json` to avoid re-hitting APIs. Slow due to API rate limits — only re-run when input data changes.
 
 2. **`python generate_site.py`** — Reads `projects.csv` and `transit_routes.json`, computes all marker properties (colors, sizes, popups) in Python, and writes a self-contained `index.html`. The generated HTML has minimal JS — just Leaflet map init, marker placement, and zoom scaling. Re-run this after any visual/UI changes.
 
@@ -35,6 +35,7 @@ zoning_districts.csv + style.css → generate_site.py → index.html
 - **Zoning classification** (`classify_use`): Matches project unit count against parsed ranges from `zoning_districts.csv`. PD zones always return VARIES. Falls back through townhouse → multifamily → generic building ranges.
 - **Housing type taxonomy** follows Missing Middle Housing typology: Duplex/Triplex, Townhouse, Multiplex, Mid-Rise, High-Rise, with Mixed-Use variants.
 - **Transit route styling**: Line weight/dash pattern reflects service level (Frequent > Standard > Peak > Supplemental), using route colors from GTFS data.
+- **Geocoding** (`_step_geocode`): Nominatim first, and results outside the Madison area are rejected. On a miss, `geocode_parcel` checks the city TaxParcels layer: an exact house number gives `parcel`, otherwise the closest number on the same street within `PARCEL_NEAREST_MAX_DIFF` (50) gives `parcel_nearest`. The `projects.csv` column `geocode_source` records the method, and `parcel_nearest` pins say "Location approximate" in their popup.
 - **Basemap**: Esri `World_Light_Gray_Base` plus `World_Light_Gray_Reference` labels in a pane above route lines and below markers. It's keyless; CARTO basemaps started requiring an API key in late 2026.
 - All HTML generation uses Python f-strings with `html.escape()` — no template engine.
 - `EXCLUDE_RECORDS` in `generate_data.py` lists manually-identified false positives to skip.
@@ -44,7 +45,7 @@ zoning_districts.csv + style.css → generate_site.py → index.html
 
 ## Tests
 
-Stdlib `unittest`, no dependencies: `python3 -m unittest` (tests live in `test_generate_data.py`).
+Stdlib `unittest`, no dependencies: `python3 -m unittest` (tests live in `test_generate_data.py` and `test_generate_site.py`).
 
 ## .gitignore
 

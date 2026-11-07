@@ -49,6 +49,9 @@ ZONING_URL = "https://maps.cityofmadison.com/arcgis/rest/services/Planning/Zonin
 # MPO BicycleMap_Pro: layer 7 = off-street paths, layer 14 = on-street facilities
 BIKE_OFFSTREET_URL = "https://maps.cityofmadison.com/arcgis/rest/services/MPO/BicycleMap_Pro/MapServer/7/query"
 BIKE_ONSTREET_URL  = "https://maps.cityofmadison.com/arcgis/rest/services/MPO/BicycleMap_Pro/MapServer/14/query"
+# Layer 2 = TaxParcels; fallback geocoder for addresses Nominatim can't find
+PARCEL_URL = "https://maps.cityofmadison.com/arcgis/rest/services/Planning/Zoning/MapServer/2/query"
+PARCEL_NEAREST_MAX_DIFF = 50  # house numbers; roughly half a block
 USER_AGENT = "MadisonWI-HousingPermits/1.0"
 
 # Generous box around Madison; geocodes outside it are treated as misses
@@ -181,8 +184,8 @@ STALE_ISSUED_CUTOFF = "2024-01-01"
 
 CSV_FIELDS = [
     "record_number", "date", "address", "status", "description",
-    "project_name", "units", "zoning", "lat", "lng", "use_type", "housing_type",
-    "outcome",
+    "project_name", "units", "zoning", "lat", "lng", "geocode_source",
+    "use_type", "housing_type", "outcome",
 ]
 
 
@@ -436,6 +439,80 @@ def geocode(address, cache):
         print(f"  No results for: {cleaned}")
         cache[cache_key] = {"lat": None, "lng": None}
         return None, None
+
+
+# "952 N Fair Oaks AVE, Madison WI ..." -> number, direction, street name (type dropped)
+_PARCEL_ADDR_RE = re.compile(r"^\s*(\d+)\s+(?:([NSEW])\s+)?(.+?)\s+[A-Za-z]+\s*(?:,|$)")
+
+
+def parse_street_address(address):
+    """Split an address into (house_number, direction or None, street_name), or None."""
+    m = _PARCEL_ADDR_RE.match(address)
+    if not m:
+        return None
+    return int(m.group(1)), m.group(2), m.group(3)
+
+
+def _polygon_center(geometry):
+    """Average of a parcel polygon's outer-ring vertices as (lat, lng)."""
+    ring = geometry["rings"][0]
+    return (sum(pt[1] for pt in ring) / len(ring),
+            sum(pt[0] for pt in ring) / len(ring))
+
+
+def geocode_parcel(address, cache):
+    """Fallback geocoder: locate an address via the city's tax parcel layer.
+
+    Returns (lat, lng, match) where match is "parcel" (exact house number),
+    "parcel_nearest" (closest number on the street within
+    PARCEL_NEAREST_MAX_DIFF), or None when nothing qualifies.
+    """
+    cache_key = f"parcel:{address}"
+    if cache_key in cache:
+        cached = cache[cache_key]
+        return cached["lat"], cached["lng"], cached["match"]
+
+    parsed = parse_street_address(address)
+    if not parsed:
+        return None, None, None
+    number, direction, street = parsed
+    where = (f"UPPER(StreetName) = '{street.upper().replace(chr(39), chr(39) * 2)}'"
+             f" AND HouseNbr BETWEEN {number - PARCEL_NEAREST_MAX_DIFF}"
+             f" AND {number + PARCEL_NEAREST_MAX_DIFF}")
+    if direction:
+        where += f" AND StreetDir = '{direction}'"
+    params = urllib.parse.urlencode({
+        "where": where,
+        "outFields": "HouseNbr",
+        "returnGeometry": "true",
+        "outSR": "4326",
+        "f": "json",
+    })
+    req = urllib.request.Request(f"{PARCEL_URL}?{params}", headers={"User-Agent": USER_AGENT})
+    try:
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            data = json.loads(resp.read().decode())
+    except (urllib.error.URLError, OSError) as e:
+        # Network failures are transient — don't cache them as misses
+        print(f"  Parcel error for {address}: {e}")
+        return None, None, None
+    if "error" in data:
+        print(f"  Parcel API error for {address}: {data['error']}")
+        return None, None, None
+
+    parcels = [f for f in data.get("features", [])
+               if f.get("attributes", {}).get("HouseNbr") and f.get("geometry")]
+    result = {"lat": None, "lng": None, "match": None}
+    if parcels:
+        best = min(parcels, key=lambda f: abs(f["attributes"]["HouseNbr"] - number))
+        lat, lng = _polygon_center(best["geometry"])
+        if in_madison_area(lat, lng):
+            exact = best["attributes"]["HouseNbr"] == number
+            result = {"lat": lat, "lng": lng,
+                      "match": "parcel" if exact else "parcel_nearest"}
+    cache[cache_key] = result
+    print(f"  Parcel: {address[:50]} -> {result['match'] or 'no match'}")
+    return result["lat"], result["lng"], result["match"]
 
 
 # ---------------------------------------------------------------------------
@@ -835,10 +912,10 @@ def _step_clear_failed_geocodes(projects, cache):
         return
     cleared = 0
     for p in projects:
-        key = f"geo:{p['address']}"
-        if key in cache and cache[key].get("lat") is None:
-            del cache[key]
-            cleared += 1
+        for key in (f"geo:{p['address']}", f"parcel:{p['address']}"):
+            if key in cache and cache[key].get("lat") is None:
+                del cache[key]
+                cleared += 1
     cache[meta_key] = datetime.now(timezone.utc).isoformat()
     save_cache(cache)
     print(f"  Cleared {cleared} failed geocode cache entries for retry\n")
@@ -852,14 +929,22 @@ def _step_geocode(projects, cache):
         cache_key = f"geo:{p['address']}"
         was_cached = cache_key in cache
         lat, lng = geocode(p["address"], cache)
+        source = "nominatim" if lat is not None else ""
+        if not was_cached:
+            # Respect Nominatim rate limit: 1 req/sec (only sleep if we made a request)
+            time.sleep(1.5)
+        if lat is None:
+            parcel_cached = f"parcel:{p['address']}" in cache
+            lat, lng, match = geocode_parcel(p["address"], cache)
+            source = match or ""
+            if not parcel_cached:
+                time.sleep(0.2)
         p["lat"] = lat
         p["lng"] = lng
+        p["geocode_source"] = source
         if lat is not None:
             geocoded_count += 1
         save_cache(cache)
-        # Respect Nominatim rate limit: 1 req/sec (only sleep if we made a request)
-        if not was_cached:
-            time.sleep(1.5)
     print(f"  Geocoded {geocoded_count}/{len(projects)} addresses\n")
 
 

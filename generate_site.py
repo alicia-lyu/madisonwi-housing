@@ -273,11 +273,16 @@ def build_popup_html(row):
                  f' \u00b7 <a href="{ge}" target="_blank">Google Earth</a>'
                  f'</div>')
 
+    approx_note = ""
+    if row.get("geocode_source") == "parcel_nearest":
+        approx_note = '<i>Location approximate (nearest parcel on street)</i><br>'
+
     return (
         f'<div class="popup">'
         f'<div class="popup-name">{html.escape(name)}</div>'
         f'<div class="popup-body">'
         f'<b>Address:</b> {html.escape(row["address"])}<br>'
+        f'{approx_note}'
         f'<b>Units:</b> {html.escape(units_str)}<br>'
         f'<b>Type:</b> {html.escape(row.get("housing_type", ""))}<br>'
         f'<b>Zoning:</b> {html.escape(zoning)}<br>'
